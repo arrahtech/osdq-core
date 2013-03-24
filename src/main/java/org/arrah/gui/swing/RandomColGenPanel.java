@@ -1,0 +1,219 @@
+package org.arrah.gui.swing;
+
+/***********************************************
+ *     Copyright to Arrah Technology 2008      *
+ *     http://www.arrah.in                     *
+ *                                             *
+ * Any part of code or file can be changed,    *
+ * redistributed, modified with the copyright  *
+ * information intact                          *
+ *                                             *
+ * Author$ : Vivek Singh                       *
+ *                                             *
+ ***********************************************/
+
+/* This file is used for creating 
+ * random numbers, string and date
+ * from populate column.
+ * 
+ */
+
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Date;
+import java.util.Vector;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerDateModel;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+
+import org.arrah.framework.ndtable.RandomColGen;
+
+public class RandomColGenPanel implements ActionListener {
+	private ReportTable _rt;
+	private int _rowC = 0;
+	private int _colIndex = 0;
+	private JDialog d_f;
+	private JFormattedTextField jft_low, jft_high;
+	private JFormattedTextField jfs_low, jfs_high;
+	private JRadioButton rd1, rd2, rd3;
+	private JSpinner jsp_low, jsp_high;
+	private JComboBox typeCombo, lanCombo, strType;
+	private Border line_b;
+
+	public RandomColGenPanel(ReportTable rt, int colIndex) {
+		_rt = rt;
+		_colIndex = colIndex;
+		_rowC = rt.table.getRowCount();
+		createDialog();
+	}; // Constructor
+
+	private void createDialog() {
+		JPanel jp = new JPanel(new GridLayout(4, 1));
+		line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
+
+		rd1 = new JRadioButton("Number");
+		rd2 = new JRadioButton("String");
+		rd3 = new JRadioButton("Date");
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(rd1);
+		bg.add(rd2);
+		bg.add(rd3);
+		rd1.setSelected(true);
+
+		jp.add(createNumPanel());
+		jp.add(createStringPanel());
+		jp.add(createDatePanel());
+
+		JPanel bp = new JPanel();
+		JButton ok = new JButton("OK");
+		ok.addKeyListener(new KeyBoardListener());
+		ok.setActionCommand("ok");
+		ok.addActionListener(this);
+		bp.add(ok);
+		JButton can = new JButton("Cancel");
+		can.addKeyListener(new KeyBoardListener());
+		can.setActionCommand("cancel");
+		can.addActionListener(this);
+		bp.add(can);
+
+		jp.add(bp);
+
+		d_f = new JDialog();
+		d_f.setModal(true);
+		d_f.setTitle("Random Generation Dialog");
+		d_f.setLocation(250, 250);
+		d_f.getContentPane().add(jp);
+		d_f.pack();
+		d_f.setVisible(true);
+
+	}
+
+	private JPanel createNumPanel() {
+		JPanel numjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		typeCombo = new JComboBox(
+				new String[] { "Integer Type", "Decimal Type" });
+		JLabel lrange = new JLabel("  Range:", JLabel.LEADING);
+		jft_low = new JFormattedTextField();
+		jft_low.setValue(new Long(0));
+		jft_low.setColumns(8);
+		JLabel torange = new JLabel("  to:", JLabel.LEADING);
+		jft_high = new JFormattedTextField();
+		jft_high.setValue(new Long(100));
+		jft_high.setColumns(8);
+		numjp.add(rd1);
+		numjp.add(typeCombo);
+		numjp.add(lrange);
+		numjp.add(jft_low);
+		numjp.add(torange);
+		numjp.add(jft_high);
+		numjp.setBorder(line_b);
+		return numjp;
+	}
+
+	private JPanel createDatePanel() {
+		JPanel datejp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		jsp_low = new JSpinner(new SpinnerDateModel());
+		jsp_high = new JSpinner(new SpinnerDateModel());
+		jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "dd/MM/yyyy"));
+		jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "dd/MM/yyyy"));
+		JLabel lrange = new JLabel("  Range:", JLabel.LEADING);
+		JLabel toRange = new JLabel("  to:", JLabel.LEADING);
+		datejp.add(rd3);
+		datejp.add(lrange);
+		datejp.add(jsp_low);
+		datejp.add(toRange);
+		datejp.add(jsp_high);
+		datejp.setBorder(line_b);
+		return datejp;
+	}
+
+	private JPanel createStringPanel() {
+		JPanel stringjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		jfs_low = new JFormattedTextField();
+		jfs_low.setValue(new Long(6));
+		jfs_low.setColumns(8);
+		jfs_high = new JFormattedTextField();
+		jfs_high.setValue(new Long(10));
+		jfs_high.setColumns(8);
+		lanCombo = new JComboBox(new String[] { "Basic Latin", "Greek",
+				"Hebrew", "Arabic", "Devanagiri", "Tamil", "Kannada", "Thai",
+				"Hangul", "Hiragana", "Katakana", "Bopomofo", "Kanbun" });
+		strType = new JComboBox(new String[] { "Any Character",
+				"LetterOrDigit", "Letter", "Digit", });
+		JLabel strLen = new JLabel("  Length between:", JLabel.LEADING);
+		JLabel andLabel = new JLabel("  and:", JLabel.LEADING);
+		stringjp.add(rd2);
+		stringjp.add(lanCombo);
+		stringjp.add(strType);
+		stringjp.add(strLen);
+		stringjp.add(jfs_low);
+		stringjp.add(andLabel);
+		stringjp.add(jfs_high);
+		stringjp.setBorder(line_b);
+
+		return stringjp;
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		String action = e.getActionCommand();
+		if (action.equals("cancel")) {
+			d_f.dispose();
+			return;
+		}
+		if (action.equals("ok")) {
+			d_f.dispose();
+			if (rd1.isSelected() == true)
+				if (typeCombo.getSelectedIndex() == 0) {
+					Vector<Long> vc = new RandomColGen(_rowC)
+							.updateColumnRandomInt(
+									((Long) jft_high.getValue()).longValue(),
+									((Long) jft_low.getValue()).longValue());
+					for (int i = 0; i < _rowC; i++) {
+						_rt.setTableValueAt(vc.get(i), i, _colIndex);
+					}
+				} else {
+					Vector<Double> vc = new RandomColGen(_rowC)
+							.updateColumnRandomDouble(
+									((Long) jft_high.getValue()).longValue(),
+									((Long) jft_low.getValue()).longValue());
+					for (int i = 0; i < _rowC; i++) {
+						_rt.setTableValueAt(vc.get(i), i, _colIndex);
+					}
+				}
+			if (rd2.isSelected() == true) {
+				Vector<String> vc = new RandomColGen(_rowC)
+						.updateColumnRandomString(((Long) jfs_high.getValue()),
+								((Long) jfs_low.getValue()),
+								lanCombo.getSelectedIndex(),
+								strType.getSelectedIndex());
+				for (int i = 0; i < _rowC; i++) {
+					_rt.setTableValueAt(vc.get(i), i, _colIndex);
+				}
+			}
+			if (rd3.isSelected() == true) {
+				long min = ((Date) jsp_low.getValue()).getTime();
+				long max = ((Date) jsp_high.getValue()).getTime();
+				Vector<Date> vc = new RandomColGen(_rowC)
+						.updateColumnRandomDate(max, min);
+				for (int i = 0; i < _rowC; i++) {
+					_rt.setTableValueAt(vc.get(i), i, _colIndex);
+				}
+			}
+			return;
+		}
+	}
+
+}
