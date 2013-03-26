@@ -18,6 +18,7 @@ package org.arrah.framework.rdbms;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Vector;
@@ -96,12 +97,13 @@ public class DataDictionaryPDF {
 		document.close();
 	}
 	
-	// Data Dictionary PDF
-	public void createDDPDF(File pdfFile) throws FileNotFoundException, DocumentException, SQLException {
-
+	/**
+	 * Writes DD as pdf into output stream
+	 */
+	public void createDDPDF(OutputStream outputStream) throws FileNotFoundException, DocumentException, SQLException {
 		
 		Document document=new Document();
-		PdfWriter.getInstance(document,new FileOutputStream(pdfFile));
+		PdfWriter.getInstance(document, outputStream);
 		document.open();
 		addTitlePage(document);
 
@@ -173,6 +175,13 @@ public class DataDictionaryPDF {
 		 
 		document.close();
 		System.out.println("\n Data Dictionary File saved successfully");
+
+		
+	}
+	
+	// Data Dictionary PDF
+	public void createDDPDF(File pdfFile) throws FileNotFoundException, DocumentException, SQLException {
+		createDDPDF(new FileOutputStream(pdfFile));
 	} // End of createDDPDF
 	
 	 private void addEmptyLine(Document doc, int number) throws DocumentException {
