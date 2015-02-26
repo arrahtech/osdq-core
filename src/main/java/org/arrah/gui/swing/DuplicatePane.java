@@ -39,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import org.arrah.framework.hadooputil.HiveQueryBuilder;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
 
@@ -237,6 +238,25 @@ public class DuplicatePane extends JPanel {
 				int type = _ht.get(colN);
 				vc_t.add(i - 1, type);
 			}
+			// Following will not work for Hive
+			// Hive does not support JDBCRowsetPanel prepared query
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) { //hive
+				
+				HiveQueryBuilder qb = new HiveQueryBuilder(
+						Rdbms_conn.getHValue("Database_DSN"), _table,
+						Rdbms_conn.getDBType());
+				String query = qb.get_hiveequal_query(vc_s,vc_t,vc_v, _condition);
+				try {
+					_rs = new JDBCRowsetPanel(query, true, vc_s.get(0));
+				} catch (Exception exp) {
+					JOptionPane
+							.showMessageDialog(null, exp.getMessage(),
+									" Hive Rowset Expand Error Dialog",
+									JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+			} else {
 			QueryBuilder qb = new QueryBuilder(
 					Rdbms_conn.getHValue("Database_DSN"), _table,
 					Rdbms_conn.getDBType());
@@ -250,6 +270,7 @@ public class DuplicatePane extends JPanel {
 								JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			} // For Rdbms
 			DuplicatePane.this.remove(_rt);
 			DuplicatePane.this.add(_rs, BorderLayout.CENTER);
 			DuplicatePane.this.revalidate();

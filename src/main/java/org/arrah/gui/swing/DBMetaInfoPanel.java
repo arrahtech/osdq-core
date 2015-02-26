@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2013      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -19,7 +19,6 @@ package org.arrah.gui.swing;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.sql.SQLException;
 import java.util.Hashtable;
 
@@ -30,13 +29,11 @@ import javax.swing.JOptionPane;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.profile.DBMetaInfo;
+import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
 import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.rdbms.TableRelationInfo;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
 
 public class DBMetaInfoPanel implements ActionListener {
 	private boolean isFrame;
@@ -239,11 +236,62 @@ public class DBMetaInfoPanel implements ActionListener {
 				vp = new TableMetaInfoPanel(4);
 				variableQ = true;
 				isFrame = true;
+			} else if (s.equals("Table Name")) {
+				f_title = "Table Name Information";
+				s31 = JOptionPane.showInputDialog(null, "Enter Table Name:",
+						"Table Input Dialog", -1);
+				if (s31 == null || s31.compareTo("") == 0)
+					return;
+				
+				rtm__ = TableMetaInfo.populateTable(2, 0,Rdbms_conn.getTableCount(), rtm__);
+				rt__ = new ReportTable(rtm__);
+				new SimilarityCheckPanel(s31, rt__, 0);
+				
+				return;
+
+			} else if (s.equals("Column Name")) {
+				f_title = "Table Name Information";
+				s31 = JOptionPane.showInputDialog(null, "Enter Column Name:",
+						"Column Input Dialog", -1);
+				if (s31 == null || s31.compareTo("") == 0)
+					return;
+				
+				rtm__ = TableMetaInfo.populateTable(2, 0,Rdbms_conn.getTableCount(), rtm__);
+				rt__ = new ReportTable(rtm__);
+				new SimilarityCheckPanel(s31, rt__, 1);
+				
+				return;
+
+			} else if (s.equals("Native Datatype")) {
+				f_title = "Table Name Information";
+				s31 = JOptionPane.showInputDialog(null, "Enter Native (DataBase) Datatype:",
+						"Native Datatype Input Dialog", -1);
+				if (s31 == null || s31.compareTo("") == 0)
+					return;
+				
+				rtm__ = TableMetaInfo.populateTable(2, 0,Rdbms_conn.getTableCount(), rtm__);
+				rt__ = new ReportTable(rtm__);
+				new SimilarityCheckPanel(s31, rt__, 2);
+				
+				return;
+
+			} else if (s.equals("SQL Datatype")) {
+				f_title = "Table Name Information";
+				s31 = JOptionPane.showInputDialog(null, "Enter SQL (java.sql) Datatype:",
+						"Java SQL Datatype Input Dialog", -1);
+				if (s31 == null || s31.compareTo("") == 0)
+					return;
+				
+				rtm__ = TableMetaInfo.populateTable(2, 0,Rdbms_conn.getTableCount(), rtm__);
+				rt__ = new ReportTable(rtm__);
+				new SimilarityCheckPanel(s31, rt__, 3);
+				
+				return;
+
 			} else {
 				return;
 			}
 			Rdbms_conn.closeConn();
-			RelationPanel relationpanel;
 			if (isFrame) {
 				JFrame.setDefaultLookAndFeelDecorated(true);
 				JFrame jframe = new JFrame(f_title);
@@ -256,7 +304,7 @@ public class DBMetaInfoPanel implements ActionListener {
 				jframe.pack();
 				jframe.setVisible(true);
 			} else {
-				relationpanel = new RelationPanel(hashtable1, hashtable,
+				 new RelationPanel(hashtable1, hashtable,
 						hashtable2);
 			}
 		} catch (SQLException sqlexception) {

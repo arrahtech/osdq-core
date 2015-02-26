@@ -153,26 +153,26 @@ public class FileActionListener extends JPanel implements MouseListener,
 						out.writeObject((ReportTable) ((ProfilePane) ((ReportViewer) _saveO).pp)._table);
 						out.writeObject((PlotterPanel) ((ReportViewer) _saveO).plotterPanel);
 						out.writeObject((PlotterPanel) ((ReportViewer) _saveO).spp.g_p);
-						out.writeObject("Version 5.2");
+						out.writeObject("Version 5.5.3");
 					} else if (_classID == 2) { // String Analysis
 						out.writeInt(_classID);
-						out.writeObject(((StringProfiler) _saveO).qp_1
+						out.writeObject(((StringProfilerPanel) _saveO).qp_1
 								.getStatus());
-						out.writeObject(((StringProfiler) _saveO).qp_2
+						out.writeObject(((StringProfilerPanel) _saveO).qp_2
 								.getStatus());
-						out.writeObject(((StringProfiler) _saveO).qp_3
+						out.writeObject(((StringProfilerPanel) _saveO).qp_3
 								.getStatus());
-						out.writeObject(((StringProfiler) _saveO).q1_c
+						out.writeObject(((StringProfilerPanel) _saveO).q1_c
 								.getText());
-						out.writeObject(((StringProfiler) _saveO).q2_c
+						out.writeObject(((StringProfilerPanel) _saveO).q2_c
 								.getText());
-						out.writeObject(((StringProfiler) _saveO).q3_c
+						out.writeObject(((StringProfilerPanel) _saveO).q3_c
 								.getText());
-						out.writeObject((Hashtable) ((StringProfiler) _saveO)._h_info);
-						out.writeObject(((StringProfiler) _saveO).r_t.getText());
-						out.writeObject(((StringProfiler) _saveO).r_c.getText());
-						out.writeObject((ReportTable) ((StringProfiler) _saveO).qtable);
-						out.writeObject("Version 5.2");
+						out.writeObject((Hashtable) ((StringProfilerPanel) _saveO)._h_info);
+						out.writeObject(((StringProfilerPanel) _saveO).r_t.getText());
+						out.writeObject(((StringProfilerPanel) _saveO).r_c.getText());
+						out.writeObject((ReportTable) ((StringProfilerPanel) _saveO).qtable);
+						out.writeObject("Version 5.5.3");
 
 					} else { // Statistical Advance Analysis
 						out.writeInt(_classID);
@@ -181,7 +181,7 @@ public class FileActionListener extends JPanel implements MouseListener,
 						out.writeObject((ReportTable) ((StatisticalAnalysisListener) _saveO)._table_1);
 						out.writeObject((ReportTable) ((StatisticalAnalysisListener) _saveO)._table_2);
 						out.writeObject((ReportTable) ((StatisticalAnalysisListener) _saveO)._table_3);
-						out.writeObject("Version 5.2");
+						out.writeObject("Version 5.5.3");
 
 					}
 				} catch (NotSerializableException ser_exp) {

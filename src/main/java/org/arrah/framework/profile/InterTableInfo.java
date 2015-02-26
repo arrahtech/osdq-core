@@ -22,10 +22,13 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.gui.swing.ConsoleFrame;
 
 public class InterTableInfo {
 
@@ -104,6 +107,16 @@ public class InterTableInfo {
 			final ReportTableModel _rt, final Vector<String> unique_table_s,
 			final Hashtable<String, Integer> _ht) {
 		final int count = _rt.getModel().getRowCount();
+		
+		// This method is not supported for hive
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			ConsoleFrame.addText("\n Load Query is not supported for Hive Data Storage");
+			JOptionPane.showMessageDialog(null,
+					"Load Query is not supported for Hive Data Storage", "Hive Support Error",
+					JOptionPane.ERROR_MESSAGE);
+			
+			return;
+		} else {
 
 		Thread[] tid = new Thread[query.length];
 
@@ -114,6 +127,7 @@ public class InterTableInfo {
 					int fcount = 0;
 					String tbl[] = null;
 					String col[] = null;
+					boolean insertflag = false;
 					try {
 						JDBCRowset rs = new JDBCRowset(query[cIndex], 0, true); // Fetch
 																				// no
@@ -143,6 +157,7 @@ public class InterTableInfo {
 							}
 							try {
 								rs.insertRow(obj);
+								insertflag = true;
 							} catch (SQLException sql_e) {
 								System.out.println("\n Row Id:" + (c + 1)
 										+ " Error-" + sql_e.getMessage()
@@ -157,6 +172,7 @@ public class InterTableInfo {
 						System.out.println("\n Error-" + e.getMessage()
 								+ " For Table: " + unique_table_s.get(cIndex));
 					}
+					if (insertflag==true)
 					System.out.println("\n " + (count - fcount) + " of Total "
 							+ count + " Rows Inserted Successfully in table :"
 							+ unique_table_s.get(cIndex));
@@ -172,10 +188,11 @@ public class InterTableInfo {
 				System.out.println("\n Thread Error:" + e.getMessage());
 			}
 		}
+		} // Not for HIVE
 	} // End of Load query
 
 	/*
-	 * Sycnh the multiple query in String[] ReportTableModel will have to data
+	 * Synch the multiple query in String[] ReportTableModel will have to data
 	 * to be synched String and Column will have name of tables and columns
 	 * while _ht will give the index of Table+Col combination QueryString will
 	 * have condition to fetch the data
@@ -189,10 +206,13 @@ public class InterTableInfo {
 		final Object[][] stored = new Object[query.length][count];
 		final int[] cI = new int[query.length];
 		Thread[] tid = new Thread[query.length];
+		
+		// Hive Thrift server has issues with Multi-threaded programme
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 
 		for (int qindex = 0; qindex < query.length; qindex++) {
 			final int cIndex = qindex;
-			tid[cIndex] = new Thread(new Runnable() {
+			 tid[cIndex] = new Thread(new Runnable() {
 				public void run() {
 					String tbl = table_s.get(cIndex);
 					String col = column_s.get(cIndex);
@@ -213,7 +233,7 @@ public class InterTableInfo {
 						rs.close();
 					} catch (SQLException e) {
 						System.out.println("\n Error-" + e.getMessage()
-								+ " For Table: " + tbl);
+								+ " For Query: " + newQuery);
 					}
 				}
 			});
@@ -226,6 +246,35 @@ public class InterTableInfo {
 				System.out.println("\n Thread Error:" + e.getMessage());
 			}
 		}
+		} else { // For Hive
+			
+			for (int qindex = 0; qindex < query.length; qindex++) {
+				final int cIndex = qindex;
+				String tbl = table_s.get(cIndex);
+				String col = column_s.get(cIndex);
+				String newQuery = query[cIndex];
+				Integer tab_index = _ht.get(tbl + col);
+				
+				if (tab_index == null)
+					return;
+				if (!(queryString[tab_index] == null || ""
+						.equals(queryString[tab_index])))
+						newQuery = newQuery + " WHERE "
+								+ queryString[tab_index];
+					cI[cIndex] = tab_index;
+
+				try {
+					JDBCRowset rs = new JDBCRowset(newQuery, count, false);
+					for (int c = 0; c < count; c++)
+						stored[cIndex][c] = rs.getObject(c + 1, 1);
+						rs.close();
+					} catch (SQLException e) {
+						System.out.println("\n Error-" + e.getMessage()
+							+ " For Query: " + newQuery);
+					}
+			
+		} } // End of Hive
+		
 		for (int c = 0; c < count; c++)
 			for (int j = 0; j < query.length; j++)
 				_rt.getModel().setValueAt(stored[j][c], c, cI[j]);

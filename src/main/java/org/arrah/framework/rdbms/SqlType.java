@@ -89,6 +89,7 @@ public class SqlType {
 
 	public static String getTypeName(int i) {
 		String s = "";
+		
 		switch (i) {
 		case java.sql.Types.ARRAY:
 			return s = "Array";

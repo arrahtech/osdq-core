@@ -46,6 +46,10 @@ public class ProfilePane extends JPanel implements ActionListener {
 
 	// These members are used by public methods :Global Variable
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private CheckBoxGroup aggr, less, more, between1, between2;
 	private JFormattedTextField text2, text3, text4, text5, text6, text7;
 	private Hashtable<String, String> table_info;

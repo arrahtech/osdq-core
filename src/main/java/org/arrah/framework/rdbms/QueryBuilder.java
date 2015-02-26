@@ -18,26 +18,42 @@ package org.arrah.framework.rdbms;
  *
  */
 
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.arrah.framework.profile.TableMetaInfo;
 
 public class QueryBuilder {
-	private String _dsn, _table, _column, _dtype;
-	private String _table1, _column1; // for table comparison
+	protected String _dsn, _table, _column, _dtype;
+	protected String _table1, _column1; // for table comparison
 
 	private static boolean isCond = false;
 	private static String _cond_q = "";
 	private static Vector<?>[] dateVar;
+	
+	public QueryBuilder() {
+		
+	}
 
 	public QueryBuilder(String Dsn, String Table, String Column, String DBType) {
 		set_dsn(Dsn);
 		_table = Table;
 		_column = Column;
 		_dtype = DBType;
-		if (_dtype.compareToIgnoreCase("mysql") != 0) {
+		if (_dtype.compareToIgnoreCase("mysql") != 0 
+				&& _dtype.compareToIgnoreCase("hive") != 0 
+				&& _dtype.compareToIgnoreCase("informix") != 0 
+				&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
+		{
 			if (!_table.startsWith("\""))
 				_table = "\"" + _table + "\"";
 			if (!_column.startsWith("\""))
@@ -54,7 +70,12 @@ public class QueryBuilder {
 		_table = Table;
 		_column = "";
 		_dtype = DBType;
-		if (_dtype.compareToIgnoreCase("mysql") != 0) {
+		if (_dtype.compareToIgnoreCase("mysql") != 0 
+			    && _dtype.compareToIgnoreCase("hive") != 0 
+			    && _dtype.compareToIgnoreCase("Informix") != 0 
+			    && !(_dtype.compareToIgnoreCase("Others") == 0 && 
+						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
+		{
 			if (!_table.startsWith("\""))
 				_table = "\"" + _table + "\"";
 		}
@@ -73,7 +94,12 @@ public class QueryBuilder {
 	public void setCTableCol(String Table, String Column) {
 		_table1 = Table;
 		_column1 = Column;
-		if (_dtype.compareToIgnoreCase("mysql") != 0) {
+		if (_dtype.compareToIgnoreCase("mysql") != 0 
+				&& _dtype.compareToIgnoreCase("hive") != 0
+				&& _dtype.compareToIgnoreCase("informix") != 0
+				&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) ) 
+		{
 			if (!_table1.startsWith("\""))
 				_table1 = "\"" + _table1 + "\"";
 			if (!_column1.startsWith("\""))
@@ -118,8 +144,11 @@ public class QueryBuilder {
 
 			if (_dtype.compareToIgnoreCase("sql_server") == 0
 					|| _dtype.compareToIgnoreCase("mysql") == 0
-					|| _dtype.compareToIgnoreCase("postgres") == 0)
+					|| _dtype.compareToIgnoreCase("postgres") == 0
+					|| _dtype.compareToIgnoreCase("splice") == 0)
 				count_query += " ) as AS1";
+			else if (_dtype.compareToIgnoreCase("hive") == 0)
+				count_query += " ) t1";
 			else
 				count_query += " )";
 
@@ -142,8 +171,11 @@ public class QueryBuilder {
 
 			if (_dtype.compareToIgnoreCase("sql_server") == 0
 					|| _dtype.compareToIgnoreCase("mysql") == 0
-					|| _dtype.compareToIgnoreCase("postgres") == 0 )
+					|| _dtype.compareToIgnoreCase("postgres") == 0
+					|| _dtype.compareToIgnoreCase("splice") == 0)
 				count_query += " ) as AS1";
+			else if (_dtype.compareToIgnoreCase("hive") == 0)
+				count_query += " ) t1";
 			else
 				count_query += " )";
 		}
@@ -172,7 +204,8 @@ public class QueryBuilder {
 			bottom_sel_query += " order by " + _column + ") WHERE rownum <= "
 					+ num;
 		} else if (_dtype.compareToIgnoreCase("mysql") == 0
-				|| _dtype.compareToIgnoreCase("postgres") == 0) {
+				|| _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("db2") == 0 ) {
 
 			bottom_sel_query = " SELECT " + distinct_str + " " + _column
 					+ " as " + col_name + " FROM " + _table;
@@ -181,7 +214,40 @@ public class QueryBuilder {
 				bottom_sel_query = bottom_sel_query + " WHERE " + _cond_q;
 
 			bottom_sel_query += " order by " + _column + " LIMIT "+num+" OFFSET 0";
-		} else {
+			
+		} else if(_dtype.compareToIgnoreCase("hive") == 0){   // Hive does not support offset
+			
+			
+			  bottom_sel_query = " SELECT " + _column + " as " + col_name + " FROM ( ";  
+			 	
+			 	bottom_sel_query += " SELECT " + distinct_str + " " + _column +  
+			 	" FROM " + _table;  
+			 	
+			 	if (isCond)  
+			 	bottom_sel_query = bottom_sel_query + " WHERE " + _cond_q;  
+			 	
+			 	bottom_sel_query += " order by " + _column + " LIMIT "+num +" ) t1 ";  
+
+		} else if(_dtype.compareToIgnoreCase("Informix") ==0){ // Informix Syntax does not take TOP
+			// Informix does not take the keyword TOP. So updated with the keyword FIRST
+
+			bottom_sel_query = " SELECT " + " FIRST " + num + " "
+			+ _column + " as " + col_name + " FROM " + _table;
+
+			if (isCond)
+			bottom_sel_query = bottom_sel_query + " WHERE " + _cond_q;
+
+			bottom_sel_query += " order by " + _column;
+
+		} else if(_dtype.compareToIgnoreCase("Splice") ==0){  // Splice Syntax does not take TOP
+			
+            bottom_sel_query = " SELECT " + _column  + " as " + col_name + " FROM " + _table   ;              
+            if (isCond)
+            	bottom_sel_query =  bottom_sel_query + " WHERE " + _cond_q;
+                  
+            bottom_sel_query += " order by " + _column + "FETCH FIRST " + " " + num + " " + " ROW ONLY";
+            
+        }  else {
 			bottom_sel_query = " SELECT " + distinct_str + " TOP " + num + " "
 					+ _column + " as " + col_name + " FROM " + _table;
 
@@ -215,7 +281,8 @@ public class QueryBuilder {
 			top_sel_query += " order by " + _column
 					+ " desc ) WHERE rownum <= " + num;
 		} else if (_dtype.compareToIgnoreCase("mysql") == 0
-				 || _dtype.compareToIgnoreCase("postgres") == 0) {
+				 || _dtype.compareToIgnoreCase("postgres") == 0
+				 || _dtype.compareToIgnoreCase("db2") == 0) {
 			
 			top_sel_query = " SELECT " + distinct_str + " " + _column + " as "
 					+ col_name + " FROM " + _table;
@@ -224,9 +291,35 @@ public class QueryBuilder {
 				top_sel_query = top_sel_query + " WHERE " + _cond_q;
 
 			top_sel_query += " order by " + _column + " desc LIMIT "+num+" OFFSET 0";
-		}
+			
+		} else if(_dtype.compareToIgnoreCase("hive") ==0){  // Hive does not support offset
+		 	
+		 	top_sel_query = " SELECT " + _column + " as " + col_name + " FROM ( ";  
+		 	
+		 	top_sel_query +=  " SELECT " + distinct_str + " " + _column +  " FROM " + _table;  
+		 	
+		 	if (isCond)  
+		 	top_sel_query = top_sel_query + " WHERE " + _cond_q;  
+		 	
+		 	top_sel_query += " order by " + _column + " desc LIMIT "+num +" ) t1 ";  
+		 	}  
+		else if(_dtype.compareToIgnoreCase("Informix") ==0){ // Informix Syntax does not take TOP
+			top_sel_query = " SELECT " + " FIRST " + num + " "
+			+ _column + " as " + col_name + " FROM " + _table;
 
-		else {
+			if (isCond)
+			top_sel_query = top_sel_query + " WHERE " + _cond_q;
+
+			top_sel_query += " order by " + _column + " desc ";
+
+		} else if(_dtype.compareToIgnoreCase("Splice") ==0){  // Splice does not support Top    
+            top_sel_query = " SELECT " + _column + " as " +  col_name + " FROM " + _table ;
+                                    
+            if (isCond)
+                   top_sel_query = top_sel_query + " WHERE " + _cond_q;
+            top_sel_query += " order by " + _column + " " + " desc fetch first" + " " +  num + " " + "row Only ";
+
+        } else {
 			top_sel_query = " SELECT " + distinct_str + " TOP " + num + " "
 					+ _column + " as " + col_name + " FROM " + _table;
 
@@ -335,8 +428,11 @@ public class QueryBuilder {
 
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| _dtype.compareToIgnoreCase("mysql") == 0
-				|| _dtype.compareToIgnoreCase("postgres") == 0 )
+				|| _dtype.compareToIgnoreCase("postgres") == 0 
+				|| _dtype.compareToIgnoreCase("splice") == 0)
 			dist_count_query += " ) as AS1";
+		else if (_dtype.compareToIgnoreCase("hive") == 0)
+			dist_count_query += " ) as t1";
 		else
 			dist_count_query += " )";
 
@@ -365,6 +461,13 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				like_query = "SELECT " + _column + " as like_wise FROM " + _table
 				+ " WHERE " + _column + "::text ILIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("informix") == 0 )
+				like_query = "SELECT " + _column + " as like_wise FROM " + _table + 
+				" WHERE " + _column + "::VARCHAR(255) LIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+                like_query = "SELECT " + _column + " as like_wise FROM " + _table
+                + " WHERE " + "CAST(" + _column + " AS CHAR(250)) LIKE "  + "'" + like_str + "'";
+
 			else
 				like_query = "SELECT " + _column + " as like_wise FROM " + _table
 					+ " WHERE " + _column + " LIKE " + "'" + like_str + "'";
@@ -372,6 +475,13 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				like_query = "SELECT " + _column + " as like_wise FROM " + _table
 				+ " WHERE " + _column + "::text NOT ILIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("informix") == 0 )
+				like_query = "SELECT " + _column + " as like_wise FROM " + _table +
+				" WHERE " + _column + "::VARCHAR(255) NOT LIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+                like_query = "SELECT " + _column + " as like_wise FROM " + _table
+                + " WHERE " + "CAST(" + _column + " AS CHAR(250)) NOT LIKE "  + "'" + like_str + "'";
+
 			else
 				like_query = "SELECT " + _column + " as like_wise FROM " + _table
 					+ " WHERE " + _column + " NOT LIKE " + "'" + like_str + "'";
@@ -387,35 +497,67 @@ public class QueryBuilder {
 
 	}
 
-	/* Get the All String */
+	/* Get the All String  for a column*/
 	public String get_all_query() {
-		String all_query = "SELECT " + _column + " as like_wise FROM " + _table;
-		if (isCond)
-			all_query = all_query + " WHERE " + _cond_q;
-
-		all_query += " order by " + _column;
-
+		
+		String all_query; 
+		
+		if(_dtype.compareToIgnoreCase("hive") == 0){ 
+			all_query = "SELECT " + _column + " as like_wise FROM "; 
+			             
+		 	all_query += " ( SELECT * FROM " + _table + " order by " + _column + " ) t1";  
+		 	
+		 	if (isCond)  
+		 	all_query = all_query + " WHERE " + _cond_q;  
+		 	
+		 }  else {  
+		 	all_query = "SELECT " + _column + " as like_wise FROM " + _table;  
+		 	
+		 	
+		 	if (isCond)  
+		 	all_query = all_query + " WHERE " + _cond_q;  
+		 	
+		 	all_query += " order by " + _column; 
+		}
+	
 		return all_query;
-
 	}
 
 	/* Get the All String */
 	public String get_all_query_wcond_wnull() {
-		String all_query = "SELECT " + _column + " as like_wise FROM " + _table
+		String all_query="";
+		
+		if(_dtype.compareToIgnoreCase("hive") == 0){ 
+			all_query = "SELECT " + _column + " as like_wise FROM "; 
+            
+		 	all_query += " ( SELECT * FROM " + _table + 
+		 			" WHERE " + _column + " IS NOT NULL"+" order by " + _column + " ) t1";
+		}
+		else {
+			all_query = "SELECT " + _column + " as like_wise FROM " + _table
 				+ " WHERE " + _column + " IS NOT NULL";
-		all_query += " order by " + _column;
+			all_query += " order by " + _column;
+		}
 
 		return all_query;
 	}
 
 	/* Get ALL Frequency Query without Null */
 	public String get_freq_query_wnull() {
-		String freq_query = "SELECT count( " + _column + " ) as row_count,"
-				+ _column + " as like_wise FROM " + _table + " WHERE "
-				+ _column + " IS NOT NULL";
-		freq_query += " group by " + _column + " having count(" + _column
-				+ ") > 0 order by " + _column;
+		
+		String freq_query = "SELECT count( " + _column + " ) as row_count," 
+				+ _column + " as like_wise FROM " + _table + " WHERE " 
+				+ _column + " IS NOT NULL";  
+			freq_query += " group by " + _column + " having count(" + _column  
+					+ ") > 0 order by "; 
 
+		if(_dtype.compareToIgnoreCase("hive") == 0){ 
+				freq_query = freq_query +"like_wise";  
+		 } else {  
+		 		freq_query = freq_query +_column;  
+		 }  
+
+		
 		return freq_query;
 	}
 
@@ -483,8 +625,15 @@ public class QueryBuilder {
 		String freq_query = "SELECT count( " + _column + " ) as row_count, "
 				+ _column + " as like_wise FROM " + _table;
 		freq_query += " group by " + _column + " having count(" + _column
-				+ ") > 1 order by 1 desc";
+				+ ") > 1 order by ";
 
+		
+		if(_dtype.compareToIgnoreCase("hive") == 0){ 
+			freq_query = freq_query +"row_count desc";  
+		} else {  
+	 		freq_query = freq_query +"1 desc";  
+		}  
+		
 		return freq_query;
 	}
 
@@ -496,10 +645,14 @@ public class QueryBuilder {
 				+ ") > 1 ";
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| _dtype.compareToIgnoreCase("mysql") == 0
-				|| _dtype.compareToIgnoreCase("postgres") == 0)
+				|| _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("splice") == 0)
 			pattern_query += " ) as AS1";
+		else if (_dtype.compareToIgnoreCase("hive") == 0)
+			pattern_query += " ) t1";
 		else
 			pattern_query += " )";
+		
 		return pattern_query;
 	}
 
@@ -512,10 +665,14 @@ public class QueryBuilder {
 				+ ") > 0 ";
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| _dtype.compareToIgnoreCase("mysql") == 0
-				||  _dtype.compareToIgnoreCase("postgres") == 0 )
+				||  _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("splice") == 0)
 			pattern_query += " ) as AS1";
+		else if (_dtype.compareToIgnoreCase("hive") == 0)
+			pattern_query += " ) t1";
 		else
 			pattern_query += " )";
+		
 		return pattern_query;
 	}
 
@@ -525,9 +682,14 @@ public class QueryBuilder {
 				+ _column + " ) as row_count FROM " + _table;
 		if (isCond)
 			freq_all_query = freq_all_query + " WHERE " + _cond_q;
+		
 		freq_all_query += " group by " + _column + " having count(" + _column
-				+ ") > 0 order by 2 desc";
+				+ ") > 0 order by";
 
+		if(_dtype.compareToIgnoreCase("hive") == 0) 
+		 		freq_all_query += " row_count desc";  
+		 else  
+		 	freq_all_query += " 2 desc ";  
 		return freq_all_query;
 	}
 
@@ -539,6 +701,14 @@ public class QueryBuilder {
 				freq_like_query = "SELECT " + _column + " as like_wise, count( "
 					+ _column + " ) as row_count FROM " + _table + " WHERE "
 					+ _column + "::text ILIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("informix") == 0)
+				freq_like_query = "SELECT " + _column + " as like_wise, count( "
+					+ _column + " ) as row_count FROM " + _table + " WHERE "
+					+ _column + "::VARCHAR(255) LIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+                freq_like_query = "SELECT " + _column + " as like_wise, count( "
+                             + _column + " ) as row_count FROM " + _table + " WHERE "
+                             + "CAST("  + _column + "AS CHAR(250)) LIKE " + "'" + like_str + "'";
 			else
 				freq_like_query = "SELECT " + _column + " as like_wise, count( "
 						+ _column + " ) as row_count FROM " + _table + " WHERE "
@@ -547,16 +717,30 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				freq_like_query = "SELECT " + _column + " as like_wise, count( "
 					+ _column + " ) as row_count FROM " + _table + " WHERE "
-					+ _column + "::text NOT LIKE " + "'" + like_str + "'";
+					+ _column + "::text NOT ILIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("informix") == 0)
+				freq_like_query = "SELECT " + _column + " as like_wise, count( "
+					+ _column + " ) as row_count FROM " + _table + " WHERE "
+					+ _column + "::VARCHAR(255) NOT LIKE " + "'" + like_str + "'";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+                freq_like_query = "SELECT " + _column + " as like_wise, count( "
+                             + _column + " ) as row_count FROM " + _table + " WHERE "
+                             + "CAST("  + _column + "AS CHAR(250)) NOT LIKE " + "'" + like_str + "'";
 			else
 				freq_like_query = "SELECT " + _column + " as like_wise, count( "
 						+ _column + " ) as row_count FROM " + _table + " WHERE "
-						+ _column + " NOT ILIKE " + "'" + like_str + "'";
+						+ _column + " NOT LIKE " + "'" + like_str + "'";
 
 		if (isCond)
 			freq_like_query = freq_like_query + " and " + _cond_q;
-		freq_like_query += " group by " + _column + " having count(" + _column
-				+ ") > 0 order by 2 desc";
+		
+		if(_dtype.compareToIgnoreCase("hive") == 0)  
+		 	freq_like_query += " group by " + _column + " having count(" + _column  
+		 	+ ") > 0 order by row_count desc";  
+		 	else  
+		 	freq_like_query += " group by " + _column + " having count(" + _column  
+		        + ") > 0 order by 2 desc";
+		
 
 		return freq_like_query;
 	}
@@ -567,18 +751,28 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| (_dtype.compareToIgnoreCase("mysql") == 0)
 				|| _dtype.compareToIgnoreCase("ms_access") == 0
-				|| _dtype.compareToIgnoreCase("postgres") == 0)
+				|| _dtype.compareToIgnoreCase("postgres") == 0 )
 			
 			m_count_query = " SELECT count(*) as row_count,sum(AS1.row_count) as row_sum FROM ( SELECT count("
 					+ _table + "." + _column + ") as row_count FROM " + _table;
+		
+		else if (_dtype.compareToIgnoreCase("splice") == 0)
+            m_count_query = " SELECT count(*) as row_count,sum(row_count) as row_sum FROM ( SELECT count("
+                         + _table + "." + _column + ") as row_count FROM " + _table + "as VirtualTable";
 		else
 			m_count_query = " SELECT count(*) as row_count,sum(row_count) as row_sum FROM ( SELECT count("
 					+ _table + "." + _column + ") as row_count FROM " + _table;
 
-		if (_table.equals(_table1) == false)
-			m_count_query += "," + _table1 + " WHERE " + _table + "." + _column
+		if (_table.equals(_table1) == false) {
+			if (_dtype.compareToIgnoreCase("hive") == 0 ){ // hive to have explicit Inner join - JOIN
+				m_count_query += " LEFT SEMI JOIN " + _table1 + " ON ( " + _table + "." + _column  
+					+ " = " + _table1 + "." + _column1 + ") AND ";  
+				
+			} else {
+				m_count_query += "," + _table1 + " WHERE " + _table + "." + _column
 					+ " = " + _table1 + "." + _column1 + " AND ";
-		else
+			}
+		} else
 			m_count_query += " WHERE ";
 
 		m_count_query += _table + "." + _column + " IS NOT NULL GROUP BY "
@@ -587,7 +781,12 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| (_dtype.compareToIgnoreCase("ms_access") == 0)
 				|| _dtype.compareToIgnoreCase("mysql") == 0
-				||  _dtype.compareToIgnoreCase("postgres") == 0) {
+				||  _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("splice") == 0) {
+			// Splice remove alias 
+			if (_dtype.compareToIgnoreCase("Splice") == 0) 
+                m_count_query = m_count_query.replaceAll("as VirtualTable", "");
+
 			if (multiple == 0)
 				m_count_query += "= 1 ) as AS1";
 			else if (multiple == 1)
@@ -596,7 +795,17 @@ public class QueryBuilder {
 				m_count_query += "> 1 ) as AS1";
 			else if (multiple == 3)
 				m_count_query += "= " + mX + " ) as AS1";
-		} else {
+		} else if (_dtype.compareToIgnoreCase("hive") == 0) {
+			if (multiple == 0)
+				m_count_query += "= 1 )  t1";
+			else if (multiple == 1)
+				m_count_query += ">= 1 )  t1";
+			else if (multiple == 2)
+				m_count_query += "> 1 )  t1";
+			else if (multiple == 3)
+				m_count_query += "= " + mX + " )  t1";
+		}
+		else {
 			if (multiple == 0)
 				m_count_query += "= 1 ) ";
 			else if (multiple == 1)
@@ -606,52 +815,110 @@ public class QueryBuilder {
 			else if (multiple == 3)
 				m_count_query += "= " + mX + " ) ";
 		}
+		
 		return m_count_query;
 	}
 
-	/* Get Matching compare count */
+	/* Get Matching compare row value */
 	public String get_match_value(byte multiple, int mX, boolean match,
 			boolean isLeft) {
 		String m_match_query = "";
 		String match_str = "";
+		String hive_innerQuery =""; // Hive does not support IN or NOT
 		if (match)
-			match_str = " IN (";
+			match_str = " IN";
 		else
-			match_str = " NOT IN (";
+			match_str = " NOT IN";
 
-		if (_table.equals(_table1) == false && isLeft == false)
-			m_match_query = " SELECT *  FROM " + _table1 + " WHERE " + _column1
-					+ match_str;
-		else
-			m_match_query = " SELECT *  FROM " + _table + " WHERE " + _column
-					+ match_str;
+		
+		if (_dtype.compareToIgnoreCase("hive") == 0) {
 
-		if (_table.equals(_table1) == false)
-			m_match_query += " SELECT " + _table + "." + _column + " FROM "
+				if (_table.equals(_table1) == false )
+					hive_innerQuery += " ( SELECT "+_table+"."+_column+" as match_value FROM "
+						+ _table + " JOIN " + _table1 + " ON (" + _table + "."
+						+ _column + " = " + _table1 + "." + _column1 + ")  AND "
+						+ _table + "." + _column + " IS NOT NULL GROUP BY "
+						+ _table + "." + _column + " HAVING " + " count(" + _table
+						+ "." + _column + ")  ";
+				else 
+					hive_innerQuery += " ( SELECT "+_table+"."+_column+" as match_value FROM "
+							+ _table + " WHERE " + _table + "." + _column
+							+ " IS NOT NULL GROUP BY " + _table + "." + _column
+							+ " HAVING " + " count(" + _table + "." + _column + ")  ";
+			
+				if (match) {
+				if (multiple == 0)
+					hive_innerQuery += "= 1 ) t1";
+				else if (multiple == 1)
+					hive_innerQuery += ">= 1 ) t1";
+				else if (multiple == 2)
+					hive_innerQuery += "> 1 ) t1";
+				else if (multiple == 3)
+					hive_innerQuery += "= " + mX + ") t1";
+				} else {
+					if (multiple == 0)
+						hive_innerQuery += "!= 1 ) t1";
+					else if (multiple == 1)
+						hive_innerQuery += "< 1 ) t1";
+					else if (multiple == 2)
+						hive_innerQuery += "<= 1 ) t1";
+					else if (multiple == 3)
+						hive_innerQuery += "!= " + mX + ") t1";
+				}
+				
+			
+			if (_table.equals(_table1) == false && isLeft == false) {
+				m_match_query = " SELECT * FROM "+_table1 +
+						 " LEFT SEMI JOIN "+hive_innerQuery +" ON  " +
+						 _table1+"."+_column1+" = t1.match_value";
+				m_match_query += " ORDER BY "+_table1+"."+_column1;
+			} else if(_table.equals(_table1) == true && isLeft == false) {
+				m_match_query = " SELECT * FROM "+_table +
+						 " LEFT SEMI JOIN "+hive_innerQuery +" ON  " +
+						 _table+"."+_column+" = t1.match_value";
+				m_match_query += " ORDER BY "+_table+"."+_column1;
+			} else {
+				m_match_query = " SELECT *  FROM "+_table+ " LEFT SEMI JOIN "+ hive_innerQuery+" ON " + 
+						_table+"."+_column+" = t1.match_value";
+				m_match_query += " ORDER BY "+ _table+"."+_column;
+			}
+			
+		} else { // RDBMS Code
+			if (_table.equals(_table1) == false && isLeft == false)
+				m_match_query = " SELECT *  FROM " + _table1 + " WHERE " + _column1
+					+ match_str;
+			else
+				m_match_query = " SELECT *  FROM " + _table + " WHERE " + _column
+					+ match_str;
+		
+			
+			if (_table.equals(_table1) == false)
+				m_match_query += " ( SELECT " + _table + "." + _column + " FROM "
 					+ _table + "," + _table1 + " WHERE " + _table + "."
 					+ _column + " = " + _table1 + "." + _column1 + "  AND "
 					+ _table + "." + _column + " IS NOT NULL GROUP BY "
 					+ _table + "." + _column + " HAVING " + " count(" + _table
 					+ "." + _column + ") ";
-		else
-			m_match_query += " SELECT " + _table + "." + _column + " FROM "
+			else
+				m_match_query += " ( SELECT " + _table + "." + _column + " FROM "
 					+ _table + " WHERE " + _table + "." + _column
 					+ " IS NOT NULL GROUP BY " + _table + "." + _column
 					+ " HAVING " + " count(" + _table + "." + _column + ") ";
 
-		if (multiple == 0)
-			m_match_query += "= 1 )";
-		else if (multiple == 1)
-			m_match_query += ">= 1 )";
-		else if (multiple == 2)
-			m_match_query += "> 1 )";
-		else if (multiple == 3)
-			m_match_query += "= " + mX + ")";
-
-		if (isLeft)
-			m_match_query += " ORDER BY " + _column;
-		else
-			m_match_query += " ORDER BY " + _column1;
+			if (multiple == 0)
+				m_match_query += "= 1 )";
+			else if (multiple == 1)
+				m_match_query += ">= 1 )";
+			else if (multiple == 2)
+				m_match_query += "> 1 )";
+			else if (multiple == 3)
+				m_match_query += "= " + mX + ")";
+		
+			if (isLeft)
+				m_match_query += " ORDER BY " + _column;
+			else
+				m_match_query += " ORDER BY " + _column1;
+		}
 
 		return m_match_query;
 	}
@@ -686,8 +953,16 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				columns += "\"" + avector[0].elementAt(j) + "\"::text ILIKE \'%"
 						+ searchS + "%\' OR ";
-			
-			else if (_dtype.compareToIgnoreCase("mysql") != 0)
+			else if (_dtype.compareToIgnoreCase("informix") == 0 )
+				columns += avector[0].elementAt(j) + "::VARCHAR(255) LIKE \'%" + searchS
+				+ "%\' OR ";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+                columns +=  "CAST(" + avector[0].elementAt(j) + " AS CHAR(250)) LIKE \'%" + searchS + "%\' OR ";
+			else if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(j) + "\" LIKE \'%"
 						+ searchS + "%\' OR ";
 			else
@@ -699,8 +974,17 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1) + "\"::text ILIKE \'%"
 						+ searchS + "%\'";
-		
-			else if (_dtype.compareToIgnoreCase("mysql") != 0)
+			else if (_dtype.compareToIgnoreCase("informix") == 0 )
+				columns += avector[0].elementAt(avector[0].size() - 1) + "::VARCHAR(255) LIKE \'%" + searchS
+				+ "%\'";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+				columns += " CAST(" + " " + avector[0].elementAt(avector[0].size() - 1) + " AS CHAR(250)) LIKE \'%" + searchS + "%\' ";
+			
+			else if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
 						+ "\" LIKE \'%" + searchS + "%\'";
 			else
@@ -728,8 +1012,17 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				columns += "\"" + avector.elementAt(j) + "\"::text ILIKE \'%"
 						+ searchS + "%\' OR ";
-			
-			else if (_dtype.compareToIgnoreCase("mysql") != 0)
+			else if (_dtype.compareToIgnoreCase("informix") == 0)
+				columns += avector.elementAt(j) + "::VARCHAR(255) LIKE \'%"
+				+ searchS + "%\' OR ";
+			else if (_dtype.compareToIgnoreCase("splice") == 0 )
+                columns +=  "CAST(" + avector.elementAt(j) + " AS CHAR(250)) LIKE \'%" + searchS + "%\' OR ";
+
+			else if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector.elementAt(j) + "\" LIKE \'%"
 						+ searchS + "%\' OR ";
 			else
@@ -741,8 +1034,17 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("postgres") == 0)
 				columns += "\"" + avector.elementAt(avector.size() - 1) + "\"::text ILIKE \'%"
 						+ searchS + "%\'";
-		
-			else if (_dtype.compareToIgnoreCase("mysql") != 0)
+			else if (_dtype.compareToIgnoreCase("informix") == 0)
+				columns += avector.elementAt(avector.size() - 1)
+				+ " ::VARCHAR(255) LIKE \'%" + searchS + "%\'";
+			else if (_dtype.compareToIgnoreCase("Splice") == 0 )
+				columns +=  "CAST(" + avector.elementAt(avector.size() - 1) + " AS CHAR(250)) LIKE \'%" + searchS + "%\' ";
+
+			else if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector.elementAt(avector.size() - 1)
 						+ "\" LIKE \'%" + searchS + "%\'";
 			else
@@ -755,6 +1057,7 @@ public class QueryBuilder {
 					+ " WHERE " + columns;
 		else
 			tb_like_query = "SELECT *  FROM " + _table + " WHERE " + columns;
+		
 		return tb_like_query;
 	}
 
@@ -763,9 +1066,14 @@ public class QueryBuilder {
 		String table = _table.charAt(0) == '"' ? _table.replaceAll("\"", "")
 				: _table;
 		String cat = Rdbms_conn.getHValue("Database_Catalog");
-		if (!(cat == null || "".equals(cat))) {
-			table = table.substring(cat.length()-1); //strip cat
+					
+		if (!(cat == null || "".equals(cat)) && cat.charAt(0)=='"') {
+				table = table.substring(cat.length()-1); //strip cat
+			} else if (!(cat == null || "".equals(cat))) {
+				table = table.substring(cat.length()+1); //strip cat
+				table = table.charAt(0) == '"' ? table.replaceAll("\"", "") : table;
 		}
+		
 		Vector<String> vector = Rdbms_conn.getTable(); // this will be without catalog append.
 		int i = vector.indexOf(table);
 
@@ -775,13 +1083,21 @@ public class QueryBuilder {
 		if (avector == null )return null;
 		
 		for (int j = 0; j < avector[0].size() - 1; j++) {
-			if (_dtype.compareToIgnoreCase("mysql") != 0)
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(j) + "\"" + ",";
 			else
 				columns += avector[0].elementAt(j) + ",";
 		}
 		if (avector[0].size() != 0)
-			if (_dtype.compareToIgnoreCase("mysql") != 0)
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
 						+ "\"";
 			else
@@ -812,7 +1128,11 @@ public class QueryBuilder {
 			if (vc == null)
 				System.out.println("\n ERROR:Could not Find:" + table);
 
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!table.startsWith("\""))
 					table = "\"" + table + "\"";
 			}
@@ -821,7 +1141,11 @@ public class QueryBuilder {
 
 			for (int i = 0; i < vc.size(); i++) {
 				String col = vc.elementAt(i);
-				if (_dtype.compareToIgnoreCase("mysql") != 0) {
+				if (_dtype.compareToIgnoreCase("mysql") != 0 
+						&& _dtype.compareToIgnoreCase("hive") != 0
+						&& _dtype.compareToIgnoreCase("informix") != 0
+						&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+								Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 					if (!col.startsWith("\""))
 						col = "\"" + col + "\"";
 				}
@@ -845,14 +1169,22 @@ public class QueryBuilder {
 			String table = table_s.get(index);
 			String col = column_s.get(index);
 
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!table.startsWith("\""))
 					table = "\"" + table + "\"";
 			}
 			if (!(cat == null || "".equals(cat)))
 				table = cat + "." + table;
 
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!col.startsWith("\""))
 					col = "\"" + col + "\"";
 			}
@@ -870,7 +1202,11 @@ public class QueryBuilder {
 		Enumeration<?> cols = col_vc.elements();
 		while (cols.hasMoreElements()) {
 			column = cols.nextElement().toString();
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";
 			}
@@ -896,7 +1232,11 @@ public class QueryBuilder {
 		Enumeration<?> cols = col_vc.elements();
 		while (cols.hasMoreElements()) {
 			column = cols.nextElement().toString();
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";
 			}
@@ -928,7 +1268,11 @@ public class QueryBuilder {
 		Enumeration<?> cols = col_vc.elements();
 		while (cols.hasMoreElements()) {
 			column = cols.nextElement().toString();
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";
 			}
@@ -948,7 +1292,11 @@ public class QueryBuilder {
 		String column = "";
 		for (int i = 0; i < col.length; i++) {
 			String colN = col[i].toString();
-			if (_dtype.compareToIgnoreCase("mysql") != 0) {
+			if (_dtype.compareToIgnoreCase("mysql") != 0 
+					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
+							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!colN.startsWith("\""))
 					colN = "\"" + colN + "\"";
 			}
@@ -962,7 +1310,431 @@ public class QueryBuilder {
 		return selColQuery;
 
 	}
+	
+	/**For Oracle-Compare query added to include cols since it was not working with oracle**/
+    public String get_col_match_value(byte multiple, int mX, boolean match,
+                  boolean isLeft) {
+           
+           String table =" ";
+           String cat = Rdbms_conn.getHValue("Database_Catalog");
+           
+           if (_table.equals(_table1) == false && isLeft == false){
+           table = _table1.charAt(0) == '"' ? _table1.replaceAll("\"", "")
+                        : _table1;
+           }
+           else {
+                  table = _table.charAt(0) == '"' ? _table.replaceAll("\"", "")
+                               : _table;
+           }
+           
+                               
+           if (!(cat == null || "".equals(cat)) && cat.charAt(0)=='"') {
+                        table = table.substring(cat.length()-1); //strip cat
+                  } else if (!(cat == null || "".equals(cat))) {
+                        table = table.substring(cat.length()+1); //strip cat
+                        table = table.charAt(0) == '"' ? table.replaceAll("\"", "") : table;
+           }
+           
+           Vector<String> vector = Rdbms_conn.getTable(); // this will be without catalog append.
+           int i = vector.indexOf(table);
 
+           Vector<?> avector[] = null;
+           avector = TableMetaInfo.populateTable(5, i, i + 1, avector);
+           String columns = "";
+           if (avector == null )return null;
+           
+           for (int j = 0; j < avector[0].size() - 1; j++) {
+                  if (_dtype.compareToIgnoreCase("mysql") != 0 
+                		  && _dtype.compareToIgnoreCase("hive") != 0
+                		  && _dtype.compareToIgnoreCase("informix") != 0
+                		  && !(_dtype.compareToIgnoreCase("Others") == 0 && 
+          						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+                        columns += "\"" + avector[0].elementAt(j) + "\"" + ",";
+                  else
+                        columns += avector[0].elementAt(j) + ",";
+           }
+           if (avector[0].size() != 0)
+                  if (_dtype.compareToIgnoreCase("mysql") != 0 
+                		  && _dtype.compareToIgnoreCase("hive") != 0
+                		  && _dtype.compareToIgnoreCase("informix") != 0
+                		  && !(_dtype.compareToIgnoreCase("Others") == 0 && 
+          						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+                        columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
+                                      + "\"";
+                  else
+                        columns += avector[0].elementAt(avector[0].size() - 1);
+           
+           String m_match_query = "";
+           String match_str = "";
+           if (match)
+                  match_str = " IN (";
+           else
+                  match_str = " NOT IN (";
+
+           if (_table.equals(_table1) == false && isLeft == false)
+                  m_match_query = " SELECT  "+columns+" FROM " + _table1 + " WHERE " + _column1
+                               + match_str;
+           else
+                  m_match_query = " SELECT  "+columns+" FROM " + _table + " WHERE " + _column
+                               + match_str;
+
+           if (_table.equals(_table1) == false)
+                  m_match_query += " SELECT " + _table + "." + _column + " FROM "
+                               + _table + "," + _table1 + " WHERE " + _table + "."
+                               + _column + " = " + _table1 + "." + _column1 + "  AND "
+                               + _table + "." + _column + " IS NOT NULL GROUP BY "
+                               + _table + "." + _column + " HAVING " + " count(" + _table
+                               + "." + _column + ") ";
+           else
+                  m_match_query += " SELECT " + _table + "." + _column + " FROM "
+                               + _table + " WHERE " + _table + "." + _column
+                               + " IS NOT NULL GROUP BY " + _table + "." + _column
+                               + " HAVING " + " count(" + _table + "." + _column + ") ";
+
+           if (multiple == 0)
+                  m_match_query += "= 1 )";
+           else if (multiple == 1)
+                  m_match_query += ">= 1 )";
+           else if (multiple == 2)
+                  m_match_query += "> 1 )";
+           else if (multiple == 3)
+                  m_match_query += "= " + mX + ")";
+
+           if (isLeft)
+                  m_match_query += " ORDER BY " + _column;
+           else
+                  m_match_query += " ORDER BY " + _column1;
+
+           return m_match_query;
+    }
+    
+    /* This function is to support count for rowset in hive as hive does not support last(), next() etc
+     * Making it static to use as utility */
+    
+    public static String hive_count_query(String orgquery) {
+    	String query = "SELECT COUNT(*) as total_count FROM ("+orgquery+") t1";
+    	return query;
+    	
+    }
+    // new code Join Query  Multi join query No Join query
+    public String getJoinQuery(Hashtable<String, String> ruleDetails) {
+        String j_query = null;
+        String[] cond = ruleDetails.get("table_Names").split(" ");
+        String dbtype = ruleDetails.get("Database_Type").toUpperCase();
+        switch (dbtype) {
+            case "ORACLE_NATIVE":
+            case "ORACLE_ODBC":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "MYSQL":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON " + ruleDetails.get("condition_Names");
+                }
+            case "SQL_SERVER":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "INFORMIX":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "SPLICE":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "MS_ACCESS":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "POSTGRES":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "DB2":
+            case "HIVE":
+                if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON (" + ruleDetails.get("condition_Names") + ")";
+                }
+                break;
+            default:
+            	if( cond.length > 3 ) {
+                    j_query = getMultiJoinQuery(ruleDetails, ruleDetails.get("Database_Type"));
+                } else {
+                    String temp;
+                    temp = ruleDetails.get("table_Names");
+                    temp = temp.replaceAll("-", " ");
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " ON (" + ruleDetails.get("condition_Names") + ")";
+                }
+                break;
+        }
+        return j_query;
+    }
+    
+    private String getMultiJoinQuery(Hashtable<String, String> ruleDetails, String dbType) {
+        String[] tables = ruleDetails.get("table_Names").split(" ");
+        String[] condition = ruleDetails.get("condition_Names").split(" ");
+
+        String query = "";
+        
+        if (tables.length == 5) {
+            for (int i = 0; i < tables.length; i++) {
+                if (tables[i].contains("-")) {
+                    tables[i] = tables[i].replaceAll("-", " ");
+                }
+            }
+            switch( dbType ) {
+                case "ORACLE_NATIVE":
+                case "ORACLE_ODBC":
+                case "MYSQL":
+                case "SQL_SERVER":
+                case "SPLICE":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + condition[2];
+                    break;
+                case "MS_ACCESS":
+                case "INFORMIX":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " WHERE " + condition[0] + " " + tables[3] + " " + tables[4] + " WHERE " + condition[2];
+                    break;
+                case "POSTGRES":
+                case "DB2":
+                case "HIVE":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + "(" + condition[2] + ")";
+                    break;
+                default:
+                	query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + "(" + condition[2] + ")";
+                    break;
+            }
+        }
+        
+        if( tables.length == 7 ) {
+            for (int i = 0; i < tables.length; i++) {
+                if (tables[i].contains("-")) {
+                    tables[i] = tables[i].replaceAll("-", " ");
+                }
+            }
+            switch( dbType ) {
+            	case "ORACLE_NATIVE":
+            	case "ORACLE_ODBC":
+            	case "MYSQL":
+            	case "SQL_SERVER":
+            	case "SPLICE":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + condition[2] + " " + tables[5] + " " + tables[6] + " ON " + condition[4];
+                    break;
+                case "MS_ACCESS":
+                case "INFORMIX":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " WHERE " + condition[0] + " " + tables[3] + " " + tables[4] + " WHERE " + condition[2] + " " + tables[5] + " " + tables[6] + " WHERE " + condition[4];
+                    break;
+                case "POSTGRES":
+                case "DB2":
+                case "HIVE":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + "(" + condition[2] + ") " + tables[5] + " " + tables[6] + " ON " + "(" + condition[4] + ")";
+                    break;
+                default:
+                	query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + "(" + condition[2] + ") " + tables[5] + " " + tables[6] + " ON " + "(" + condition[4] + ")";
+                    break;
+            }
+        }
+        
+        if( tables.length == 9 ) {
+            for (int i = 0; i < tables.length; i++) {
+                if (tables[i].contains("-")) {
+                    tables[i] = tables[i].replaceAll("-", " ");
+                }
+            }
+            switch( dbType ) {
+        		case "ORACLE_NATIVE":
+        		case "ORACLE_ODBC":
+        		case "MYSQL":
+        		case "SQL_SERVER":
+        		case "SPLICE":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + condition[2] + " " + tables[5] + " " + tables[6] + " ON " + condition[4] + " " + tables[7] + tables[8] + " ON " + condition[6];
+                    break;
+                case "MS_ACCESS":
+                case "INFORMIX":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " WHERE " + condition[0] + " " + tables[3] + " " + tables[4] + " WHERE " + condition[2] + " " + tables[5] + " " + tables[6] + " WHERE " + condition[4] + " " + tables[7] + tables[8] + " WHERE " + condition[6];
+                    break;
+                case "POSTGRES":
+                case "DB2":
+                case "HIVE":
+                    query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + "(" + condition[2] + ")" + tables[5] + " " + tables[6] + " ON " + "(" + condition[4] + ") " + tables[7] + tables[8] + " ON " + "(" + condition[6] + ")";
+                    break;
+                default:
+                	query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + tables[0] + " " + tables[1] + " " + tables[2] + " ON " + condition[0] + " " + tables[3] + " " + tables[4] + " ON " + "(" + condition[2] + ")" + tables[5] + " " + tables[6] + " ON " + "(" + condition[4] + ") " + tables[7] + tables[8] + " ON " + "(" + condition[6] + ")";
+                    break;
+            }
+        }
+        return query;
+    }
+    
+    public String getNonJoinQuery(Hashtable<String, String> ruleDetails) {
+        String j_query = null;
+        switch (ruleDetails.get("Database_Type")) {
+            case "ORACLE_NATIVE":
+            case "ORACLE_ODBC":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "MYSQL":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+            case "SQL_SERVER":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "INFORMIX":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "SPLICE":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "MS_ACCESS":
+                break;
+            case "POSTGRES":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "DB2":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+            case "HIVE":
+                if (ruleDetails.get("condition_Names").equals("")) {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                } else {
+                    j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                }
+                break;
+             default:
+            	 if (ruleDetails.get("condition_Names").equals("")) {
+                     j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names");
+                 } else {
+                     j_query = "SELECT " + ruleDetails.get("column_Names") + " FROM " + ruleDetails.get("table_Names") + " WHERE " + ruleDetails.get("condition_Names");
+                 }
+                break;
+        }
+        return j_query;
+    }
+
+    
+    public List<String> get_all_tables(Hashtable<String, String> dbDetails) {
+    	ArrayList<String >db_tables = new ArrayList<String>();
+    	Rdbms_NewConn dbmsConn = null;
+    	ResultSet rs = null;
+    	
+        try {
+        	dbmsConn = new Rdbms_NewConn(dbDetails);
+            dbmsConn.openConn();
+            System.out.println("Connected to " + dbDetails.get("Database_ConnectionName"));
+            DatabaseMetaData md = dbmsConn.getMetaData();
+            rs = md.getTables(null, null, "%", null);
+
+            while (rs.next()) {
+                db_tables.add(rs.getString("TABLE_NAME"));
+            }
+            dbmsConn.closeConn();
+            rs.close();
+           
+            return db_tables;
+        } catch (SQLException ex) {
+            Logger.getLogger(QueryBuilder.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return db_tables;
+    }
+    public List<String> get_all_cols(Hashtable<String, String> dbDetails, String t_name) {
+    	ArrayList<String >db_cols = new ArrayList<String>();
+    	Rdbms_NewConn dbmsConn = null;
+    	ResultSet rsCol = null;
+    	
+        try {
+        	dbmsConn = new Rdbms_NewConn(dbDetails);
+
+            dbmsConn.openConn();
+
+            rsCol = dbmsConn.getMetaData().getColumns(null, null, t_name, "%");
+
+            while (rsCol.next()) {
+                db_cols.add(rsCol.getString("COLUMN_NAME"));
+            }
+
+            dbmsConn.closeConn();
+        } catch (SQLException ex) {
+            Logger.getLogger(QueryBuilder.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return db_cols;
+
+    }
+    
+    // End of new code
+    
 	public static void setCond(String query) {
 		isCond = true;
 		_cond_q = "(" + query + ")";

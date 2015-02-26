@@ -428,7 +428,7 @@ public class RelationPanel extends JPanel implements MouseMotionListener,
 		JFrame.setDefaultLookAndFeelDecorated(true);
 
 		// Create and set up the window.
-		JFrame frame = new JFrame("RelationShip Pane");
+		JFrame frame = new JFrame("Relationship Pane");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		// Create and set up the content pane.

@@ -30,6 +30,7 @@ import javax.swing.JOptionPane;
 
 public class CSVtoReportTableModel {
 	private int previewRowNumber = 15; // will show 15 lines in preview
+	private int displayRowNumber = 100; // will show 15 lines in preview
 	private int skipRowNumber = 0; // Skip no rows by default
 	private String FIELD_SEP = ","; // Default field separator
 	private String COMMENT_STR = "#"; // // Default comment String
@@ -46,6 +47,7 @@ public class CSVtoReportTableModel {
 	private boolean commentSelection = false;
 	private boolean skipRowSelection = false;
 	private boolean previewRowSelection = false;
+	private boolean displayRowSelection = false;
 	private boolean firstRowColumnName = false;
 	private boolean strictParsing = false;
 
@@ -68,7 +70,12 @@ public class CSVtoReportTableModel {
 			if (previewRowNumber <= 0) // Nothing to preview
 				previewRowNumber = 15; // Default Value
 		}
-
+		
+		if (displayRowSelection == true) {
+			if (displayRowNumber <= 0) // Nothing to preview
+				displayRowNumber = 100; // Default Value
+		}
+		
 		if (skipRowSelection == true) {
 			if (skipRowNumber <= 0) // Nothing to skip
 				skipRowSelection = false;
@@ -84,12 +91,14 @@ public class CSVtoReportTableModel {
 
 		try {
 			br = new BufferedReader(new FileReader(f));
-			while ((line = br.readLine()) != null) {
+			while ((line = br.readLine()) != null) { // how to read multi-line feed
 				totalLine++;
 				if (commentSelection == true) {
 					if (line.startsWith(COMMENT_STR) == true)
 						continue;
 				}
+				line = line.trim();
+				
 				if (line.equals(""))
 					continue;
 
@@ -98,8 +107,12 @@ public class CSVtoReportTableModel {
 					if (lineCount <= skipRowNumber)
 						continue;
 				}
+				if (displayRowSelection == true) {
+					if (validLine >= displayRowNumber) // reached the number to display
+						break;
+				}
 
-				line = line.trim().replaceAll("\\s+", " ");
+				line = line.replaceAll("\\s+", " ");
 				/*
 				 * Now all the needed rows has been skipped let parse the right
 				 * one and populate table
@@ -107,7 +120,7 @@ public class CSVtoReportTableModel {
 				int colI = 0;
 				ArrayList<String> columnA = new ArrayList<String>();
 				int lineIndex = 0;
-				int lineLength = line.length();
+				int lineLength = line.length(); // it will work only for single line record
 				ColumnAttr cob; // Column Attribute Object
 				boolean lastCol = false;
 				String[] f_column;
@@ -201,7 +214,6 @@ public class CSVtoReportTableModel {
 									true, true);
 						headerSize = vec_c;
 						headerSet = true;
-						continue;
 					}
 				} // End of Header Selection
 
@@ -272,11 +284,21 @@ public class CSVtoReportTableModel {
 		this.previewRowSelection = previewRowSelection;
 		previewRowNumber = previewRows;
 	}
-
+	
 	public boolean isPreviewRowSelection() {
 		return previewRowSelection;
 	}
+	
+	public void setDisplayRowSelection(boolean displayRowSelection,
+			int displayRows) {
+		this.displayRowSelection = displayRowSelection;
+		displayRowNumber = displayRows;
+	}
 
+	public boolean isDisplayRowSelection() {
+		return displayRowSelection;
+	}
+	
 	public void setFirstRowColumnName(boolean firstRowColumnName,
 			Vector<ColumnAttr> column_v) {
 		this.firstRowColumnName = firstRowColumnName;

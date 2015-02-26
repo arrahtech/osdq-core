@@ -1,5 +1,11 @@
 package org.arrah.framework.util;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
  *                                             *
@@ -50,6 +56,55 @@ public class ValueSorter implements Comparable <Object> {
 	public void set_key(String _key) {
 		this._key = _key;
 	}
+	
+	public static Object[] sortOnValue(Hashtable<String, Double> map, boolean desc) {
+		Enumeration <String> key = map.keys();
+		String keyE = null;
+		Vector <ValueSorter> vsv = new Vector <ValueSorter> ();
+		while (key.hasMoreElements() == true ){
+			keyE = key.nextElement();
+			ValueSorter vs = new ValueSorter(keyE, map.get(keyE));
+			vsv.add(vs);
+		}
+			Collections.sort(vsv); //ascending order
+			
+		if (desc == true) {
+			Collections.reverse(vsv);
+		}
+		
+		Object[] obj = new Object[vsv.size()];
+		for ( int i=0; i <vsv.size(); i++ ) {
+			ValueSorter vs = vsv.get(i);
+			String keyv = vs.get_key();
+			obj[i] = keyv;
+		}
+		return obj;
+	}
+	
+	// OTHER is defualt strin value like "undefined" "NA"
+	public static Object[] sortKey(Hashtable<String, Double> map, String OTHER) {
+		Object[] obj = null;
+		if (map.containsKey(OTHER) == false) {
+			obj = map.keySet().toArray();
+			Arrays.sort(obj);
+			return obj;
+		} else {
+			Object[] key_s = map.keySet().toArray();
+			Arrays.sort(key_s);
+			obj = new Object[key_s.length];
+			int j = 0; // New Object Index
+			for (int i = 0; i < key_s.length; i++) {
+				if (key_s[i].toString().compareToIgnoreCase(OTHER) == 0) {
+					obj[key_s.length - 1] = OTHER;
+					j--;
+				} else
+					obj[j] = key_s[i];
+				j++;
+			}
+			return obj;
+		}
+	}
+	
 
 
 }

@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2007      *
+ *     Copyright to Arrah Technology 2014      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -25,8 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Locale;
@@ -43,12 +42,15 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
 import org.arrah.framework.dataquality.QualityCheck;
+import org.arrah.framework.ndtable.ReportTableModel;
+import org.arrah.framework.ndtable.ResultsetToRTM;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.util.DiscreetRange;
 import org.arrah.framework.util.KeyValueParser;
+
 
 public class QualityListener implements ActionListener {
 	private JDialog d_f;
@@ -129,7 +131,7 @@ public class QualityListener implements ActionListener {
 			}
 			if (source.equals("Cardinality")) {
 				menuSel = 7;
-				CompareTablePanel f = new CompareTablePanel();
+				new CompareTablePanel();
 				return;
 			}
 			if (source.equals("Fuzzy")) {
@@ -182,7 +184,7 @@ public class QualityListener implements ActionListener {
 				if (n == JOptionPane.YES_OPTION)
 					emode = true;
 				menuSel = 16;
-				CompareTablePanel f = new CompareTablePanel(emode);
+				new CompareTablePanel(emode);
 				return;
 			}
 			if (source.equals("Table Comparison")) {
@@ -201,6 +203,21 @@ public class QualityListener implements ActionListener {
 				menuSel = 19;
 				CompareSchemaDialog newDialog = new CompareSchemaDialog ();
 					newDialog.createGUI();
+				return;
+			}
+			if (source.equals("Cross Column Search")) { // like fuzzy
+				menuSel = 20;
+				createDialog();
+				return;
+			}
+			if (source.equals("Box Plot")) { // BoX Plot
+				menuSel = 21;
+				createDialog();
+				return;
+			}
+			if (source.equals("K Mean Cluster")) { // K Mean Cluster
+				menuSel = 22;
+				createDialog();
 				return;
 			}
 		}// End of Menu Item
@@ -248,7 +265,7 @@ public class QualityListener implements ActionListener {
 				return;
 			}
 			if (command.equals("next")) {
-				Vector vc = selTP.getColumns();
+				Vector<String> vc = selTP.getColumns();
 
 				if (vc.isEmpty()) {
 					JOptionPane.showMessageDialog(null,
@@ -267,43 +284,29 @@ public class QualityListener implements ActionListener {
 						d_f.dispose();
 					break;
 				case 2:
-					JOptionPane
-							.showMessageDialog(
-									null,
-									"Choose a file which has Key Value format like \n \"searchReplace.txt\"",
-									"Information Message",
-									JOptionPane.INFORMATION_MESSAGE);
+					SearchOptionDialog sd = new SearchOptionDialog();
+					File f = sd.getFile();
 					try {
-						File f = FileSelectionUtil
-								.chooseFile("Select Standardisation File");
-						if (f == null)
+						if (f == null) {
+							d_f.setCursor(java.awt.Cursor
+									.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 							return;
-
-						ConsoleFrame
-								.addText("\n Selected File:" + f.toString());
+						}
+						ConsoleFrame.addText("\n Selected File:" + f.toString());
 						Hashtable<String, String> filterHash = KeyValueParser.parseFile(f
 								.toString());
-						searchAction(selTP.getTable(), vc, filterHash);
+						String options = sd.getSelectedOption();
+						searchAction(selTP.getTable(), vc, filterHash,options); // Pass options
 
-					} catch (FileNotFoundException fe) {
-						JOptionPane.showMessageDialog(null, fe.getMessage(),
-								"File not Found Dialog",
-								JOptionPane.ERROR_MESSAGE);
-						ConsoleFrame
-								.addText("\n ERROR: Selected File Not Found");
-						break;
-					} catch (IOException ioe) {
-						JOptionPane.showMessageDialog(null, ioe.getMessage(),
-								"IO Exception Dialog",
-								JOptionPane.ERROR_MESSAGE);
-						ConsoleFrame.addText("\n ERROR: IO exception happened");
-						break;
 					} catch (SQLException sqle) {
 						JOptionPane.showMessageDialog(null, sqle.getMessage(),
 								"SQL Exception Dialog",
 								JOptionPane.ERROR_MESSAGE);
+					} finally  {
+						d_f.setCursor(java.awt.Cursor
+								.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+						
 					}
-
 					d_f.dispose();
 					break;
 				case 3:
@@ -336,7 +339,6 @@ public class QualityListener implements ActionListener {
 					break;
 				case 8:
 					try {
-						d_f.dispose();
 						similarAction(selTP.getTable(), vc);
 					} catch (SQLException sqle) {
 						JOptionPane.showMessageDialog(null, sqle.getMessage(),
@@ -377,7 +379,6 @@ public class QualityListener implements ActionListener {
 					break;
 				case 14:
 				case 15:
-					d_f.dispose();
 					DiscreetInputGUI dig = new DiscreetInputGUI();
 					dig.createDialog();
 					String dtext = dig.getRawText();
@@ -430,6 +431,23 @@ public class QualityListener implements ActionListener {
 					}
 					
 					break;
+				case 20:
+					try {
+						crossColumnAction(selTP.getTable(), vc);
+					} catch (SQLException sqle) {
+						JOptionPane.showMessageDialog(null, sqle.getMessage(),
+								"SQL Exception Dialog",
+								JOptionPane.ERROR_MESSAGE);
+					}
+					break;
+				case 21:
+					boxPlotAction(selTP.getTable(), vc, true);
+					d_f.dispose();
+					break;
+				case 22:
+					kMeanAction(selTP.getTable(), vc, true);
+					d_f.dispose();
+					break;
 				default:
 					d_f.dispose();
 				}
@@ -438,7 +456,8 @@ public class QualityListener implements ActionListener {
 		} // End of Else
 	}// End of Action Performed
 
-	private boolean dupAction(String table, Vector col) {
+	/* Duplicate Quality Check */
+	private boolean dupAction(String table, Vector<?> col) {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
 				Rdbms_conn.getDBType());
@@ -455,8 +474,89 @@ public class QualityListener implements ActionListener {
 		
 		return true;
 	}
+	/* Create Data for Box Plot */
+	private void boxPlotAction(String table, Vector<?> col, boolean isInclusive) {
+		QueryBuilder qb = new QueryBuilder(
+				Rdbms_conn.getHValue("Database_DSN"), table,
+				Rdbms_conn.getDBType());
+		String query = qb.get_tableAll_query();
+		if (!"".equals(selTP.getQueryString()))
+			query += " AND (" + selTP.getQueryString() + ")";
+		ReportTableModel rtm = null;
 
-	private void incAction(String table, Vector col, boolean isInclusive) {
+		try {
+			Rdbms_conn.openConn();
+			ResultSet rs = Rdbms_conn.runQuery(query);
+			rtm = ResultsetToRTM.getSQLValue(rs, true);
+			rs.close();
+			Rdbms_conn.closeConn();
+		} catch (SQLException sql_e) {
+			JOptionPane.showMessageDialog(null, sql_e.getMessage(),
+					"BoxPlot Error Dialog", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
+		BoxPlotPanel bp = new BoxPlotPanel("Box Plot Number Profiling", "Columns", "Value");
+		try {
+			if (col.size() > 1)
+				bp.addRTMDataSet(rtm, col.get(0).toString(), col.get(1).toString());
+			else
+				bp.addRTMDataSet(rtm, col.get(0).toString(), "");
+			bp.drawBoxPlot();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Exception:"+e.getMessage());
+			return;
+		}
+		
+		frame = new JFrame("Box Plot Frame");
+		frame.setLocation(250, 50);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.getContentPane().add(bp);
+		frame.pack();
+		bringToFront(frame);
+	}
+	/* Create Data for KMean Plot */
+	private void kMeanAction(String table, Vector<?> col, boolean isInclusive) {
+		QueryBuilder qb = new QueryBuilder(
+				Rdbms_conn.getHValue("Database_DSN"), table,
+				Rdbms_conn.getDBType());
+		String query = qb.get_tableAll_query();
+		if (!"".equals(selTP.getQueryString()))
+			query += " AND (" + selTP.getQueryString() + ")";
+		ReportTableModel rtm = null;
+
+		try {
+			Rdbms_conn.openConn();
+			ResultSet rs = Rdbms_conn.runQuery(query);
+			rtm = ResultsetToRTM.getSQLValue(rs, true);
+			rs.close();
+			Rdbms_conn.closeConn();
+		} catch (SQLException sql_e) {
+			JOptionPane.showMessageDialog(null, sql_e.getMessage(),
+					"K Mean Error Dialog", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
+		KMeanPanel kp = new KMeanPanel("K Mean Cluster", "Columns", "Value");
+		try {
+			kp.addRTMDataSet(rtm, col);
+			kp.drawKMeanPlot(5,col); // hard coded to 5
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Exception:"+e.getMessage());
+			return;
+		}
+		
+		frame = new JFrame("K Mean Frame");
+		frame.setLocation(250, 50);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.getContentPane().add(kp);
+		frame.pack();
+		bringToFront(frame);
+	}
+
+
+	/* Checks Null and empty string - Completeness Analysis */
+	private void incAction(String table, Vector<?> col, boolean isInclusive) {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
 				Rdbms_conn.getDBType());
@@ -503,9 +603,9 @@ public class QualityListener implements ActionListener {
 		bringToFront(frame);
 	}
 
-	
+	/* Search and Replaces the value from key-val pair  - Standardization */
 	private void searchAction(String table, Vector<?> col,
-			Hashtable<String, String> filter) throws SQLException {
+			Hashtable<String, String> filter, String options) throws SQLException {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
 				Rdbms_conn.getDBType());
@@ -517,7 +617,7 @@ public class QualityListener implements ActionListener {
 
 		QualityCheck qc = new QualityCheck();
 		rt = new ReportTable(qc.searchReplace(rows, col.get(0).toString(),
-				filter));
+				filter,options));
 		mrowI = qc.getrowIndex();
 		matchI = qc.getColMatchIndex();
 
@@ -548,7 +648,8 @@ public class QualityListener implements ActionListener {
 
 	}
 
-	private void repalceNullAction(String table, Vector col, String replaceWith)
+	/* Replaces Null and empty string */
+	private void repalceNullAction(String table, Vector<?> col, String replaceWith)
 			throws SQLException {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
@@ -624,7 +725,8 @@ public class QualityListener implements ActionListener {
 
 	}
 
-	private void matchAction(String table, Vector col, boolean isMatch)
+	/*  Format Matching quality */
+	private void matchAction(String table, Vector<?> col, boolean isMatch)
 			throws SQLException {
 
 		FormatPatternPanel fp = new FormatPatternPanel(col.get(0).toString());
@@ -677,17 +779,32 @@ public class QualityListener implements ActionListener {
 
 	}
 
-	private void similarAction(String table, Vector col) throws SQLException {
+	/* Fuzzy Search */
+	private void similarAction(String table, Vector<?> col) throws SQLException {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
 				Rdbms_conn.getDBType());
 		String query = qb.get_selCol_query(col.toArray(),
 				selTP.getQueryString());
 		rows = new JDBCRowset(query, -1, false);
-		SimilarityCheckPanel sc = new SimilarityCheckPanel(rows);
+		d_f.dispose(); // now dispose the dialog
+		 new SimilarityCheckPanel(rows,query);
+	}
+	
+	/* Cross Column Search */
+	private void crossColumnAction(String table, Vector<?> col) throws SQLException {
+		QueryBuilder qb = new QueryBuilder(
+				Rdbms_conn.getHValue("Database_DSN"), table,
+				Rdbms_conn.getDBType());
+		String query = qb.get_selCol_query(col.toArray(),
+				selTP.getQueryString());
+		rows = new JDBCRowset(query, -1, false);
+		d_f.dispose(); // now dispose the dialog
+		 new CrossColumnPanel(rows,query);
 	}
 
-	private void caseFormatAction(String table, Vector col, int formatType)
+	/* String case formating quality check */
+	private void caseFormatAction(String table, Vector<?> col, int formatType)
 			throws SQLException {
 
 		char defChar = '.';
@@ -714,7 +831,15 @@ public class QualityListener implements ActionListener {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
 				Rdbms_conn.getDBType());
-		String query = qb.get_tableAll_query();
+		String query ="";
+		
+		// Oracle RowsetImpl needs Column name
+		if(Rdbms_conn.getDBType().compareToIgnoreCase("oracle_native") == 0
+                || (Rdbms_conn.getDBType().compareToIgnoreCase("oracle_odbc") == 0))               
+				query = qb.get_tb_value(false);
+		else
+			query = qb.get_tableAll_query();
+		
 		if (!"".equals(selTP.getQueryString()))
 			query += " WHERE " + selTP.getQueryString();
 
@@ -752,7 +877,8 @@ public class QualityListener implements ActionListener {
 
 	}
 
-	private void disceetSearchAction(String table, Vector col,
+	/* Discreet Search quality */
+	private void disceetSearchAction(String table, Vector<?> col,
 			Vector<String> token, boolean match) throws SQLException {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
@@ -786,6 +912,9 @@ public class QualityListener implements ActionListener {
 		bP.add(cancel);
 		sP.add(bP, BorderLayout.PAGE_END);
 
+		// Now dispose old dialog and create new frame
+		d_f.dispose();
+		
 		frame = new JFrame("Discreet Search Frame");
 		frame.setLocation(250, 50);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

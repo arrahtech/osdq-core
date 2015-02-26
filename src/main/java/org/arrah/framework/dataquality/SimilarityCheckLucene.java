@@ -29,8 +29,10 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.RAMDirectory;
+
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
+import org.arrah.framework.rdbms.Rdbms_conn;
 
 public class SimilarityCheckLucene {
 	private ReportTableModel _rt, outputRT;
@@ -73,18 +75,19 @@ public class SimilarityCheckLucene {
 		}
 		return colName;
 	}
-
+	
 	public Document createDocument(int rowId, Object[] row) {
 		Document doc = new Document();
 		if (row == null)
 			return doc;
 		try {
 			doc.add(new Field("at__rowid__", Integer.toString(rowId),
-					Field.Store.YES, Field.Index.NO));
+					Field.Store.YES, Field.Index.TOKENIZED)); // for cross column search
 			for (int i = 0; i < row.length; i++) {
 				if (row[i] != null && colName[i] != null)
 					doc.add(new Field(colName[i], row[i].toString(),
-							Field.Store.NO, Field.Index.TOKENIZED));
+							// Field.Store.NO, Field.Index.TOKENIZED)); we have to do hive query
+							Field.Store.YES, Field.Index.TOKENIZED));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -126,14 +129,15 @@ public class SimilarityCheckLucene {
 		}
 	}
 
+	/* Since it is in sequence it will work for hive */
 	public void addDocument() {
 		// Create multiple threads(10) if rowId > 100
 		try {
-			if (rowC <= 100 || isRowSet == true) { // Rowset has synch problem
+			if (rowC <= 100 || isRowSet == true) { // Rowset has synch problem so no thread
 				for (int i = 0; i < rowC; i++)
 					if (isRowSet == false)
 						writer.addDocument(createDocument(i, _rt.getRow(i)));
-					else
+					else 
 						writer.addDocument(createDocument(i + 1,
 								_rows.getRow(i + 1)));
 			} else {
@@ -177,6 +181,10 @@ public class SimilarityCheckLucene {
 		}
 	}
 
+	/* This function is added to search the query string in the report table 
+	 * For now no one uses this function. It is a place holder.
+	 */
+	
 	public void searchTableIndex(String query) {
 		if (openIndex() == false)
 			return;
@@ -210,8 +218,18 @@ public class SimilarityCheckLucene {
 				Object[] row = null;
 				if (isRowSet == false)
 					row = _rt.getRow(Integer.parseInt(rowid));
-				else
-					row = _rows.getRow(Integer.parseInt(rowid));
+				else {
+					
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+						row = _rows.getRow(Integer.parseInt(rowid)); 
+					} else {
+						// will not work for Hive as rowset can not move bothway
+						// Hive the info should be taken from document itself by colname
+						row = new Object[colName.length];
+						for (int k =0; k < colName.length; k++)
+							row[k] = doc.get(colName[k]);
+					}
+				}
 				Object[] newRow = new Object[row.length + 1];
 				boolean del = false;
 				newRow[0] = del;
@@ -274,6 +292,9 @@ public class SimilarityCheckLucene {
 			System.out.println("\n " + e.getMessage());
 			System.out.println("\n Error: Can not Close Search  Index");
 		}
+	}
+	public void setRowset(JDBCRowset rowset) {
+		_rows= rowset;
 	}
 
 } // End of Similarity Check

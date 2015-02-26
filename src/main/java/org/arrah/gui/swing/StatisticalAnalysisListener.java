@@ -13,7 +13,8 @@ package org.arrah.gui.swing;
  ***********************************************/
 
 /* 
- * This file is used for statistical analysis  
+ * This file is used for statistical analysis
+ * getting data from DB  
  */
 
 import java.awt.BorderLayout;
@@ -105,14 +106,14 @@ public class StatisticalAnalysisListener extends JPanel implements
 				min_d = Double.valueOf(min_str).doubleValue();
 				sum_d = Double.valueOf(sum_str).doubleValue();
 
-				_table_2.addFillRow(new String[] { "Sample Size", count_str });
-				_table_2.addFillRow(new String[] { "Maximum ", max_str });
-				_table_2.addFillRow(new String[] { "Minimum ", min_str });
-				_table_2.addFillRow(new String[] { "Range",
+				_table_2.addFillRow(new String[] { "Total Record Count", count_str });
+				_table_2.addFillRow(new String[] { "Maximum Value ", max_str });
+				_table_2.addFillRow(new String[] { "Minimum Value ", min_str });
+				_table_2.addFillRow(new String[] { "Range(Max-Min)",
 						Double.toString(max_d - min_d) });
-				_table_2.addFillRow(new String[] { "Summation", sum_str });
+				_table_2.addFillRow(new String[] { "Total Record Sum", sum_str });
 				_table_2.addRow();
-				_table_2.addFillRow(new String[] { "Mean", avg_str });
+				_table_2.addFillRow(new String[] { "Mean Value ", avg_str });
 
 			}
 			rs.close();
@@ -204,7 +205,7 @@ public class StatisticalAnalysisListener extends JPanel implements
 					Double.toString(perv_a[20]), Long.toString(perc_a[20]) });
 
 			_table_2.addRow();
-			_table_2.addFillRow(new String[] { "Mid Range",
+			_table_2.addFillRow(new String[] { "Mid Range Value",
 					Double.toString((max_d + min_d) / 2) });
 			_table_2.addFillRow(new String[] { "Mid Range(1%-99%)",
 					Double.toString((perv_a[0] + perv_a[20]) / 2) });

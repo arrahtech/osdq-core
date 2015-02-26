@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import org.arrah.framework.ndtable.RTMUtil;
+import org.arrah.framework.util.DiscreetRange;
 
 public class FileQueryDialog extends QueryDialog {
 	/**
@@ -44,7 +45,7 @@ public class FileQueryDialog extends QueryDialog {
 	Vector<Integer> delete_v;
 	Vector<Object[]> delrow_v;
 
-	public FileQueryDialog(int i, String s, Vector avector[]) {
+	public FileQueryDialog(int i, String s, Vector<?> avector[]) {
 		super(i, s, avector);
 	}
 
@@ -81,7 +82,7 @@ public class FileQueryDialog extends QueryDialog {
 				}
 				result_v = vc_r[0]; // For Single Condition
 				for (int i = 0; i < (ao_v.size() - 1); i++) {
-					vc_r[i + 1] = RTMUtil.mergeSet(vc_r[i], vc_r[i + 1],
+					vc_r[i + 1] = DiscreetRange.mergeSet(vc_r[i], vc_r[i + 1],
 							ao_v.get(i));
 					result_v = vc_r[i + 1];
 				}
@@ -104,7 +105,7 @@ public class FileQueryDialog extends QueryDialog {
 
 			for (int i = 0; i < _rt.table.getRowCount(); i++)
 				univ_v.add(i);
-			del_v = RTMUtil.mergeSet(univ_v, result_v, "xor");
+			del_v = DiscreetRange.mergeSet(univ_v, result_v, "xor");
 
 			Integer[] a = new Integer[del_v.size()];
 			a = del_v.toArray(a);
@@ -129,7 +130,7 @@ public class FileQueryDialog extends QueryDialog {
 
 		for (int j = 0; j < index; j++) {
 
-			JComboBox jcombobox = (JComboBox) cb_v.get(j);
+			JComboBox<String> jcombobox = (JComboBox<String>) cb_v.get(j);
 			int k = jcombobox.getSelectedIndex();
 			if (k <= 1)
 				continue;
@@ -150,7 +151,7 @@ public class FileQueryDialog extends QueryDialog {
 
 			s5 = s5.replace('"', '\'');
 			cond_v.add(s5);
-			String s3 = ((JComboBox) aoc_v.get(j)).getSelectedItem().toString();
+			String s3 = ((JComboBox<String>) aoc_v.get(j)).getSelectedItem().toString();
 			ao_v.add(s3);
 		}
 	}

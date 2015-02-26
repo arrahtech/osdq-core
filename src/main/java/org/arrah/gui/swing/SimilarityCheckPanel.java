@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2007      * 
+ *     Copyright to Arrah Technology 2013      * 
  *     http://www.arrah.in                     * 
  *                                             *
  * Any part of code or file can be changed,    *
@@ -24,6 +24,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -35,6 +37,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -49,12 +52,13 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
+
 import org.arrah.framework.dataquality.SimilarityCheckLucene;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
 
-public class SimilarityCheckPanel implements ActionListener, TableModelListener {
+public class SimilarityCheckPanel implements ActionListener, TableModelListener, ItemListener {
 	private ReportTable _rt, outputRT;
 	private String[] colName;
 	private String[] colType;
@@ -63,13 +67,15 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 	private JDialog d_m;
 	private JFrame dg;
 	private JCheckBox chk;
-	private JComboBox[] sType, sImp;
+	private JComboBox<String>[] sType;
+	private JFormattedTextField[] sImp,sFuzzy,sCharLen;
 	private JTextField[] skiptf;
 	private boolean isChanged = false;
-	private Hashtable<Integer, Integer> parentMap;
+	private Hashtable<Integer, Integer> parentMap; // it will hold original position
 	boolean isRowSet = false;
 	private JDBCRowset _rows;
 	private SimilarityCheckLucene _simcheck;
+	private String queryForRowset="";
 
 	// For ReportTable Input
 	public SimilarityCheckPanel(ReportTable rt) {
@@ -81,7 +87,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		mapDialog();
 	}
 
-	// For Rowset Table Input
+	// For Rowset Table Input for rdbms
 	public SimilarityCheckPanel(JDBCRowset rowSet) {
 		isRowSet = true;
 		_rows = rowSet;
@@ -91,7 +97,21 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		rowC = _rows.getRowCount();
 		mapDialog();
 	}
-	// For independent table
+	
+	// For Rowset Table Input for Hive
+	// Hive rowset does not move forward and backward so create new rowset
+		public SimilarityCheckPanel(JDBCRowset rowSet, String query) {
+			queryForRowset = query;
+			isRowSet = true;
+			_rows = rowSet;
+			_simcheck = new SimilarityCheckLucene(_rows);
+			colName = _rows.getColName();
+			colType = _rows.getColType();
+			rowC = _rows.getRowCount();
+			mapDialog();
+		}
+	
+	// For independent table and selected Columns
 	public SimilarityCheckPanel(String searchString, String tabName, Vector<String> colV) {
 		
 		_rt = createRT(tabName,colV);
@@ -99,13 +119,32 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		colName = getColName();
 		rowC = _rt.table.getRowCount();
 		_rt.getModel().addTableModelListener(this);
-		
 		_simcheck.makeIndex();
-		searchTableIndex(searchString);
+		searchTableIndex(searchString,-1); // search in colV
+	}
+	
+	// For RTM  table and single Column Search
+	public SimilarityCheckPanel(String searchString, ReportTable reportTable, int colIndex) {
 		
- 
+		_rt = reportTable;
+		_simcheck = new SimilarityCheckLucene(_rt.getRTMModel());
+		colName = getColName();
+		rowC = _rt.table.getRowCount();
+		_rt.getModel().addTableModelListener(this);
+		_simcheck.makeIndex();
+		searchTableIndex(searchString,colIndex);
 	}
 
+	private void createNewRowset(String query) throws SQLException {
+		
+		isRowSet = true;
+		_rows = new JDBCRowset(query, -1, false); 
+		_simcheck.setRowset(_rows); // new class will have new index
+		colName = _rows.getColName();
+		colType = _rows.getColType();
+		rowC = _rows.getRowCount();
+	}
+	
 	private String[] getColName() {
 		int colC = _rt.table.getColumnCount();
 		colName = new String[colC];
@@ -118,20 +157,36 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		return colName;
 	}
 
+	/* For Hive a new rowset need to be created 
+	 * because it does not scroll forward and backward
+	 */
 	private void searchTableIndex() {
 		if (_simcheck.openIndex() == false)
 			return;
 		// Add a boolean column for delete
-		String[] newColN = new String[colName.length + 1];
-		newColN[0] = "Delete Editable"; // This column you can change
+		String[] newColN = new String[colName.length + 2];
+		newColN[0] = "Delete Editable"; // CheckBox selection
+		newColN[1] = "Group ID"; // Group ID and Row number
 		for (int i = 0; i < colName.length; i++)
-			newColN[i + 1] = colName[i];
+			newColN[i + 2] = colName[i];
 
 		outputRT = new ReportTable(newColN, false, true);
 		skipVC = new Vector<Integer>();
 		parentMap = new Hashtable<Integer, Integer>();
+		
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+		 // for Hive
+				if (_rows != null) _rows.close();
+				try {
+					createNewRowset(queryForRowset);
+				} catch (SQLException e) {
+					System.out.println("New Rowset Exception:"+e.getLocalizedMessage());
+					return;
+				}
+		}
 
 		// Iterate over row
+		int grpid = 1; // groupID for matching groups
 		for (int i = 0; i < rowC; i++) {
 			if (isRowSet == false && skipVC.contains(i) == true)
 				continue;
@@ -139,6 +194,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 				continue;
 
 			String queryString = getQString(i);
+			
 			if (queryString == null || queryString.equals("") == true)
 				continue;
 			Query qry = _simcheck.parseQuery(queryString);
@@ -156,13 +212,28 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 					Object[] row = null;
 					if (isRowSet == false)
 						row = _rt.getRow(Integer.parseInt(rowid));
-					else
-						row = _rows.getRow(Integer.parseInt(rowid));
-					Object[] newRow = new Object[row.length + 1];
+					else {
+						if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+							row = _rows.getRow(Integer.parseInt(rowid)); 
+						} else {
+							// will not work for Hive as rowset can not move bothways
+							// Hive the info should be taken from document itself by colname
+							row = new Object[colName.length];
+							for (int k =0; k < colName.length; k++)
+								row[k] = doc.get(colName[k]);
+						}
+					}
+					
+					Object[] newRow = new Object[row.length + 2];
 					boolean del = false;
 					newRow[0] = del;
+					if (isRowSet == false)
+						newRow[1] = "Group: "+grpid+ " Index:"+rowid;
+					else
+						newRow[1] = "Group: "+grpid+ " Row:"+rowid;
+					
 					for (int k = 0; k < row.length; k++)
-						newRow[k + 1] = row[k];
+						newRow[k + 2] = row[k];
 					outputRT.addFillRow(newRow);
 					skipVC.add(Integer.parseInt(rowid));
 				} catch (Exception e) {
@@ -171,6 +242,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 				}
 			}
 			outputRT.addNullRow();
+			grpid++;
 		}
 		_simcheck.closeSeachIndex();
 
@@ -190,26 +262,35 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 
 		int colC = colName.length;
 		sType = new JComboBox[colC];
-		sImp = new JComboBox[colC];
+		sImp = new JFormattedTextField[colC];
+		sFuzzy = new JFormattedTextField[colC];
 		JTextField[] tf1 = new JTextField[colC];
 		skiptf = new JTextField[colC];
+		sCharLen = new JFormattedTextField[colC];
 
 		JPanel jp = new JPanel();
 		SpringLayout layout = new SpringLayout();
 		jp.setLayout(layout);
 
-		JLabel l1 = new JLabel("Field");
+		JLabel l1 = new JLabel("Field Name");
 		l1.setForeground(Color.BLUE);
 		JLabel l2 = new JLabel("Search Criterion");
 		l2.setForeground(Color.BLUE);
-		JLabel l3 = new JLabel("Importance");
+		JLabel l3 = new JLabel("Boosting Factor");
 		l3.setForeground(Color.BLUE);
 		JLabel l4 = new JLabel("Skip Words");
 		l4.setForeground(Color.BLUE);
+		JLabel l5 = new JLabel("Similarity Index");
+		l5.setForeground(Color.BLUE);
+		JLabel l6 = new JLabel("Char Length");
+		l6.setForeground(Color.BLUE);
 		jp.add(l1);
 		jp.add(l2);
 		jp.add(l3);
+		jp.add(l5);
 		jp.add(l4);
+		jp.add(l6);
+		
 
 		for (int i = 0; i < colC; i++) {
 			tf1[i] = new JTextField(8);
@@ -218,26 +299,38 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 			tf1[i].setToolTipText(colType[i]);
 			jp.add(tf1[i]);
 
-			sType[i] = new JComboBox(new String[] { "Don't Use", "Exact",
-					"Similar-Any", "Similar-All", "Left Imp.", "Right Imp." });
+			sType[i] = new JComboBox<String>(new String[] { "Not Applicable", "Exact Match",
+					"Similar-Any Word", "Similar-All Words", "Begin Char Match", "End Char Match" });
+			sType[i].addItemListener(this);
+			sType[i].setActionCommand(Integer.toString(i));
 			jp.add(sType[i]);
 
-			sImp[i] = new JComboBox(new String[] { "Low", "Medium", "High" });
+			sImp[i] = new JFormattedTextField();
+			sImp[i].setEnabled(false);
 			jp.add(sImp[i]);
+			
+			sFuzzy[i] = new JFormattedTextField();
+			sFuzzy[i].setEnabled(false);
+			jp.add(sFuzzy[i]);
 
-			skiptf[i] = new JTextField(8);
+			skiptf[i] = new JTextField(12);
 			skiptf[i].setText("And,Or,Not"); // Lucene core words
+			skiptf[i].setEnabled(false);
 			jp.add(skiptf[i]);
+			
+			sCharLen[i] = new JFormattedTextField();
+			sCharLen[i].setEnabled(false);
+			jp.add(sCharLen[i]);
 
 		}
-		SpringUtilities.makeCompactGrid(jp, colC + 1, 4, 3, 3, 3, 3); // +1 for
+		SpringUtilities.makeCompactGrid(jp, colC + 1, 6, 3, 3, 3, 3); // +1 for
 																		// header
 
 		JScrollPane jscrollpane1 = new JScrollPane(jp);
 		if (colC * 35 + 50 > 400)
-			jscrollpane1.setPreferredSize(new Dimension(575, 400));
+			jscrollpane1.setPreferredSize(new Dimension(625, 400));
 		else
-			jscrollpane1.setPreferredSize(new Dimension(575, colC * 35 + 50));
+			jscrollpane1.setPreferredSize(new Dimension(625, colC * 35 + 50));
 
 		JPanel bp = new JPanel();
 		JButton help = new JButton("Help");
@@ -277,6 +370,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		if (command.equals("simcheck")) {
 			try {
 				d_m.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				if (validateInput() == false ) return;
 				_simcheck.makeIndex();
 				searchTableIndex();
 			} finally {
@@ -296,7 +390,13 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		}
 		if (command.equals("help")) {
 			JOptionPane.showMessageDialog(null,
-					"Open Similarity_check.[doc][pdf] to get more Infomation");
+					"Boosting Factor  should be positive integer.\n" +
+					"New Ranking = Boosting Factor X Old Ranking \n\n"+
+					"Similarity Index should be between 0.0 and 1.0 \n " +
+					"0.0 - No match                1.0 Exact match \n\n" +
+					"Char Length should be positive integer.\n" +
+					"It match number of characters from Beging or End \n\n" +
+					" Open Similarity_check.[doc][pdf] to get more Infomation");
 			return;
 		}
 		if (command.equals("delete")) {
@@ -308,9 +408,9 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 			if (isChanged == true && chk.isSelected() == true) {
 				JOptionPane
 						.showMessageDialog(null,
-								"Parent table has changed.\n Redo Similarity Check to get updated value.");
+								"Parent table has changed.\n Run Similarity Check again to get updated value.");
 				ConsoleFrame
-						.addText("\n Parent table has changed.\n Redo Similarity Check to get updated value.");
+						.addText("\n Parent table has changed.\n Run Similarity Check again get updated value.");
 				return;
 			}
 			markDel = new Vector<Integer>();
@@ -377,6 +477,9 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		}
 	}
 
+	/* This logic will not work with Hive. As rowset is not moving both ways
+	 * A new rowset needs to be opened.
+	 */
 	private String getQString(int rowid) {
 		String queryString = "";
 		Object[] row = null;
@@ -388,7 +491,6 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 			} catch (Exception e) {
 				ConsoleFrame.addText("\n Row Fetch Error:" + e.getMessage());
 				e.printStackTrace();
-				// TODO -- catch exception
 			}
 		}
 		if (row == null)
@@ -396,7 +498,16 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 
 		for (int j = 0; j < row.length; j++) {
 			int type = sType[j].getSelectedIndex();
-			int imp = sImp[j].getSelectedIndex() + 1;
+			int imp = 5, charLen = 4; // default value
+			float fuzzyval = 0.500f; // default value
+			
+			if (sImp[j].getValue() != null)
+			 imp = (Integer)sImp[j].getValue();
+			if (sFuzzy[j].getValue() != null)
+			 fuzzyval = (Float)sFuzzy[j].getValue();
+			if ( sCharLen[j].getValue() != null )
+			 charLen = (Integer)sCharLen[j].getValue();
+			
 			String multiWordQuery = "";
 			String skipText = skiptf[j].getText();
 			boolean skip = true;
@@ -405,6 +516,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 			if (skipText != null && skipText.equals("") == false) {
 				skip = false;
 				skipText = skipText.trim().replaceAll(",", " ");
+				skipText = skipText.trim().replaceAll("_", " "); // StandardAnalyse treats _ as new word
 				skipText = skipText.trim().replaceAll("\\s+", " ");
 				skiptoken = skipText.split(" ");
 			}
@@ -451,12 +563,12 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 						if (newTerm.equals("") == false && type == 2)
 							newTerm += " OR ";
 						newTerm += colName[j] + ":"
-								+ QueryParser.escape(token[i]) + "~^" + imp
+								+ QueryParser.escape(token[i]) + "~"+fuzzyval+"^" + imp
 								+ " "; // For Fuzzy Logic
 					}
 					multiWordQuery = newTerm;
 					break;
-				case 4: // Left Imp first 4 characters
+				case 4: // Left Imp first n characters
 					matchF = false;
 					if (skip == false) {
 						for (int k = 0; k < skiptoken.length; k++)
@@ -468,11 +580,11 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 					if (matchF == true)
 						continue;
 
-					if (term.length() > 4) {
-						term = term.substring(0, 4);
+					if (term.length() > charLen) {
+						term = term.substring(0, charLen);
 					}
 					break;
-				case 5: // Right Imp last 4 characters
+				case 5: // Right Imp last n characters
 					matchF = false;
 					if (skip == false) {
 						for (int k = 0; k < skiptoken.length; k++)
@@ -484,8 +596,8 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 					if (matchF == true)
 						continue;
 
-					if (term.length() > 4) {
-						term = term.substring(term.length() - 4, term.length());
+					if (term.length() > charLen) {
+						term = term.substring(term.length() - charLen, term.length());
 					}
 					break;
 
@@ -502,7 +614,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 				else if (type == 4) // Left Imp match
 					queryString += colName[j] + ":"
 							+ QueryParser.escape(term.trim()) + "*^" + imp;
-				else if (type == 5) // Left Imp match
+				else if (type == 5) // Right Imp match
 					queryString += colName[j] + ":*"
 							+ QueryParser.escape(term.trim()) + "^" + imp;
 			} else {
@@ -560,7 +672,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		
 	}
 	
-	private void searchTableIndex(String searchStr) {
+	private void searchTableIndex(String searchStr, int colIndex) { // -1 data in all columns
 		outputRT = new ReportTable(colName, false, true);
 		
 		if (_simcheck.openIndex() == false)
@@ -570,7 +682,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		if (queryString == null || queryString.equals("") == true)
 			return;
 		
-		    queryString = prepareLQuery(queryString);
+		    queryString = prepareLQuery(queryString, colIndex);
 			Query qry = _simcheck.parseQuery(queryString);
 			Hits hit = _simcheck.searchIndex(qry);
 			if (hit == null || hit.length() <= 0) {
@@ -610,11 +722,16 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 		QualityListener.bringToFront(dg);
 	}
 	
-	public String prepareLQuery(String rawquery) {
+	
+	
+	public String prepareLQuery(String rawquery, int colIndex) {
 		rawquery = rawquery.replaceAll(",", " ");
+		rawquery = rawquery.trim().replaceAll("_", " "); // StandardAnalyzer treats _ as new word
 		rawquery = rawquery.replaceAll("\\s+", " ");
 		String[] token = rawquery.split(" ");
 		String newTerm = "";
+		
+	if (colIndex < 0 ) {
 		for (int j=0; j<colName.length; j++ ) {
 			for (int i = 0; i < token.length; i++) {
 				if (token[i] == null || "".equals(token[i]))
@@ -624,11 +741,118 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener 
 				newTerm += " OR ";
 				
 				newTerm += colName[j] + ":"
-					+ QueryParser.escape(token[i]) + "~0.3 "; // For Fuzzy Logic
+					+ QueryParser.escape(token[i]) + "~0.5 "; // For Fuzzy Logic
 		
 			}
 		}
+	} else { // prepare query for colName
+		String colTitle = _rt.getModel().getColumnName(colIndex);
+		for (int i = 0; i < token.length; i++) {
+			if (token[i] == null || "".equals(token[i]))
+			continue;
+			
+			if (newTerm.equals("") == false )
+				newTerm += " AND ";
+			
+			newTerm += colTitle + ":"
+					+ QueryParser.escape(token[i]) + "~0.5 "; // For Fuzzy Logic
+		}
+		
+	}
 		return newTerm;
 	}
 
+	public void itemStateChanged(ItemEvent event) {
+		
+		if (event.getStateChange() == ItemEvent.SELECTED ) {
+			JComboBox<String> selCombo = (JComboBox<String>) event.getSource();
+			String s = event.getItem().toString();
+			int index = Integer.parseInt(selCombo.getActionCommand());
+			
+			if("Not Applicable".equalsIgnoreCase(s) == true) {
+				sImp[index].setEnabled(false);
+				sFuzzy[index].setEnabled(false);
+				sCharLen[index].setEnabled(false);
+				skiptf[index].setEnabled(false);
+			} else {
+				skiptf[index].setEnabled(true);
+				sImp[index].setEnabled(true);
+				
+				if("Exact Match".equalsIgnoreCase(s) == true  ) {
+					sImp[index].setEnabled(false);
+					sFuzzy[index].setValue(new Float(1.000f));
+					sFuzzy[index].setEnabled(false);
+					sCharLen[index].setEnabled(false);
+				} 
+				if("Similar-Any Word".equalsIgnoreCase(s)  == true || 
+						"Similar-All Words".equalsIgnoreCase(s) == true	) {
+					sImp[index].setValue(new Integer(10));
+					sFuzzy[index].setValue(new Float(0.500f));
+					sFuzzy[index].setEnabled(true);
+					sCharLen[index].setEnabled(false);
+					
+				}
+				if("Begin Char Match".equalsIgnoreCase(s)  == true ||
+						"End Char Match".equalsIgnoreCase(s)  == true ) {
+					sImp[index].setValue(new Integer(5));
+					sFuzzy[index].setValue(new Float(1.000f));
+					sFuzzy[index].setEnabled(false);
+					sCharLen[index].setEnabled(true);
+					sCharLen[index].setValue(new Integer(4));
+					
+				} 
+			}	
+		}
+	}
+
+	private boolean validateInput() {
+		for (int j=0; j < sImp.length; j++) {
+			
+			if (sImp[j].isEnabled() == true ) {
+				if (sImp[j].getValue() != null ) {
+					int imp = (Integer)sImp[j].getValue();
+					if (imp < 0) {
+						JOptionPane.showMessageDialog(null,
+								"Boosting factor can not be Negative");
+						return false;
+					}	
+				} else {
+					JOptionPane.showMessageDialog(null,
+							"Boosting factor can not be Null");
+					return false;
+				}
+			}
+			
+			if (sFuzzy[j].isEnabled() == true ) {
+				if (sFuzzy[j].getValue() != null ) {
+					float fuzzy = (Float)sFuzzy[j].getValue();
+					if (fuzzy < 0.0f || fuzzy > 1.0f) {
+						JOptionPane.showMessageDialog(null,
+								"Similarity Index has to be between 0.0f and 1.0f");
+						return false;
+					}	
+				} else {
+					JOptionPane.showMessageDialog(null,
+							"Similarity Index can not be Null");
+					return false;
+				}
+			}
+			
+			if (sCharLen[j].isEnabled() == true ) {
+				if (sCharLen[j].getValue() != null ) {
+					int charLen = (Integer)sCharLen[j].getValue();
+					if (charLen <= 0 ) {
+						JOptionPane.showMessageDialog(null,
+								"Character Length can not be Negative");
+						return false;
+					}	
+				} else {
+					JOptionPane.showMessageDialog(null,
+							"Character Length can not be Null");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 } // End of Similarity Check

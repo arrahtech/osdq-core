@@ -1,8 +1,9 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
- *     http://www.arrah.in                     *
+ *     Copyright to Arrah Technology 2014      *
+ *                                             *
+ *                                             *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -24,6 +25,8 @@ import java.awt.Cursor;
 import java.awt.MediaTracker;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
@@ -34,6 +37,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -46,15 +50,14 @@ import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
 
-public class RightView implements ActionListener {
-
-	// These members are used by public methods :Global Variable
+public class RightView implements ItemListener,ActionListener {
 
 	private JScrollPane htmlView;
 	private JLabel schema_name, table_name, col_name;
 	private Hashtable<String, String> table_info;
 	private JPanel parent, body, body_p;
 	private JCheckBox edit_c;
+	private JComboBox<String> ana_combo;
 
 	public RightView() {
 
@@ -66,8 +69,10 @@ public class RightView implements ActionListener {
 
 		// Create top Panel
 		parent.add(createTopPane(), BorderLayout.PAGE_START);
+		
+		
 
-		// Create the left Panel
+		// Create the body Panel
 		body = new JPanel();
 		parent.add(body, BorderLayout.LINE_START);
 
@@ -89,6 +94,7 @@ public class RightView implements ActionListener {
 		table_name.setText("" + table_info.get("Table"));
 		col_name.setText("" + table_info.get("Column"));
 		edit_c.setSelected(false);
+		ana_combo.setSelectedIndex(0); // Set it to first
 		if (body_p != null && body_p instanceof JDBCRowsetPanel)
 			((JDBCRowsetPanel) body_p).rowset.close();
 		body.removeAll();
@@ -136,20 +142,17 @@ public class RightView implements ActionListener {
 		jlabel.setToolTipText("Add Conditions");
 		topPane.add(jlabel);
 
-		JLabel dummy = new JLabel(
+		JLabel show_l = new JLabel(
 				"<html><body><a href=\"\">Show Condition</A><body></html>", 0);
-		dummy.addMouseListener(new LinkMouseListener());
-		topPane.add(dummy);
-
-		JLabel num_a = new JLabel(
-				"<html><body><a href=\"\">Number Analytics</A><body></html>", 0);
-		num_a.addMouseListener(new LinkMouseListener());
-		topPane.add(num_a);
-
-		JLabel str_a = new JLabel(
-				"<html><body><a href=\"\">String Analytics</A><body></html>", 0);
-		str_a.addMouseListener(new LinkMouseListener());
-		topPane.add(str_a);
+		show_l.addMouseListener(new LinkMouseListener());
+		topPane.add(show_l);
+		
+		/* All analysis should be selectable by comboBox */
+		
+		ana_combo = new JComboBox<String> (new String[] {"Analysis Method","-----------------------",
+				"Number Analysis","String Analysis","String Length Analysis","Timeliness Analysis"} );
+		ana_combo.addItemListener(this);
+		topPane.add(ana_combo);
 
 		// Set the Border for topPane
 		topPane.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -172,20 +175,17 @@ public class RightView implements ActionListener {
 
 		layout.putConstraint(SpringLayout.WEST, jlabel, 0, SpringLayout.WEST,
 				schema_name);
-		layout.putConstraint(SpringLayout.NORTH, jlabel, 2, SpringLayout.SOUTH,
+		layout.putConstraint(SpringLayout.NORTH, jlabel, 4, SpringLayout.SOUTH,
 				schema_name);
-		layout.putConstraint(SpringLayout.WEST, dummy, 15, SpringLayout.EAST,
+		layout.putConstraint(SpringLayout.WEST, show_l, 15, SpringLayout.EAST,
 				jlabel);
-		layout.putConstraint(SpringLayout.NORTH, dummy, 2, SpringLayout.SOUTH,
+		layout.putConstraint(SpringLayout.NORTH, show_l, 4, SpringLayout.SOUTH,
 				schema_name);
-		layout.putConstraint(SpringLayout.WEST, num_a, 15, SpringLayout.EAST,
-				dummy);
-		layout.putConstraint(SpringLayout.NORTH, num_a, 2, SpringLayout.SOUTH,
+		layout.putConstraint(SpringLayout.WEST, ana_combo, 25, SpringLayout.EAST,
+				show_l);
+		layout.putConstraint(SpringLayout.NORTH, ana_combo, 4, SpringLayout.SOUTH,
 				schema_name);
-		layout.putConstraint(SpringLayout.WEST, str_a, 15, SpringLayout.EAST,
-				num_a);
-		layout.putConstraint(SpringLayout.NORTH, str_a, 2, SpringLayout.SOUTH,
-				schema_name);
+		
 		layout.putConstraint(SpringLayout.SOUTH, topPane, 2,
 				SpringLayout.SOUTH, ep);
 
@@ -195,7 +195,7 @@ public class RightView implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 
 		String dsn_str = "" + table_info.get("Schema");
-		String type_str = "" + table_info.get("Type");
+		// String type_str = "" + table_info.get("Type");
 		String tbl_str = "" + table_info.get("Table");
 		String col_str = "" + table_info.get("Column");
 		QueryBuilder q_factory = new QueryBuilder(dsn_str, tbl_str, col_str,
@@ -267,31 +267,11 @@ public class RightView implements ActionListener {
 							"Query Information",
 							JOptionPane.INFORMATION_MESSAGE);
 					return;
-				} else if (s1 != null
-						&& s1.equals("<html><body><a href=\"\">Number Analytics</A><body></html>")) {
-					if (body_p != null && body_p instanceof JDBCRowsetPanel)
-						((JDBCRowsetPanel) body_p).rowset.close();
-					body_p = new ReportViewer(table_info);
-					body.removeAll();
-					body.add(body_p);
-					parent.revalidate();
-					parent.repaint();
-					return;
-				} else if (s1 != null
-						&& s1.equals("<html><body><a href=\"\">String Analytics</A><body></html>")) {
-					if (body_p != null && body_p instanceof JDBCRowsetPanel)
-						((JDBCRowsetPanel) body_p).rowset.close();
-					body_p = new StringProfiler(table_info);
-					body.removeAll();
-					body.add(body_p);
-					parent.revalidate();
-					parent.repaint();
-					return;
-				} else {
-					Vector vector = Rdbms_conn.getTable();
+				}  else {
+					Vector<String> vector = Rdbms_conn.getTable();
 					int i = vector.indexOf(table_name.getText());
 
-					Vector avector[] = null;
+					Vector<?> avector[] = null;
 					avector = TableMetaInfo.populateTable(5, i, i + 1, avector);
 
 					QueryDialog querydialog = new QueryDialog(2,
@@ -333,6 +313,77 @@ public class RightView implements ActionListener {
 		private LinkMouseListener() {
 		}
 
+	}
+
+	public void itemStateChanged(ItemEvent e) {
+		
+		if (e.getStateChange() == ItemEvent.SELECTED) {
+			if (e.getItem().toString().equalsIgnoreCase("Number Analysis") == true){
+				if (body_p != null && body_p instanceof JDBCRowsetPanel)
+					((JDBCRowsetPanel) body_p).rowset.close();
+				body_p = new ReportViewer(table_info);
+				body.removeAll();
+				body.add(body_p);
+				parent.revalidate();
+				parent.repaint();
+				return;
+			}
+			if (e.getItem().toString().equalsIgnoreCase("String Analysis") == true){
+				if (body_p != null && body_p instanceof JDBCRowsetPanel)
+					((JDBCRowsetPanel) body_p).rowset.close();
+				body_p = new StringProfilerPanel(table_info);
+				body.removeAll();
+				body.add(body_p);
+				parent.revalidate();
+				parent.repaint();
+				return;
+			}
+			if (e.getItem().toString().equalsIgnoreCase("String Length Analysis") == true){
+				if (body_p != null && body_p instanceof JDBCRowsetPanel)
+					((JDBCRowsetPanel) body_p).rowset.close();
+				try {
+					htmlView.getTopLevelAncestor().setCursor(
+						java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+					body_p = new StringLenProfilerPanel(table_info);
+					body.removeAll();
+					body.add(body_p);
+					parent.revalidate();
+					parent.repaint();
+				} finally {
+					htmlView.getTopLevelAncestor().setCursor(
+							java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				}
+				return;
+			}
+			if (e.getItem().toString().equalsIgnoreCase("Timeliness Analysis") == true){
+				if (body_p != null && body_p instanceof JDBCRowsetPanel)
+					((JDBCRowsetPanel) body_p).rowset.close();
+				try {
+					htmlView.getTopLevelAncestor().setCursor(
+							java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+					body_p = new TimeProfilerPanel(table_info);
+					body.removeAll();
+					body.add(body_p);
+					parent.revalidate();
+					parent.repaint();
+				} finally {
+					htmlView.getTopLevelAncestor().setCursor(
+							java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				}
+				return;
+
+			}
+			if (body_p != null && body_p instanceof JDBCRowsetPanel)
+				((JDBCRowsetPanel) body_p).rowset.close();
+			body_p = new JPanel();
+			body.removeAll();
+			body.add(body_p);
+			parent.revalidate();
+			parent.repaint();
+			return;
+			
+		} // End of ItemEvent.SELECTED
+		
 	}
 
 }

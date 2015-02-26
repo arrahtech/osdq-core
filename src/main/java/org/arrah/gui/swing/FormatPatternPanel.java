@@ -44,8 +44,9 @@ import javax.swing.SpringLayout;
 
 public class FormatPatternPanel implements ActionListener {
 	private JDialog d_f = null;
-	private Hashtable _nf, _df, _sf, _pf;
-	private JComboBox type_c = null;
+	private Hashtable<String, StringBuffer> _nf, _df;
+	private Hashtable<String, Object>   _sf, _pf;
+	private JComboBox<String> type_c = null;
 	private DefaultListModel all_l_model, input_l_model;
 	private JList all_l = null, input_l = null;
 	private MyCellRenderer cellR = null;
@@ -61,7 +62,7 @@ public class FormatPatternPanel implements ActionListener {
 
 	/* Create dialog for taking input for pattern */
 	public int createDialog() {
-		type_c = new JComboBox(new String[] { "Number", "Date", "Phone",
+		type_c = new JComboBox<String>(new String[] { "Number", "Date", "Phone",
 				"Formatted String" });
 		type_c.addActionListener(this);
 
@@ -186,14 +187,14 @@ public class FormatPatternPanel implements ActionListener {
 		getNumberTable();
 		if (_nf == null)
 			return;
-		Enumeration e = _nf.keys();
+		Enumeration<String> e = _nf.keys();
 		while (e.hasMoreElements()) {
 			all_l_model.addElement(e.nextElement());
 		}
 	}
 
 	private void refreshFormat(int classId) {
-		Enumeration e = null;
+		Enumeration<String> e = null;
 		input_l_model.clear();
 		all_l_model.clear();
 
@@ -254,10 +255,10 @@ public class FormatPatternPanel implements ActionListener {
 			// Open the file and load Hashtable
 			FileInputStream fileIn = new FileInputStream(fileName);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
-			_nf = (Hashtable) in.readObject();
-			_df = (Hashtable) in.readObject();
-			_pf = (Hashtable) in.readObject();
-			_sf = (Hashtable) in.readObject();
+			_nf = (Hashtable<String, StringBuffer>) in.readObject();
+			_df = (Hashtable<String, StringBuffer>) in.readObject();
+			_pf = (Hashtable<String, Object>) in.readObject();
+			_sf = (Hashtable<String, Object>) in.readObject();
 			in.close();
 			fileIn.close();
 		} catch (FileNotFoundException file_exp) {
@@ -274,43 +275,43 @@ public class FormatPatternPanel implements ActionListener {
 		}
 	}
 
-	public Hashtable getNumberTable() {
+	public Hashtable<String, StringBuffer> getNumberTable() {
 		loadFormatFile("formatFile.atc");
 		return _nf;
 	}
 
-	public void setNumberTable(Hashtable nt) {
+	public void setNumberTable(Hashtable<String, StringBuffer> nt) {
 		_nf = nt;
 		saveFormatFile("formatFile.atc");
 
 	}
 
-	public Hashtable getDateTable() {
+	public Hashtable<String, StringBuffer> getDateTable() {
 		loadFormatFile("formatFile.atc");
 		return _df;
 	}
 
-	public void setDateTable(Hashtable dt) {
+	public void setDateTable(Hashtable<String, StringBuffer> dt) {
 		_df = dt;
 		saveFormatFile("formatFile.atc");
 	}
 
-	public Hashtable getStringTable() {
+	public Hashtable<String, Object> getStringTable() {
 		loadFormatFile("formatFile.atc");
 		return _sf;
 	}
 
-	public void setStringTable(Hashtable st) {
+	public void setStringTable(Hashtable<String, Object> st) {
 		_sf = st;
 		saveFormatFile("formatFile.atc");
 	}
 
-	public Hashtable getPhoneTable() {
+	public Hashtable<String, Object> getPhoneTable() {
 		loadFormatFile("formatFile.atc");
 		return _pf;
 	}
 
-	public void setPhoneTable(Hashtable pt) {
+	public void setPhoneTable(Hashtable<String, Object> pt) {
 		_pf = pt;
 		saveFormatFile("formatFile.atc");
 	}
@@ -367,6 +368,10 @@ public class FormatPatternPanel implements ActionListener {
 
 	/* For Showing the tooltip value */
 	private class MyCellRenderer extends DefaultListCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private int listType = 0; // Different label for different type
 		private Hashtable tipValue = null;
 
@@ -390,7 +395,7 @@ public class FormatPatternPanel implements ActionListener {
 			}
 		}
 
-		public Component getListCellRendererComponent(JList list, Object value, // value
+		public Component getListCellRendererComponent(JList<?> list, Object value, // value
 																				// to
 																				// display
 				int index, // cell index

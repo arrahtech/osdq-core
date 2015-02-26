@@ -27,6 +27,10 @@ import javax.swing.JPanel;
 import javax.swing.ToolTipManager;
 
 public class UniversePanel extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String title;
 	private boolean init;
 	private String[] st;
@@ -139,10 +143,17 @@ public class UniversePanel extends JPanel {
 		if (!init)
 			return null;
 		String tip = "<html>";
-		tip += "Match(" + String.valueOf(lg[0]) + ")<BR>";
-		tip += "No Match(" + String.valueOf(lg[2] - lg[0]) + ")<BR>";
-		if (isLeft)
+		if (isLeft) {
+			tip += " Unique Record Match(" + String.valueOf(lg[0]) + ")<BR>";
+			tip += " Unique Record NO Match(" + String.valueOf(lg[2] - lg[0]) + ")<BR>";
 			tip += "Null(" + String.valueOf(lg[1]) + ")<BR>";
+		}
+		else {
+			tip += "Match(" + String.valueOf(lg[0]) + ")<BR>";
+			tip += "NO Match(" + String.valueOf(lg[2] - lg[0]) + ")<BR>";
+			tip += "Null(" + String.valueOf(lg[1]) + ")<BR>";
+		}
+			
 		return tip += "</html>";
 	}
 }

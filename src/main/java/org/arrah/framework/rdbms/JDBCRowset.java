@@ -21,6 +21,7 @@ import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Ref;
+import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -28,10 +29,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Vector;
 
-import com.sun.rowset.JdbcRowSetImpl;
-
 public class JDBCRowset {
-	private JdbcRowSetImpl rows;
+	private UpdatableJdbcRowsetImpl rows;
 	private String[] col_name;
 	private String[] tbl_name;
 	private int[] col_type;
@@ -52,23 +51,22 @@ public class JDBCRowset {
 			if (url == null || "".equals(url)) {
 			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase(
 					"oracle_native") == 0)
-				rows = new JdbcRowSetImpl(protocol + ":@"
+				rows = new UpdatableJdbcRowsetImpl(protocol + ":@"
 						+ Rdbms_conn.getHValue("Database_DSN"),
 						Rdbms_conn.getHValue("Database_User"),
 						Rdbms_conn.getHValue("Database_Passwd"));
 			else
-				rows = new JdbcRowSetImpl(protocol + ":"
+				rows = new UpdatableJdbcRowsetImpl(protocol + ":"
 						+ Rdbms_conn.getHValue("Database_DSN"),
 						Rdbms_conn.getHValue("Database_User"),
 						Rdbms_conn.getHValue("Database_Passwd"));
 			} else {
-				rows = new JdbcRowSetImpl(url,
+				rows = new UpdatableJdbcRowsetImpl(url,
 						Rdbms_conn.getHValue("Database_User"),
 						Rdbms_conn.getHValue("Database_Passwd"));
 						
 				
 			}
-
 			rows.setReadOnly(editable);
 			rows.setCommand(query);
 			if (maxRow > 1) // only if positive maxRow is set
@@ -90,17 +88,32 @@ public class JDBCRowset {
 				}
 			}
 			rows.execute();
-			if (rows.last() == true)
-				rowC = rows.getRow();
-
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+				if (rows.last() == true)
+					rowC = rows.getRow();
+			} else { // call count function explicitly 
+				Rdbms_conn.openConn();
+				String orgQuery = QueryBuilder.hive_count_query(query);
+				ResultSet rs = Rdbms_conn.runQuery(orgQuery);
+				while (rs.next()) {
+					rowC = rs.getInt("total_count");
+				}
+				rs.close();
+				Rdbms_conn.closeConn();
+			}
 			createMD();
+			
 		} catch (SQLException e) {
+			System.err.println("Error in JDBCRowset Constructor:"+e.getLocalizedMessage());
 			throw e;
 		}
-		rows.setAutoCommit(true);
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			rows.setAutoCommit(true);
+		}
 	}
 
 	/* IF YOU WANT Prepared query Rowset */
+	// Hive does not support prepared rowset yet
 	public JDBCRowset(String query, boolean editable, Vector<Integer> vc_t,
 			Vector<Object> vc_v) throws SQLException {
 		try {
@@ -109,17 +122,17 @@ public class JDBCRowset {
 			if (url == null || "".equals(url)) {
 			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase(
 					"oracle_native") == 0)
-				rows = new JdbcRowSetImpl(protocol + ":@"
+				rows = new UpdatableJdbcRowsetImpl(protocol + ":@"
 						+ Rdbms_conn.getHValue("Database_DSN"),
 						Rdbms_conn.getHValue("Database_User"),
 						Rdbms_conn.getHValue("Database_Passwd"));
 			else
-				rows = new JdbcRowSetImpl(protocol + ":"
+				rows = new UpdatableJdbcRowsetImpl(protocol + ":"
 						+ Rdbms_conn.getHValue("Database_DSN"),
 						Rdbms_conn.getHValue("Database_User"),
 						Rdbms_conn.getHValue("Database_Passwd"));
 			} else {
-				rows = new JdbcRowSetImpl(url,
+				rows = new UpdatableJdbcRowsetImpl(url,
 						Rdbms_conn.getHValue("Database_User"),
 						Rdbms_conn.getHValue("Database_Passwd"));
 			}
@@ -134,7 +147,6 @@ public class JDBCRowset {
 				fromIndex += 2; // move Index
 				setQuery(i, vc_t.get(i), vc_v.get(i));
 			}
-
 			if (query.indexOf(" ?", fromIndex) != -1) {
 				Vector<?>[] dateVar = QueryBuilder.getDateCondition();
 				for (int i = vc_t.size(); i < (vc_t.size() + dateVar[0].size()); i++) {
@@ -157,16 +169,35 @@ public class JDBCRowset {
 										- vc_t.size())).getTime()));
 				}
 			}
-
 			rows.execute();
-			if (rows.last() == true)
-				rowC = rows.getRow();
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+				if (rows.last() == true)
+					rowC = rows.getRow();
+			} else {
+				Rdbms_conn.openConn();
+				String orgQuery = QueryBuilder.hive_count_query(query);
+				ResultSet rs = Rdbms_conn.runQuery(orgQuery);
+				while (rs.next()) {
+					rowC = rs.getInt("total_count");
+				}
+				rs.close();
+				Rdbms_conn.closeConn();
+			}
 		} catch (SQLException e) {
+			System.err.println("Error in Prepared JDBCRowset Constructor:"+e.getLocalizedMessage());
 			throw e;
 		}
-		rows.setAutoCommit(true);
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			rows.setAutoCommit(true);
+		}
 	}
 
+	/* This will give 2 dimensional array 
+	 * one will have cols and second will have rows
+	 * however it will fails in hive as it has abosute and previous
+	 * functions which is not supported by hive
+	 * 
+	 */
 	public Vector<Object>[] getRowCol(int fromIndex, int toIndex,
 			Vector<Object>[] row_v) throws SQLException {
 		rows.absolute(fromIndex);
@@ -250,7 +281,12 @@ public class JDBCRowset {
 		rows.absolute(row);
 		boolean update = updateCell(col, obj);
 		rows.updateRow();
-		rows.refreshRow();
+		try { 
+			rows.refreshRow();
+		} catch(Exception e){
+			System.out.println("WARNING :: ResultSet.refreshRow() is not Supported");
+		}
+		
 		return update;
 	}
 
@@ -428,7 +464,10 @@ public class JDBCRowset {
 
 		for (int i = 1; i < numberOfColumns + 1; i++) {
 			col_name[i - 1] = rsmd.getColumnName(i);
-			tbl_name[i - 1] = rsmd.getTableName(i);
+			// Hive no support
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+				tbl_name[i - 1] = rsmd.getTableName(i);
+			}
 			col_type[i - 1] = rsmd.getColumnType(i);
 		}
 	}
@@ -460,31 +499,68 @@ public class JDBCRowset {
 		rows.insertRow();
 		rows.moveToCurrentRow();
 	}
-
+	
+	/* This will give objects of next row in hive as it has rs.next() call 
+	 * If we have to call from same row then rs.next() should not be there
+	 */
 	synchronized public Object getObject(int row, int col) throws SQLException {
 		if (row > rowC)
 			return null;
-		rows.absolute(row);
+		// Hive does not support moving cursors
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			rows.absolute(row);
+		} else {
+			if (rows.next() == false)
+				return null;
+		}
 		Object obj = rows.getObject(col);
 		if (obj == null) {
 			try {
 				String ret = rows.getString(col);
 				return ret;
 			} catch (Exception e) {
+				System.out.println("Exeception:" + e.getLocalizedMessage());
 				return null;
 			}
 		} else
 			return obj;
 	}
 
+	/* This function will not move cursor */
+	synchronized public Object getRowObject(int col) throws SQLException {
+
+		Object obj = rows.getObject(col);
+		if (obj == null) {
+			try {
+				String ret = rows.getString(col);
+				return ret;
+			} catch (Exception e) {
+				System.out.println("Exeception:" + e.getLocalizedMessage());
+				return null;
+			}
+		} else
+			return obj;
+	}
+	
 	public int getRowCount() {
 		return rowC;
 	}
 
 	synchronized public Object[] getRow(int rowId) throws SQLException {
 		Object[] objA = new Object[numberOfColumns];
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			if (rows.next() == false) return null;
+		}
 		for (int i = 0; i < numberOfColumns; i++) {
-			objA[i] = getObject(rowId, i + 1);
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+				objA[i] = getObject(rowId, i + 1);
+			} else { // for hive
+				// Hive does not support absolute function so we have 
+				// to getObject while not moving the cursor
+				// rowId has no meaning here it will always fetch next row
+				objA[i] = getRowObject(i + 1);
+			}
+			
 		}
 		return objA;
 	}
@@ -499,11 +575,11 @@ public class JDBCRowset {
 		}
 	}
 
-	public JdbcRowSetImpl getRowset() {
+	public UpdatableJdbcRowsetImpl getRowset() {
 		return rows;
 	}
 
-	synchronized public void setRowset(JdbcRowSetImpl rowset) {
+	synchronized public void setRowset(UpdatableJdbcRowsetImpl rowset) {
 		rows = rowset;
 	}
 

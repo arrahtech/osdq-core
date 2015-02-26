@@ -1,8 +1,8 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2012      *
- *     http://www.arrah.in                     *
+ *     Copyright to Arrah Technology 2014      *
+ *                                             *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -12,7 +12,8 @@ package org.arrah.gui.swing;
  *                                             *
  ***********************************************/
 
-/* This file is used for creating Tools info 
+/* This file is used for creating Tools menu
+ * callbacks 
  *
  */
 
@@ -61,15 +62,78 @@ public class ToolListener implements ActionListener {
 
 				String source = ((JMenuItem) (e.getSource())).getText();
 				if (source.equals("SQL Interface")) {
-					SqlTablePanel sq = new SqlTablePanel();
+					new SqlTablePanel();
 					return;
 				}
-				if (source.equals("Import File")) {
-					ImportFilePanel f = new ImportFilePanel(true);
+				if (source.equals("Create Table")) {
+					new CreateTableDialog();
+					return;
+				}
+				if (source.equals("CSV Format") || source.equals("XML Format") || source.equals("XLS Format")) {
+					new ImportFilePanel(true);
+					return;
+				}
+				if (source.equals("Single File Match") || source.equals("Multiple File Match") ||
+					source.equals("1:1 Record Linkage") ||	source.equals("1:N Record Linkage") ||
+					source.equals("Single File Merge") || source.equals("Multiple File Merge") ||
+					source.equals("Diff File") ) {
+					
+					ReportTable firstRT = null, secondRT= null;
+					JOptionPane.showMessageDialog(null, "Select the First File");
+					ImportFilePanel firstFile = new ImportFilePanel(false);
+					if (firstFile != null ) 
+						firstRT = firstFile.getTable();
+					if (firstRT == null) {
+						JOptionPane.showMessageDialog(null, "Selected File has no data", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+						ConsoleFrame.addText("\n Invalid File Format");
+						return;
+					}
+	
+					if ( source.equals("1:1 Record Linkage") || source.equals("1:N Record Linkage") || 
+							source.equals("Multiple File Match") || source.equals("Multiple File Merge")
+							|| source.equals("Diff File") ) {
+						JOptionPane.showMessageDialog(null, "Select the Second File");
+						ImportFilePanel secondFile = new ImportFilePanel(false);
+						if (secondFile != null ) 
+							secondRT = secondFile.getTable();
+						if (secondRT == null) {
+							JOptionPane.showMessageDialog(null, "File has no data", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+							ConsoleFrame.addText("\n Invalid File Format");
+							return;
+						}
+					}
+					if (source.equals("Diff File")) {
+						new CompareFileDialog(firstRT.getRTMModel(), secondRT.getRTMModel());
+						return;
+					}
+					CompareRecordDialog crd=null;
+					if (source.equals("Single File Match") || source.equals("Multiple File Match") == true)
+						crd = new CompareRecordDialog(firstRT, secondRT, 0); // 0 for Match // 1 for linkage
+					else if ( source.equals("1:N Record Linkage") )
+						crd = new CompareRecordDialog(firstRT, secondRT, 1);
+					else if ( source.equals("1:1 Record Linkage") )
+						crd = new CompareRecordDialog(firstRT, secondRT, 4); // 4 for Inner Join
+					else if ( source.equals("Single File Merge") || source.equals("Multiple File Merge") )
+						crd = new CompareRecordDialog(firstRT, secondRT, 2); // 2 for Merge
+					
+					crd.createMapDialog();
+						
+					return;
+				}
+				if (source.equals("Multi-Line Format")) {
+					new MultiLineInputPanel();
+					return;
+				}
+				if ( source.equals("To HDFS")) {
+					new HDFSFileTransferFrame(true); // copy to HDFS
+					return;
+				}
+				if (source.equals("From HDFS") ) {
+					new HDFSFileTransferFrame(false); // copy from HDFS
 					return;
 				}
 				if (source.equals("Create Regex")) {
-					RegexPanel rg = new RegexPanel();
+					 new RegexPanel();
 					return;
 				}
 				if (source.equals("Search DB")) {
@@ -77,7 +141,7 @@ public class ToolListener implements ActionListener {
 							.showInputDialog("Enter String to Search Database","Search String");
 					if (input == null || "".equals(input))
 						return;
-					SearchDBPanel sdb = new SearchDBPanel(input);
+					new SearchDBPanel(input);
 					return;
 				}
 				if (source.equals("Search Table")) {
@@ -86,7 +150,7 @@ public class ToolListener implements ActionListener {
 					if (input == null || "".equals(input))
 						return;
 					TableSearchDialog tsd = new TableSearchDialog(input);
-					JDialog jd = tsd.createMapDialog();
+					tsd.createMapDialog();
 					return;
 				}
 				if (source.equals("Fuzzy Search")) {
@@ -95,7 +159,7 @@ public class ToolListener implements ActionListener {
 					if (input == null || "".equals(input))
 						return;
 					TableSearchDialog tsd = new TableSearchDialog(input,true);
-					JDialog jd = tsd.createMapDialog();
+					tsd.createMapDialog();
 					return;
 				}
 				if (source.equals("Create Format")) {

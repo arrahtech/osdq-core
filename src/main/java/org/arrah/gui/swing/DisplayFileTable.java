@@ -1,8 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2013      *
- *     http://www.arrah.in                     *
+ *     Copyright to Arrah Technology 2014      *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -33,7 +32,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
@@ -43,6 +43,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -50,6 +51,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
@@ -63,6 +65,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
@@ -71,7 +74,10 @@ import javax.swing.text.MaskFormatter;
 
 import org.arrah.framework.dataquality.FillCheck;
 import org.arrah.framework.dataquality.FormatCheck;
+import org.arrah.framework.hadooputil.HiveQueryBuilder;
 import org.arrah.framework.ndtable.RTMUtil;
+import org.arrah.framework.ndtable.ReportTableModel;
+import org.arrah.framework.ndtable.ResultsetToRTM;
 import org.arrah.framework.profile.InterTableInfo;
 import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.QueryBuilder;
@@ -112,21 +118,29 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 	private Vector<Integer> delete_v = null;
 	private Vector<Object[]> delrow_v = null;
 
+	private JCheckBox local, overWrite; 
+	private JTextField locationf;
+	private JTextArea partArea;
+	
 	private JFrame frame;
 
 	// Constructor
 	public DisplayFileTable(ReportTable rt) {
 		_rt = rt;
-		showGUI();
+		
+		// call show GUI explicitly
+		// showGUI();
 	}
 
 	public DisplayFileTable(ReportTable rt, String fileN) {
 		_rt = rt;
 		_fileN = fileN;
-		showGUI();
+		
+		// call show GUI explicitly
+		// showGUI();
 	}
 
-	private void showGUI() {
+	public void showGUI() {
 		if (_rt == null)
 			return;
 		frame = new JFrame("File Table Display:" + _fileN);
@@ -148,30 +162,92 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		analytics_m.setMnemonic('A');
 		menubar.add(analytics_m);
 		
-		JMenuItem reportC_m = new JMenuItem("Report");
+		JMenuItem reportC_m = new JMenuItem("Tabular Report");
 		reportC_m.addActionListener(this);
 		reportC_m.setActionCommand("report");
 		analytics_m.add(reportC_m);
+		
+		JMenuItem crosstablC_m = new JMenuItem("Cross Tab Report");
+		crosstablC_m.addActionListener(this);
+		crosstablC_m.setActionCommand("crosstab");
+		analytics_m.add(crosstablC_m);
 
+		JMenu uniDim = new JMenu("Visual Analytics");
 		JMenuItem lineC_m = new JMenuItem("Line Chart");
 		lineC_m.addActionListener(this);
 		lineC_m.setActionCommand("linechart");
-		analytics_m.add(lineC_m);
+		uniDim.add(lineC_m);
 
 		JMenuItem barC_m = new JMenuItem("Bar Chart");
 		barC_m.addActionListener(this);
 		barC_m.setActionCommand("barchart");
-		analytics_m.add(barC_m);
+		uniDim.add(barC_m);
 
 		JMenuItem hbarC_m = new JMenuItem("Horizontal Bar Chart");
 		hbarC_m.addActionListener(this);
 		hbarC_m.setActionCommand("hbarchart");
-		analytics_m.add(hbarC_m);
+		uniDim.add(hbarC_m);
 
 		JMenuItem pieC_m = new JMenuItem("Pie Chart");
 		pieC_m.addActionListener(this);
 		pieC_m.setActionCommand("piechart");
-		analytics_m.add(pieC_m);
+		uniDim.add(pieC_m);
+		
+		analytics_m.add(uniDim);
+		analytics_m.addSeparator();
+		
+		JMenuItem timeser_m = new JMenuItem("Time Series Analysis");
+		timeser_m.addActionListener(this);
+		timeser_m.setActionCommand("timeseries");
+		analytics_m.add(timeser_m);
+		
+		JMenuItem timeser_for = new JMenuItem("Time Series Forecast");
+		timeser_for.addActionListener(this);
+		timeser_for.setActionCommand("timefore");
+		analytics_m.add(timeser_for);
+		
+		JMenuItem timeliness = new JMenuItem("Timeliness");
+		timeliness.addActionListener(this);
+		timeliness.setActionCommand("timeliness");
+		analytics_m.add(timeliness);
+		
+		analytics_m.addSeparator();
+		
+
+		
+
+		/*** Outlier Analysis ***/
+		JMenu outlier = new JMenu("Outlier");
+		// Box Plot for now. Other algo will be added later
+		JMenuItem out_box = new JMenuItem("Box Plot");
+		out_box.addActionListener(this);
+		out_box.setActionCommand("boxplot");
+		outlier.add(out_box);
+		analytics_m.add(outlier); // Outlier
+		
+		JMenuItem kmean = new JMenuItem("K-Mean Cluster");
+		kmean.addActionListener(this);
+		kmean.setActionCommand("kmean");
+		analytics_m.add(kmean);
+		
+		JMenuItem regress = new JMenuItem("Regression");
+		regress.addActionListener(this);
+		regress.setActionCommand("regression");
+		analytics_m.add(regress);
+		
+		analytics_m.addSeparator();
+		
+		JMenuItem loc_m = new JMenuItem("Location Analytics");
+		loc_m.addActionListener(this);
+		loc_m.setActionCommand("location");
+		analytics_m.add(loc_m);
+		
+		analytics_m.addSeparator();
+		
+		JMenuItem strlength = new JMenuItem("String Length Analysis");
+		strlength.addActionListener(this);
+		strlength.setActionCommand("stringlen");
+		analytics_m.add(strlength);
 
 		JMenuItem addC_m = new JMenuItem("Add Column");
 		addC_m.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A,
@@ -207,6 +283,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		populateC_m.addActionListener(this);
 		populateC_m.setActionCommand("populatecolumn");
 		column_m.add(populateC_m);
+		
+		JMenuItem maskC_m = new JMenuItem("Mask Column");
+		maskC_m.addActionListener(this);
+		maskC_m.setActionCommand("maskcolumn");
+		column_m.add(maskC_m);
 		column_m.addSeparator();
 
 		JMenuItem searC_m = new JMenuItem("Standardisation");
@@ -326,6 +407,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		similarC_m.setActionCommand("simcheck");
 		option_m.add(similarC_m);
 		option_m.addSeparator();
+		
+		JMenuItem crossCol_m = new JMenuItem("Cross Column Search");
+		crossCol_m.addActionListener(this);
+		crossCol_m.setActionCommand("crosscol");
+		option_m.add(crossCol_m);
+		option_m.addSeparator();
 
 		JMenu discreetC_m = new JMenu("Discreet Range Check");
 		option_m.add(discreetC_m);
@@ -348,7 +435,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		option_m.add(loadDB_m);
 
 		JMenuItem syncDB_m = new JMenuItem("Synch From DB");
-		syncDB_m.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T,
+		syncDB_m.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
 				InputEvent.ALT_MASK));
 		syncDB_m.addActionListener(this);
 		syncDB_m.setActionCommand("fromdb");
@@ -364,23 +451,73 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		try {
 			frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			if (command.equals("barchart")) {
-				AnalyticsListener al = new AnalyticsListener(_rt, 1);
+				 new FileAnalyticsListener(_rt, 1);
 				return;
 			}
 			if (command.equals("piechart")) {
-				AnalyticsListener al = new AnalyticsListener(_rt, 2);
+				new FileAnalyticsListener(_rt, 2);
 				return;
 			}
 			if (command.equals("hbarchart")) {
-				AnalyticsListener al = new AnalyticsListener(_rt, 3);
+				  new FileAnalyticsListener(_rt, 3);
 				return;
 			}
 			if (command.equals("linechart")) {
-				AnalyticsListener al = new AnalyticsListener(_rt, 4);
+				 new FileAnalyticsListener(_rt, 4);
 				return;
 			}
 			if (command.equals("report")) {
-				AnalyticsListener al = new AnalyticsListener(_rt, 5);
+				 new FileAnalyticsListener(_rt, 5);
+				return;
+			}
+			if (command.equals("location")) {
+				 new FileAnalyticsListener(_rt, 6);
+				return;
+			}
+			if (command.equals("crosstab")) {
+				 new FileAnalyticsListener(_rt, 7);
+				return;
+			}
+			// Outlier
+			if (command.equals("bynumber")) {
+				 new FileAnalyticsListener(_rt, 8);
+				return;
+			}
+			if (command.equals("bypercent")) {
+				 new FileAnalyticsListener(_rt, 9);
+				return;
+			}
+			if (command.equals("bystddev")) {
+				 new FileAnalyticsListener(_rt, 10);
+				return;
+			}
+			if (command.equals("boxplot")) {
+				 new FileAnalyticsListener(_rt, 11);
+				return;
+			}
+			// End outlier
+			if (command.equals("kmean")) {
+				 new FileAnalyticsListener(_rt, 12);
+				return;
+			}
+			if (command.equals("timeseries")) {
+				 new FileAnalyticsListener(_rt, 13);
+				return;
+			}
+			if (command.equals("regression")) {
+				 new FileAnalyticsListener(_rt, 14);
+				return;
+			}
+			if (command.equals("timeliness")) {
+				 new FileAnalyticsListener(_rt, 15);
+				return;
+			}
+			if (command.equals("stringlen")) {
+				 new FileAnalyticsListener(_rt, 16);
+				return;
+			}
+			if (command.equals("timefore")) {
+				 new FileAnalyticsListener(_rt, 17);
 				return;
 			}
 			if (command.equals("undocond")) {
@@ -399,8 +536,8 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("createcond")) {
 				Vector[] vector1 = new Vector[2];
-				vector1[0] = new Vector();
-				vector1[1] = new Vector();
+				vector1[0] = new Vector<String>();
+				vector1[1] = new Vector<String>();
 				for (int i = 0; i < _rt.table.getColumnCount(); i++) {
 					vector1[0].add(_rt.table.getColumnName(i));
 					vector1[1].add(_rt.table.getColumnClass(i).getName());
@@ -497,21 +634,31 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 
 				return;
 			}
+			if (command.equals("maskcolumn")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				MaskingPanel msp = new MaskingPanel(_rt,index);
+				msp.createDialog();
+				
+				return;
+			}
 			if (command.equals("populatecolumn")) {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
 					return;
 				int row_c = _rt.table.getRowCount();
 
-				String[] popOption = new String[] { "Auto Incremenatal",
-						"Expression Builder", "Random Generation" };
+				String[] popOption = new String[] { "Auto Incremental",
+						"Expression Builder", "Random Generation", "Data Explosion","Grouping - Number & Date",
+						"Utility Functions"};
 				String input = (String) JOptionPane.showInputDialog(null,
 						"Choose population Type", "Select population Type",
 						JOptionPane.INFORMATION_MESSAGE, null, popOption,
 						popOption[0]);
 				if (input == null || "".equals(input))
 					return;
-				if ("Auto Incremenatal".equals(input)) {
+				if ("Auto Incremental".equals(input)) {
 					String start = "";
 					int i = 0;
 					while ("".equals(start)) {
@@ -530,11 +677,19 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 						_rt.table.setValueAt(i++, j, index);
 					}
 				} else if ("Expression Builder".equals(input)) {
-					ExpressionBuilderPanel eb = new ExpressionBuilderPanel(_rt,
-							index);
-				} else {
+					new ExpressionBuilderPanel(_rt,index);
+					
+				} else if ("Data Explosion".equals(input)) {
+					 new DataExplosionPanel(_rt,index);
+					
+				} else if ("Grouping - Number & Date".equals(input)) {
+					new GroupingPanel(_rt,index);
+				} else if ("Utility Functions".equals(input) ) {
+					new UtilFunctionPanel(_rt,index);
+				}
+				else {
 					/* Random value generator */
-					RandomColGenPanel rcg = new RandomColGenPanel(_rt, index);
+					 new RandomColGenPanel(_rt, index);
 				}
 				return;
 			}
@@ -548,7 +703,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 					return;
 
 				Object replace = null;
-				Class cclass = _rt.table.getColumnClass(index);
+				Class<?> cclass = _rt.table.getColumnClass(index);
 				try {
 					if (cclass.getName().toUpperCase().contains("DOUBLE")) {
 						replace = Double.parseDouble(input);
@@ -583,27 +738,16 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
 					return;
-				Hashtable filterHash = null;
-
-				JOptionPane
-						.showMessageDialog(
-								null,
-								"Choose a file which has Key Value format like \n \"searchReplace.txt\"",
-								"Information Message",
-								JOptionPane.INFORMATION_MESSAGE);
-				try {
-					File f = FileSelectionUtil
-							.chooseFile("Select Standardisation File");
-					if (f == null)
-						return;
-
-					ConsoleFrame.addText("\n Selected File:" + f.toString());
-					filterHash = KeyValueParser.parseFile(f.toString());
-				} catch (IOException ioe) {
-					JOptionPane.showMessageDialog(null, ioe.getMessage(),
-							"IO Exception Dialog", JOptionPane.ERROR_MESSAGE);
-					ConsoleFrame.addText("\n ERROR: IO exception happened");
-				}
+				Hashtable<String,String> filterHash = null;
+				SearchOptionDialog sd = new SearchOptionDialog();
+				File f = sd.getFile();
+				if (f == null) return;
+				
+				ConsoleFrame.addText("\n Selected File:" + f.toString());
+				filterHash = KeyValueParser.parseFile(f.toString());
+				
+				String options = sd.getSelectedOption();
+		
 				int row_c = _rt.table.getRowCount();
 				_rt.cancelSorting();
 				_rt.table.clearSelection();
@@ -611,37 +755,77 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 
 				// Take care of class type
 				Object replace = null;
-				Class cclass = _rt.table.getColumnClass(index);
+				Class<?> cclass = _rt.table.getColumnClass(index);
 
+				Enumeration<String> en = filterHash.keys();
+				while (en.hasMoreElements()) {
+					String key = en.nextElement().toString();
+					Pattern p= null;
+				/* We will compile the pattern here so that once compile it can match all rows.*/
+				try {
+					if (options.charAt(0) == '0' && options.charAt(2) == '1' )  // case insensitive and literal true
+						p =Pattern.compile(key, Pattern.LITERAL|Pattern.CASE_INSENSITIVE);
+					else if ( options.charAt(0) == '1' && options.charAt(2) == '1' ) // case sensitive and literal true
+						p = Pattern.compile(key, Pattern.LITERAL);
+					else if (options.charAt(0) == '0' && options.charAt(2) == '0') // case insensitive and literal false
+						p = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+					else // case sensitive and literal false
+						p = Pattern.compile(key); // no flag
+					
+				} catch (PatternSyntaxException pe) {
+					System.out.println("Pattern Compile Exception:"
+						+ pe.getMessage());
+					continue;
+				} catch (IllegalArgumentException ee) {
+					System.out.println("Illegal Argument Exception:"
+							+ ee.getMessage());
+						continue;
+				}
+				if (p== null ) {
+					System.out.println("Pattern is NULL");
+						continue;
+				}
+				
 				for (int i = 0; i < row_c; i++) {
 					Object obj = _rt.table.getValueAt(i, index);
 					if (obj == null)
 						continue;
+					
 					String value = obj.toString().trim()
 							.replaceAll("\\s+", " "); // Split for White Space
-					String valueTok[] = value.split(" ");
-					ConsoleFrame
-							.addText("\n Matched Display Value for Row index "
-									+ i + " is:" + value);
-
-					Enumeration en = filterHash.keys();
-					while (en.hasMoreElements()) {
-						String key = en.nextElement().toString();
+					
+					String[] valueTok = new String[1];
+					valueTok[0] = value;
+					
+					if (options.charAt(1) == '0' ) // multi-word not chosen
+						 valueTok = value.split(" ");
+					
 						boolean matchFound = false;
-
+						
 						for (int j = 0; j < valueTok.length; j++) {
 							try {
-								if (Pattern.matches(key, valueTok[j]) == true) {
+								// needs to add case sensitive and word search replace
+							Matcher m = p.matcher(valueTok[j]);
+							if (options.charAt(3) == '1' ){ // Full sequence match
+								if (m.matches() == true ) {
 									String newvalue = (String) filterHash
 											.get(key);
 									valueTok[j] = newvalue;
 									matchFound = true;
 									continue;
 								}
+							} else { // find
+								if (m.find() == true) {
+									String newvalue = (String) filterHash.get(key);
+									newvalue = m.replaceAll(newvalue);
+									valueTok[j] = newvalue;
+									matchFound = true;
+									continue;
+								}
+								
+							}
 							} catch (PatternSyntaxException pe) {
-								ConsoleFrame
-										.addText("\n Pattern Compile Exception:"
-												+ pe.getMessage());
+								ConsoleFrame.addText("\n Pattern Compile Exception:"+ pe.getMessage());
 								break;
 							}
 						}
@@ -704,7 +888,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				}
 				JDialog d_fill = new JDialog();
 				d_fill.setModal(true);
-				d_fill.setTitle("Option Dialog");
+				d_fill.setTitle("Table Fill Dialog");
 				d_fill.setLocation(250, 250);
 				d_fill.getContentPane().add(newRTFill);
 				d_fill.pack();
@@ -847,7 +1031,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("simcheck")) {
 				_rt.cancelSorting();
-				SimilarityCheckPanel sim = new SimilarityCheckPanel(_rt);
+				new SimilarityCheckPanel(_rt);
+				return;
+			}
+			if (command.equals("crosscol")) {
+				_rt.cancelSorting();
+				new CrossColumnPanel(_rt);
 				return;
 			}
 			if (command.equals("todb")) {
@@ -870,6 +1059,16 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				if (query == null || query.length == 0)
 					return;
 				synchQuery(query);
+				return;
+			}
+			if (command.equals("hiveload")) {
+				if ( runHiveLoad() == true )
+					if (d_m != null)
+						d_m.dispose();
+				return;
+			}
+			if (command.equals("tableinfo")) {
+				 showHiveTableInfo();
 				return;
 			}
 			if (command.equals("filerow") || command.equals("filecol")) {
@@ -1108,7 +1307,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 
 		d_f = new JDialog();
 		d_f.setModal(true);
-		d_f.setTitle("Option Dialog");
+		d_f.setTitle("Row Edit Option Dialog");
 		d_f.setLocation(250, 250);
 		d_f.getContentPane().add(dp);
 		d_f.pack();
@@ -1118,6 +1317,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 
 	private JDialog mapDialog(boolean toDb) {
 		init = false;
+		JPanel jp_p = null;
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 && toDb == true ) {
+			jp_p = hiveLoadPanel();
+			jp_p.setPreferredSize(new Dimension(500,300));
+		} else {
 		TableItemListener tl = new TableItemListener();
 		ColumnItemListener cl = new ColumnItemListener();
 
@@ -1160,7 +1364,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				radio1[i].setSelected(false);
 			jp.add(radio1[i]);
 
-			table1[i] = new JComboBox();
+			table1[i] = new JComboBox<String>();
 			table1[i].addItemListener(tl);
 			for (int j = 0; j < vector.size(); j++) {
 				String item = (String) vector.get(j);
@@ -1168,7 +1372,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			jp.add(table1[i]);
 
-			col1[i] = new JComboBox();
+			col1[i] = new JComboBox<String>();
 			col1[i].addItemListener(cl);
 			for (int j = 0; j < vector1[0].size(); j++) {
 				String item = (String) vector1[0].get(j);
@@ -1241,9 +1445,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		cancel.addKeyListener(new KeyBoardListener());
 		bp.add(cancel);
 
-		JPanel jp_p = new JPanel(new BorderLayout());
+		jp_p = new JPanel(new BorderLayout());
 		jp_p.add(jscrollpane1, BorderLayout.CENTER);
 		jp_p.add(bp, BorderLayout.PAGE_END);
+		}
 
 		d_m = new JDialog();
 		d_m.setModal(true);
@@ -1291,6 +1496,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 	}
 
 	private class MyCellRenderer extends DefaultTableCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		private String _format;
 
 		public MyCellRenderer(String format) {
@@ -1499,7 +1708,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 						ConsoleFrame.addText("\n " + e.getMessage());
 					}
 				} else {
-					Vector vector = Rdbms_conn.getTable();
+					Vector<String> vector = Rdbms_conn.getTable();
 					int i = vector.indexOf(table1[_index].getSelectedItem()
 							.toString());
 
@@ -1600,5 +1809,168 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			_rt.table.setValueAt(prevC, i, index);
 		}
 
+	}
+	/* This function will create a panel to load data into hive */
+	private JPanel hiveLoadPanel() {
+		
+		Vector<String> vector = Rdbms_conn.getTable();
+		vector1 = new Vector[2];
+		table1 = new JComboBox[1]; // Only one is needed to hold tablenames
+
+		vector1 = TableMetaInfo.populateTable(5, 0, 1, vector1);
+		
+		table1[0] = new JComboBox<String>();
+		for (int j = 0; j < vector.size(); j++) {
+			String item = (String) vector.get(j);
+			table1[0].addItem(item);
+		}
+		
+		JLabel gInfo = new JLabel("This option will load existing HDFS/Hive file into Hive table");
+		JLabel fileInfo = new JLabel("Full Path:");
+		local = new JCheckBox("Local File");
+		local.setToolTipText("Local File on which Hadoop File System is running");
+		locationf= new JTextField (35);
+		locationf.setText("\"FILE_PATH\"");
+		JLabel tableInfo = new JLabel("Select Table to load Into");
+		JLabel partInfo = new JLabel("Enter Partition Value - (partcol1='val1', partcol2=\"val2\" ...)");
+		partArea= new JTextArea (5,30);
+		overWrite = new JCheckBox("Overwrite data ( It will overwrite existing data)");
+
+		JPanel jp = new JPanel();
+		SpringLayout layout = new SpringLayout();
+		jp.setLayout(layout);
+		jp.add(gInfo);jp.add(fileInfo);jp.add(local);jp.add(locationf);jp.add(tableInfo);
+		jp.add(table1[0]);jp.add(partInfo);jp.add(partArea);jp.add(overWrite);
+
+		layout.putConstraint(SpringLayout.WEST, gInfo, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, gInfo, 8, SpringLayout.NORTH,jp);
+		layout.putConstraint(SpringLayout.WEST, fileInfo, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, fileInfo, 5, SpringLayout.SOUTH,gInfo);
+		layout.putConstraint(SpringLayout.WEST, locationf, 5, SpringLayout.EAST, fileInfo);
+		layout.putConstraint(SpringLayout.NORTH, locationf, 2, SpringLayout.NORTH,fileInfo);
+		
+		layout.putConstraint(SpringLayout.WEST, local, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, local, 5, SpringLayout.SOUTH,fileInfo);
+		layout.putConstraint(SpringLayout.WEST, tableInfo, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, tableInfo, 8, SpringLayout.SOUTH,local);
+		layout.putConstraint(SpringLayout.WEST, table1[0], 15, SpringLayout.EAST, tableInfo);
+		layout.putConstraint(SpringLayout.NORTH, table1[0], -3, SpringLayout.NORTH,tableInfo);
+		
+		layout.putConstraint(SpringLayout.WEST, partInfo, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, partInfo, 10, SpringLayout.SOUTH,table1[0]);
+		layout.putConstraint(SpringLayout.WEST, partArea, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, partArea, 8, SpringLayout.SOUTH,partInfo);
+		layout.putConstraint(SpringLayout.WEST, overWrite, 5, SpringLayout.WEST, jp);
+		layout.putConstraint(SpringLayout.NORTH, overWrite, 10, SpringLayout.SOUTH,partArea);
+		
+
+		JPanel bp = new JPanel();
+		
+		JButton info = new JButton("Table Info");
+		info.setActionCommand("tableinfo");
+		info.addActionListener(this);
+		info.addKeyListener(new KeyBoardListener());
+		bp.add(info);
+		
+		JButton ok = new JButton("Load");
+		ok.setActionCommand("hiveload");
+		ok.addActionListener(this);
+		ok.addKeyListener(new KeyBoardListener());
+		bp.add(ok);
+		
+		JButton cancel = new JButton("Cancel");
+		cancel.setActionCommand("mcancel");
+		cancel.addActionListener(this);
+		cancel.addKeyListener(new KeyBoardListener());
+		bp.add(cancel);
+
+		JPanel jp_p = new JPanel(new BorderLayout());
+		jp_p.add(jp, BorderLayout.CENTER);
+		jp_p.add(bp, BorderLayout.PAGE_END);
+
+		return jp_p;
+	}
+	
+	 /* This function is used to Hive Table Information in dialog box */
+	 private void showHiveTableInfo() {
+		 String table  = table1[0].getSelectedItem().toString();
+		 HiveQueryBuilder qb = new HiveQueryBuilder(
+					Rdbms_conn.getHValue("Database_DSN"),table,Rdbms_conn.getDBType());
+			String query = qb.descHiveTable();
+			
+			try {
+				d_m.setCursor(java.awt.Cursor
+						.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+				Rdbms_conn.openConn();
+				ResultSet rs = Rdbms_conn.runQuery(query); 
+				ReportTableModel rtm = ResultsetToRTM.getSQLValue(rs, true);
+				rs.close();
+				Rdbms_conn.closeConn();
+				ReportTable rt = new ReportTable(rtm);
+				
+				/* Now Open Dialog to show */
+				JDialog showDia = new JDialog();
+				showDia.setModal(true);
+				showDia.setTitle("Map Dialog");
+				showDia.setLocation(250, 100);
+				showDia.getContentPane().add(rt);
+				showDia.pack();
+				showDia.setVisible(true);
+			} catch (SQLException e) {
+				JOptionPane.showMessageDialog(null,
+						e.getLocalizedMessage(), "Hive SQL Error",
+						JOptionPane.ERROR_MESSAGE);
+			} finally {
+				d_m.setCursor(java.awt.Cursor
+						.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+			}
+		 
+	 }
+	
+	/* This function will load file into table */
+	private boolean runHiveLoad() {
+		String table  = table1[0].getSelectedItem().toString();
+		
+		String path = locationf.getText();
+		
+		if (path == null || "".equals(path) || "\"\"".equals(path)) {
+			JOptionPane.showMessageDialog(null,
+					"File Location can not be empty", "File Path Error",
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		// in case user is not putting under double quote
+		if (path.startsWith("\"") == false) 
+			path = "\""+path+"\"";
+		
+		String partition = partArea.getText();
+		if (!( partition == null || "".equals(partition))) {
+			partition.trim();
+			if (partition.startsWith("(") == false )
+				partition = "("+partition+")";
+		}
+		
+		HiveQueryBuilder qb = new HiveQueryBuilder(
+				Rdbms_conn.getHValue("Database_DSN"),table,Rdbms_conn.getDBType());
+		String query = qb.appendHiveTable(path, table, local.isSelected(), overWrite.isSelected(), partition);
+		
+		try {
+			d_m.setCursor(java.awt.Cursor
+							.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+			Rdbms_conn.openConn();
+			ResultSet rs = Rdbms_conn.runQuery(query); 
+			rs.close();
+			Rdbms_conn.closeConn();
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null,
+					e.getLocalizedMessage(), "Hive SQL Error",
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		} finally {
+			d_m.setCursor(java.awt.Cursor
+					.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+		}
+		ConsoleFrame.addText("\n Load successful to Table:"+table);
+		return true;
 	}
 }

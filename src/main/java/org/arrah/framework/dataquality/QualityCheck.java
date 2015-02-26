@@ -23,11 +23,13 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
+import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.rdbms.SqlType;
 import org.arrah.framework.util.StringCaseFormatUtil;
 
@@ -45,7 +47,7 @@ public class QualityCheck {
 	// String condition will tell if the query has to run with some condition
 
 	public ReportTableModel searchReplace(JDBCRowset rows, String col,
-			Hashtable<String, String> filter) throws SQLException {
+			Hashtable<String, String> filter, String options) throws SQLException {
 
 		String[] col_name = rows.getColName();
 		String[] colType = rows.getColType();
@@ -75,28 +77,90 @@ public class QualityCheck {
 		int rowC = rows.getRowCount();
 		int mrowC = 0;
 
-		for (int i = 0; i < rowC; i++) {
-			Object obj = rows.getObject(i + 1, matchI + 1);
-			if (obj == null)
+		
+		Enumeration<String> en = filter.keys();
+		while (en.hasMoreElements()) {
+			String key = en.nextElement().toString();
+			Pattern p= null;
+		/* We will compile the pattern here so that once compile it can match all rows.*/
+		try {
+			if (options.charAt(0) == '0' && options.charAt(2) == '1' )  // case insensitive and literal true
+				p =Pattern.compile(key, Pattern.LITERAL|Pattern.CASE_INSENSITIVE);
+			else if ( options.charAt(0) == '1' && options.charAt(2) == '1' ) // case sensitive and literal true
+				p = Pattern.compile(key, Pattern.LITERAL);
+			else if (options.charAt(0) == '0' && options.charAt(2) == '0') // case insensitive and literal false
+				p = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+			else // case sensitive and literal false
+				p = Pattern.compile(key); // no flag
+			
+		} catch (PatternSyntaxException pe) {
+			System.out.println("Pattern Compile Exception:"
+				+ pe.getMessage());
+			continue;
+		} catch (IllegalArgumentException ee) {
+			System.out.println("Illegal Argument Exception:"
+					+ ee.getMessage());
 				continue;
-			String value = obj.toString().trim().replaceAll("\\s+", " "); // Split
-																			// for
-																			// White
-																			// Space
-			String valueTok[] = value.split(" ");
-			Enumeration<String> en = filter.keys();
-			while (en.hasMoreElements()) {
-				String key = en.nextElement().toString();
+		}
+		if (p== null ) {
+			System.out.println("Pattern is NULL");
+				continue;
+		}
+		for (int i = 0; i < rowC; i++) {
+			/* Hive does not ensure sequence of rows. Also columns are independent
+			 * so getObject will be out of synch for getRow and getObject. For Hive
+			 * call get Rows and extract object from there.
+			 */
+			Object obj = null;
+			Object[] objA = null;
+			
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+				objA = rows.getRow(i + 1);
+				obj=objA[matchI];
+				if (obj == null)  {
+					 continue; // empty objects
+				}
+			} else { // RDBMS
+			 obj = rows.getObject(i + 1, matchI + 1);
+			 if (obj == null) 
+				 continue; // empty objects
+			}
+			
+			String value = obj.toString().trim().replaceAll("\\s+", " "); // Split for White Space
+			
+			/* This search takes the key - searches the key in the multi-word string
+			 *  If it finds the key ( regex search) it replaces the only that word with Value
+			 */
+			
+			String[] valueTok = new String[1];
+			valueTok[0] = value;
+			
+			if (options.charAt(1) == '0' ) // multi-word not chosen
+				 valueTok = value.split(" ");
+
 				boolean matchFound = false;
 
 				for (int j = 0; j < valueTok.length; j++) {
 					try {
-						if (Pattern.matches(key, valueTok[j]) == true) {
+						// needs to add case sensitive and word search replace
+					Matcher m = p.matcher(valueTok[j]);
+					if (options.charAt(3) == '1' ){ // Full sequence match
+						if (m.matches() == true) {
 							String newvalue = (String) filter.get(key);
 							valueTok[j] = newvalue;
 							matchFound = true;
 							continue;
 						}
+					} else { // find
+						if (m.find() == true) {
+							String newvalue = (String) filter.get(key);
+							newvalue = m.replaceAll(newvalue);
+							valueTok[j] = newvalue;
+							matchFound = true;
+							continue;
+						}
+						
+					}
 					} catch (PatternSyntaxException pe) {
 						System.out.println("\n Pattern Compile Exception:"
 								+ pe.getMessage());
@@ -108,7 +172,7 @@ public class QualityCheck {
 						String newValue = "";
 						for (int j = 0; j < valueTok.length; j++) {
 							if (newValue.equals("") == false)
-								newValue += " "; // Put space
+								newValue += " "; // Put space and put back the multi-word
 							newValue += valueTok[j];
 						}
 						try {
@@ -125,7 +189,9 @@ public class QualityCheck {
 									.println("\n WANING: Could not Parse Input String:"
 											+ newValue);
 						}
-						Object[] objA = rows.getRow(i + 1);
+						if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) 
+							objA = rows.getRow(i + 1); // For Hive it already filled.
+						
 						Object[] add_obj = new Object[objA.length + 1];
 						add_obj[0] = replace;
 						for (int k = 0; k < objA.length; k++) {
@@ -133,13 +199,12 @@ public class QualityCheck {
 						}
 						rt.addFillRow(add_obj);
 						mrowI.add(mrowC++, (i + 1));
-						break;
 					} catch (SQLException se) {
 						System.out.println("\n Exception :" + se.getMessage());
 						continue;
 					} catch (Exception ex) {
 						System.out.println("\n Exception :" + ex.getMessage());
-						ex.printStackTrace();
+						continue;
 					}
 				} // if match found
 			}
@@ -191,10 +256,20 @@ public class QualityCheck {
 		int mrowC = 0;
 
 		for (int i = 0; i < rowC; i++) {
-			Object obj = rows.getObject(i + 1, matchI + 1);
+			Object obj = null;
+			Object[] objA = null;
+			
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+				objA = rows.getRow(i + 1);
+				obj=objA[matchI];
+			} else { // RDBMS
+			 obj = rows.getObject(i + 1, matchI + 1);
+			}
 			if (obj == null || "".equals(obj.toString())) {
 				try {
-					Object[] objA = rows.getRow(i + 1);
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+						objA = rows.getRow(i + 1);
+					}
 					Object[] add_obj = new Object[objA.length + 1];
 					add_obj[0] = replace;
 					for (int k = 0; k < objA.length; k++) {
@@ -240,9 +315,20 @@ public class QualityCheck {
 		int rowC = rows.getRowCount();
 		int mrowC = 0;
 		for (int i = 0; i < rowC; i++) {
-			Object obj = rows.getObject(i + 1, matchI + 1);
+			Object obj = null;
+			Object[] objA = null;
+			
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+				objA = rows.getRow(i + 1);
+				obj=objA[matchI];
+				if (obj == null)  {
+					 continue; // empty objects
+				}
+			} else { // RDBMS
+			 obj = rows.getObject(i + 1, matchI + 1);
 			if (obj == null)
 				continue;
+			}
 			boolean isObjMatch = false;
 
 			if (type.equals("Number")) {
@@ -267,7 +353,9 @@ public class QualityCheck {
 			}
 			if (isObjMatch == true) {
 				try {
-					Object[] objA = rows.getRow(i + 1);
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+						objA = rows.getRow(i + 1);
+					}
 					Object[] add_obj = new Object[objA.length + 1];
 					add_obj[0] = obj;
 					for (int k = 0; k < objA.length; k++) {
@@ -317,9 +405,21 @@ public class QualityCheck {
 		int mrowC = 0;
 
 		for (int i = 0; i < rowC; i++) {
-			Object obj = rows.getObject(i + 1, matchI + 1);
+			Object obj = null;
+			Object[] objA = null;
+			
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+				objA = rows.getRow(i + 1);
+				obj=objA[matchI];
+				if (obj == null)  {
+					 continue; // empty objects
+				}
+			} else { // RDBMS
+			// getObject will move cursor for hive
+			obj = rows.getObject(i + 1, matchI + 1);
 			if (obj == null)
 				continue;
+			}
 			String searchFormat = obj.toString();
 			String valueFormat = null;
 			boolean isObjMatch = true;
@@ -360,7 +460,9 @@ public class QualityCheck {
 			if (isObjMatch == false) {
 				try {
 					String value = valueFormat;
-					Object[] objA = rows.getRow(i + 1);
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+						objA = rows.getRow(i + 1); // Already selected for Hive
+					}
 					Object[] add_obj = new Object[objA.length + 1];
 					add_obj[0] = value;
 					for (int k = 0; k < objA.length; k++) {
@@ -413,9 +515,21 @@ public class QualityCheck {
 		int mrowC = 0;
 
 		for (int i = 0; i < rowC; i++) {
-			Object obj = rows.getObject(i + 1, matchI + 1);
+			
+			Object obj = null;
+			Object[] objA = null;
+			
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+				objA = rows.getRow(i + 1);
+				obj=objA[matchI];
+				if (obj == null)  {
+					 continue; // empty objects
+				}
+			} else { // RDBMS
+			 obj = rows.getObject(i + 1, matchI + 1);
 			if (obj == null)
 				continue;
+			}
 			String value = obj.toString();
 			int tokenI = 0;
 			boolean matchFound = false;
@@ -450,7 +564,9 @@ public class QualityCheck {
 								.println("\n WANING: Could not Parse Input String:"
 										+ newValue);
 					}
-					Object[] objA = rows.getRow(i + 1);
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+					 objA = rows.getRow(i + 1);
+					}
 					Object[] add_obj = new Object[objA.length + 1];
 					add_obj[0] = replace;
 					for (int k = 0; k < objA.length; k++) {

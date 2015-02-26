@@ -1,8 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2012      *
- *     http://www.arrah.in                     *
+ *     Copyright to Arrah Technology 2014      *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -65,15 +64,16 @@ public class TableMenuListener implements ActionListener, ItemListener {
 	private String reg_prev = ""; // Empty string not null
 	private JDialog d, jd;
 	private int rowI = 0;
-	private int colI = 0;
+	private int colI = 0, columnSearchIndex= -1; // selected Column for search
 	private int rowcount = 0;
 	private int colcount = 0;
-	private int i, j;
+	private int i,j;
 	private JLabel sn;
 	private int match_c = 0;
 	private JCheckBox cs, em;
 	private Pattern pat = null;
-	private boolean stateChanged = true;
+	private boolean stateChanged = true, columnSearch = false;
+	
 
 	public TableMenuListener(JTable rt) {
 		table = rt;
@@ -100,7 +100,10 @@ public class TableMenuListener implements ActionListener, ItemListener {
 
 		});
 		s.setMnemonic(KeyEvent.VK_S);
-		s.setActionCommand("search");
+		if (columnSearch == true)
+			s.setActionCommand("searchCol");
+		else
+			s.setActionCommand("search");
 		s.addActionListener(this);
 		s.addKeyListener(new KeyBoardListener());
 
@@ -191,19 +194,31 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			jd.dispose();
 			return;
 		}
-		if (action_c.compareToIgnoreCase("search") == 0) {
+		if (action_c.compareToIgnoreCase("search") == 0 || 
+				action_c.compareToIgnoreCase("searchCol") == 0) {
 			boolean match_found = false;
 			String s_s = f.getText();
 			if (s_s == null || s_s.compareTo("") == 0) {
+				JOptionPane.showMessageDialog(d, "Nothing to Search",
+						"Error Message", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			if (prev.compareTo(s_s) != 0) {
 				rowI = 0;
-				colI = 0;
+				
+				if (columnSearch == true) {
+					colI = columnSearchIndex; // start Search from selected Column
+					colcount = colI +1; // only search in selected column
+				}
+					
+				else {
+					colI = 0;
+					colcount = table.getColumnCount();
+				}
 				match_c = 0;
 				prev = s_s;
 				rowcount = table.getRowCount();
-				colcount = table.getColumnCount();
+				
 				sn.setText(" Match Index: ");
 			}
 			if (em.isSelected() == false
@@ -249,14 +264,20 @@ public class TableMenuListener implements ActionListener, ItemListener {
 						table.scrollRectToVisible(table.getCellRect(i, j, true));
 						sn.setText(" Match Index: " + ++match_c);
 						rowI = (j < colcount - 1) ? i : i + 1;
-						colI = (j < colcount - 1) ? j + 1 : 0;
+						if (columnSearch == true)
+							colI = (j < colcount - 1) ? j + 1 : columnSearchIndex ;
+						else
+							colI = (j < colcount - 1) ? j + 1 : 0;
 						break;
 					}
 
 				}
 				if (match_found == true)
 					break;
-				colI = 0;
+				if (columnSearch == true)
+					colI = columnSearchIndex;
+				else
+					colI = 0;
 			}
 			if (i == rowcount) {
 				d.setVisible(false);
@@ -266,7 +287,7 @@ public class TableMenuListener implements ActionListener, ItemListener {
 				if (n == JOptionPane.NO_OPTION) {
 					d.setVisible(true);
 					rowI = rowcount;
-					colI = colcount;
+					colI = colcount; // it will not go into loop because of rowcount
 					return;
 				}
 				colI = 0;
@@ -316,7 +337,16 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			table.clearSelection();
 			return;
 		}
-		if (source.getText().compareTo("Regex Search") == 0) {
+		if (source.getText().compareTo("Across Table") == 0) {
+			createDialogPanel();
+			return;
+		}
+		if (source.getText().compareTo("Across Column") == 0) {
+			int i = selectedColIndex(table);
+			if (i >= 0 ) {
+				columnSearch = true;
+				columnSearchIndex = i;
+			}
 			createDialogPanel();
 			return;
 		}
@@ -465,6 +495,22 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			
 		}
 
+	}
+	
+	private int selectedColIndex(JTable  table) {
+		int colC = table.getColumnCount();
+		Object[] colN = new Object[colC];
+		for (int i = 0; i < colC; i++)
+		 colN[i] = (i + 1) + "," + table.getColumnName(i);	
+		String input = (String) JOptionPane.showInputDialog(null,
+				"Select the Column ", "Column Selection Dialog",
+				JOptionPane.PLAIN_MESSAGE, null, colN, colN[0]);
+		if (input == null || input.equals(""))
+			return -1;
+
+		String col[] = input.split(",", 2);
+		int index = Integer.valueOf(col[0]).intValue();
+		return index - 1;
 	}
 
 

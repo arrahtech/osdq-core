@@ -190,10 +190,10 @@ public class TableSearchDialog implements ActionListener {
 			try {
 			d_m.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 			if (isFuzzy == false) {
-				SearchDBPanel sdb = new SearchDBPanel(_searchStr, tableList.get(index), colName_v);
+				new SearchDBPanel(_searchStr, tableList.get(index), colName_v);
 			}
 			else {
-				SimilarityCheckPanel smp = new SimilarityCheckPanel(_searchStr, tableList.get(index), colName_v);
+				 new SimilarityCheckPanel(_searchStr, tableList.get(index), colName_v);
 			}
 			} catch (Exception ee) {
 				System.out.println("Exeption in Table Search:"+ee.getMessage());

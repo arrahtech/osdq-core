@@ -148,11 +148,18 @@ public class TableMetaInfoPanel extends JPanel implements ActionListener {
 				ft_p.setEditable(false);
 			currentP = 1;
 			ft_p.setValue(new Integer(currentP));
-			l_s.setText(" Showing 1 - " + tablePPage + " of total " + tableC
-					+ " tables in Page " + currentP);
-			populateTable(queryID, 0, tablePPage);
-			revalidate();
-			repaint();
+			
+			// Now change the cursor
+			try {
+				this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+				l_s.setText(" Showing 1 - " + tablePPage + " of total " + tableC
+						+ " tables in Page " + currentP);
+				populateTable(queryID, 0, tablePPage);
+				revalidate();
+				repaint();
+			} finally {
+				this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+			}
 		}
 		if (command.equals("goto")) {
 
@@ -166,14 +173,20 @@ public class TableMetaInfoPanel extends JPanel implements ActionListener {
 			int startIndex = (currentP - 1) * tablePPage;
 			int endIndex = currentP * tablePPage;
 
-			if (endIndex > tableC)
-				endIndex = tableC;
-			populateTable(queryID, startIndex, endIndex);
+			// Now change the cursor
+			try {
+				this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+					if (endIndex > tableC)
+						endIndex = tableC;
+					populateTable(queryID, startIndex, endIndex);
 
 			l_s.setText(" Showing " + (startIndex + 1) + " - " + endIndex
 					+ " of total " + tableC + " tables in Page" + currentP);
 			revalidate();
 			repaint();
+			} finally {
+				this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+			}
 		}
 	}
 

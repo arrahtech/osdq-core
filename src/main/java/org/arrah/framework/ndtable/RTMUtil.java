@@ -20,6 +20,8 @@ package org.arrah.framework.ndtable;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Vector;
 
@@ -243,48 +245,7 @@ public class RTMUtil {
 		return result_v;
 	}
 
-	public static Vector<Integer> mergeSet(Vector<Integer> leftSet,
-			Vector<Integer> rightSet, String mergeType) {
-		if (leftSet == null || rightSet == null)
-			return null;
 
-		if (mergeType.trim().compareToIgnoreCase("or") == 0) { // OR set
-			Vector<Integer> orSet = new Vector<Integer>();
-			orSet = leftSet;
-			for (int i = 0; i < rightSet.size(); i++) {
-				if (orSet.contains(rightSet.get(i)) == false)
-					orSet.add(rightSet.get(i));
-			}
-			return orSet;
-		} else if (mergeType.trim().compareToIgnoreCase("and") == 0) { // AND
-																		// set
-			Vector<Integer> andSet = new Vector<Integer>();
-			if (leftSet.size() > rightSet.size()) {
-				for (int i = 0; i < rightSet.size(); i++) {
-					if (leftSet.contains(rightSet.get(i)) == true)
-						andSet.add(rightSet.get(i));
-				}
-			} else {
-				for (int i = 0; i < leftSet.size(); i++) {
-					if (rightSet.contains(leftSet.get(i)) == true)
-						andSet.add(leftSet.get(i));
-				}
-			}
-			return andSet;
-		} else if (mergeType.trim().compareToIgnoreCase("xor") == 0) { // XoR
-																		// set
-			// Left is Universal Set and right Set is getting Exclusive XoR
-			Vector<Integer> xorSet = new Vector<Integer>();
-			for (int i = 0; i < leftSet.size(); i++) {
-				if (rightSet.contains(leftSet.get(i)) == false)
-					xorSet.add(leftSet.get(i));
-			}
-			return xorSet;
-
-		}
-		return leftSet;
-	}
-	
 	public static PdfPTable createPDFTable (ReportTableModel rtm) {
 		if (rtm == null ) return null;
 		int colC = rtm.getModel().getColumnCount();
@@ -314,4 +275,96 @@ public class RTMUtil {
 		}
 		return pdfTable;
 	}
-}
+	
+	// This util function will return sorted RTM
+	public static ReportTableModel sortRTM(ReportTableModel _rtm, final boolean asc) {
+		
+		
+		 final class Row implements Comparable<Row> {
+			 Object[] _row;
+			 
+			 public Row(Object[] row) {
+				 _row = row;
+			 }
+			 
+			 private Object[] getRow() {
+				 return _row;
+			 }
+			 // CompareTo function Natural Ordering
+			public int compareTo(Row r1) {
+				Object[] row1 = this.getRow();
+				Object[] row2 = r1.getRow();
+				int comparison = 0;
+				
+				for (int i=0; i < row1.length; i++) {
+					
+					Object o1 = row1[i];
+					Object o2 = row2[i];
+					
+					// Define null less than everything, except null.
+					if (o1 == null && o2 == null) {
+						continue;
+					} else if (o1 == null) {
+						comparison = -1; break;
+					} else if (o2 == null) {
+						comparison = 1; break;
+					}
+					// Now see the values
+					
+					if (o2 instanceof Number){
+						if(  ((Number)o2).doubleValue() > ((Number)o1).doubleValue() ) {
+							comparison = -1; break;
+							
+						}
+						if(  ((Number)o2).doubleValue() < ((Number)o1).doubleValue() ) {
+							comparison = 1; break;
+							
+						}
+					} // Number
+					else if (o2 instanceof java.util.Date){
+						Calendar c1 = Calendar.getInstance();
+						Calendar c2 = Calendar.getInstance();
+						c1.setTime((Date)o1); c2.setTime((Date)o2);
+						int cmp = c1.compareTo(c2);
+						if( cmp != 0) {
+							comparison = cmp; break;
+						}
+						
+					} // Date
+					else {
+						String s1 = o1.toString();
+						String s2 = o2.toString();
+						int cmp = s1.compareTo(s2);
+						if( cmp != 0) {
+							comparison = cmp; break;
+						}
+					} // treat as String
+					
+				}
+				if (comparison != 0) {
+					return asc == false ? -comparison: comparison;
+				}
+				return comparison;
+			} } // End of Row Class
+	
+	 int rowC = _rtm.getModel().getRowCount();
+	 Row[] rows = new Row[rowC];
+	 for (int i=0 ; i < rowC; i++) {
+		 Object[] row = _rtm.getRow(i);
+		 rows[i] = new Row(row);
+	 }
+	 Arrays.sort(rows); 
+
+	 // Now Create new RreportTableModel and return it
+	 
+	 Object[] colName = _rtm.getAllColName();
+	 
+	 ReportTableModel newRTM = new ReportTableModel(colName, _rtm.isRTEditable(), true);
+	 for (int i =0; i < rows.length; i++)
+		 newRTM.addFillRow(rows[i].getRow());
+	 
+	 	return newRTM;
+	}
+	
+	
+} // End of Class RTMUtil

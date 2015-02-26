@@ -26,6 +26,7 @@ import java.util.Vector;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.SqlType;
 import org.arrah.framework.rdbms.TableRelationInfo;
 
 public class TableMetaInfo {
@@ -165,7 +166,7 @@ public class TableMetaInfo {
 		ResultSet resultset = null;
 		if (reporttable == null)
 			reporttable = new ReportTableModel(new String[] { "Table",
-					"Column", "Type", "Size", "Precision", "Radix", "Remark",
+					"Column", "DBType","SQLType","Size", "Precision", "Radix", "Remark",
 					"Default", "Bytes", "Ordinal Pos", "Nullable" });
 		else
 			reporttable.cleanallRow();
@@ -177,6 +178,8 @@ public class TableMetaInfo {
 				String s3 = resultset.getString(3);
 				if (s3.equals(s2)) {
 					String s4 = resultset.getString(4);
+					int i5 = resultset.getInt(5);
+					String s52 = SqlType.getTypeName(i5);
 					String s5 = resultset.getString(6);
 					String s6 = resultset.getString(7);
 					String s7 = resultset.getString(9);
@@ -186,14 +189,14 @@ public class TableMetaInfo {
 					String s11 = resultset.getString(16);
 					String s12 = resultset.getString(17);
 					String s13 = resultset.getString(18);
-					String as[] = { s2, s4, s5, s6, s7, s8, s9, s10, s11, s12,
+					String as[] = { s2, s4, s5,s52, s6, s7, s8, s9, s10, s11, s12,
 							s13 };
 					reporttable.addFillRow(as);
 				}
-			}
+			} // End of While
+			resultset.close();
 		}
 
-		resultset.close();
 		return reporttable;
 	}
 
@@ -226,10 +229,10 @@ public class TableMetaInfo {
 					String as[] = { s3, s4, s5, s6, s7 };
 					reporttable.addFillRow(as);
 				}
-			}
+			} // End of While
+			resultset.close();
 		}
-
-		resultset.close();
+		
 		if (k == 0) System.out.println("Tables do not Exist \n Or You might not have permisson to run this query ");
 		return reporttable;
 	}
@@ -315,7 +318,7 @@ public class TableMetaInfo {
 						s12 = resultset.getString("equal_count");
 
 					resultset.close();
-				} catch (SQLException sqlexception2) {
+				} catch (SQLException | NullPointerException sqlexception2) {
 					s12 = "N/A";
 				}
 				try {
@@ -362,7 +365,7 @@ public class TableMetaInfo {
 		s1 = s1.compareTo("") != 0 ? s1 : null;
 		s = s.compareTo("") != 0 ? s : null;
 		Vector<String> vector = Rdbms_conn.getTable();
-		avector = new Vector[2];
+		avector = new Vector<?>[2];
 		avector[0] = new Vector<String>();
 		avector[1] = new Vector<Integer>();
 		int k = 0;
@@ -379,7 +382,7 @@ public class TableMetaInfo {
 					avector[1].add(k, new Integer(i1));
 					k++;
 				}
-			}
+			} // End of while
 			resultset.close();
 		}
 		return avector;
@@ -478,6 +481,10 @@ public class TableMetaInfo {
 			throws SQLException {
 		String sch = Rdbms_conn.getHValue("Database_SchemaPattern");
 		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		cat="";
+		cat = cat.compareTo("") != 0 ? cat : null;
+		sch = sch.compareTo("") != 0 ? sch : null;
+
 		TableRelationInfo TableRelationInfo = TableMetaInfo
 				.getTableRelationInfo(cat, sch, table);
 		ReportTableModel rtm = new ReportTableModel(new String[] { "Primary Key",

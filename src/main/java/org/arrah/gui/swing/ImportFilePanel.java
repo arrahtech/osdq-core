@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2013      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -60,7 +60,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 	private String COMMENT_STR = "#";
 	private File f = null;
 	private ReportTable showT;
-	private JCheckBox f_s, w_s, s_c, skip_c, preview_c, hd, comment;
+	private JCheckBox f_s, w_s, s_c, skip_c, preview_c, hd, comment, rowCount_c;
 	private BufferedReader br;
 	private JScrollPane table_s;
 	private JButton vw_b, previous;
@@ -68,7 +68,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 	private JTextField n, s, cv, of;
 	private Vector<ColumnAttr> vc;
 	private int vcIndex;
-	private JFormattedTextField w, skip_r, fw_c, preview_r;
+	private JFormattedTextField w, skip_r, fw_c, preview_r, rowCount_r;
 	private JDialog d, d_f;
 	private JRadioButton fw, vw, ws, cm, ot, ao;
 	private boolean _showGUI;
@@ -86,6 +86,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 				if (_showGUI == true) {
 					DisplayFileTable dft = new DisplayFileTable(showT,
 							f.toString());
+					dft.showGUI();
 				}
 			} else if (f.getName().toLowerCase().endsWith(".xls")) {
 				final XlsReader xlsReader = new XlsReader();
@@ -93,6 +94,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 				if (_showGUI == true) {
 					DisplayFileTable dft = new DisplayFileTable(showT,
 							f.toString());
+					dft.showGUI();
 				}
 			} else {
 				takeOptions(f);
@@ -208,7 +210,13 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		preview_r = new JFormattedTextField(NumberFormat.getIntegerInstance());
 		preview_r.setValue(new Integer(15));
 		preview_r.setEnabled(false);
-		JPanel p4 = new JPanel(new GridLayout(3, 2));
+		
+		rowCount_c = new JCheckBox("Display Rows");
+		rowCount_c.addItemListener(this);
+		rowCount_r = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		rowCount_r.setValue(new Integer(100));
+		rowCount_r.setEnabled(false);
+		JPanel p4 = new JPanel(new GridLayout(4, 2));
 		p4.setBorder(BorderFactory.createTitledBorder(line_b,
 				"File Optional Information"));
 		p4.add(comment);
@@ -217,17 +225,19 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		p4.add(skip_r);
 		p4.add(preview_c);
 		p4.add(preview_r);
+		p4.add(rowCount_c);
+		p4.add(rowCount_r);
 
 		vw_b = new JButton("Advance Options");
 		vw_b.setActionCommand("datainput");
 		vw_b.addActionListener(this);
-		a_status = new JLabel("Advance Option set for 0 Column");
+		a_status = new JLabel("Set for 0 Column");
 
 		JPanel content = new JPanel();
 		SpringLayout layout = new SpringLayout();
 		content.setLayout(layout);
 		table_s = new JScrollPane();
-		table_s.setPreferredSize(new Dimension(550, 300));
+		table_s.setPreferredSize(new Dimension(550, 280));
 		table_s.setViewportView(showT);
 		content.add(table_s);
 		content.add(p1);
@@ -237,30 +247,25 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		content.add(vw_b);
 		content.add(a_status);
 
-		layout.putConstraint(SpringLayout.WEST, table_s, 2, SpringLayout.WEST,
-				content);
-		layout.putConstraint(SpringLayout.EAST, content, 2, SpringLayout.EAST,
-				table_s);
-		layout.putConstraint(SpringLayout.NORTH, p1, 2, SpringLayout.SOUTH,
-				table_s);
-		layout.putConstraint(SpringLayout.NORTH, p2, 2, SpringLayout.SOUTH,
-				table_s);
+		layout.putConstraint(SpringLayout.WEST, table_s, 2, SpringLayout.WEST,content);
+		layout.putConstraint(SpringLayout.EAST, content, 2, SpringLayout.EAST,table_s);
+		layout.putConstraint(SpringLayout.NORTH, p1, 2, SpringLayout.SOUTH,table_s);
+		layout.putConstraint(SpringLayout.NORTH, p2, 2, SpringLayout.SOUTH,table_s);
 		layout.putConstraint(SpringLayout.WEST, p2, 2, SpringLayout.EAST, p1);
+		
+		layout.putConstraint(SpringLayout.NORTH, vw_b, 5, SpringLayout.SOUTH,p2);
+		layout.putConstraint(SpringLayout.WEST, vw_b, 20, SpringLayout.EAST, p1);
+		layout.putConstraint(SpringLayout.NORTH, a_status, 3,SpringLayout.NORTH, vw_b);
+		layout.putConstraint(SpringLayout.WEST, a_status, 3,SpringLayout.EAST, vw_b);
 
 		layout.putConstraint(SpringLayout.NORTH, p3, 2, SpringLayout.SOUTH, p1);
 		layout.putConstraint(SpringLayout.EAST, p3, 0, SpringLayout.EAST, p1);
 		layout.putConstraint(SpringLayout.WEST, p3, 0, SpringLayout.WEST, p1);
 
-		layout.putConstraint(SpringLayout.NORTH, p4, 2, SpringLayout.SOUTH, p2);
+		layout.putConstraint(SpringLayout.NORTH, p4, 2, SpringLayout.SOUTH, vw_b);
 		layout.putConstraint(SpringLayout.WEST, p4, 0, SpringLayout.WEST, p2);
 		layout.putConstraint(SpringLayout.EAST, p4, 0, SpringLayout.EAST, p2);
-		layout.putConstraint(SpringLayout.NORTH, vw_b, 10, SpringLayout.SOUTH,
-				p4);
-		layout.putConstraint(SpringLayout.WEST, vw_b, 20, SpringLayout.EAST, p3);
-		layout.putConstraint(SpringLayout.NORTH, a_status, 1,
-				SpringLayout.SOUTH, vw_b);
-		layout.putConstraint(SpringLayout.WEST, a_status, 15,
-				SpringLayout.WEST, vw_b);
+		
 
 		JButton orig_b = new JButton("Raw Value");
 		orig_b.setActionCommand("original");
@@ -282,11 +287,10 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		content.add(b_p);
 
 		layout.putConstraint(SpringLayout.NORTH, b_p, 2, SpringLayout.SOUTH, p3);
-		layout.putConstraint(SpringLayout.SOUTH, content, 2,
-				SpringLayout.SOUTH, b_p);
+		layout.putConstraint(SpringLayout.SOUTH, content, 2,SpringLayout.SOUTH, b_p);
 
 		d_f = new JDialog();
-		d_f.setTitle("Option Dialog:" + f);
+		d_f.setTitle("Import File Option Dialog:" + f);
 		d_f.setLocation(250, 50);
 		d_f.getContentPane().add(content);
 		d_f.setModal(true);
@@ -358,6 +362,13 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 				preview_r.setEnabled(false);
 			return;
 		}
+		if (ch_name.compareTo("Display Rows") == 0) {
+			if (e.getStateChange() == ItemEvent.SELECTED)
+				rowCount_r.setEnabled(true);
+			if (e.getStateChange() == ItemEvent.DESELECTED)
+				rowCount_r.setEnabled(false);
+			return;
+		}
 
 	}
 
@@ -384,11 +395,13 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 			d_f.dispose();
 			if (_showGUI == true) {
 				DisplayFileTable dft = new DisplayFileTable(showT, f.toString());
+				dft.showGUI();
 			}
 			return;
 		}
 		if (command.equals("cancel")) {
 			d_f.dispose();
+			showT = null; // make table null
 			return;
 		}
 		if (command.equals("datainput")) {
@@ -481,7 +494,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 				vc.set(vcIndex, att);
 
 			d.dispose();
-			a_status.setText("Advance Option set for " + vc.size() + " Column.");
+			a_status.setText("Set for " + vc.size() + " Column.");
 
 			return;
 		}
@@ -557,10 +570,19 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		boolean commentSelection = comment.isSelected();
 		boolean skipRowSelection = skip_c.isSelected();
 		boolean previewRowSelection = preview_c.isSelected();
+		boolean rowCountSelection = rowCount_c.isSelected();
 
 		int skipRowNumber = 0;
 		int previewRowNumber = 15; // will show 15 lines in preview
+		int rowCountNumber = 100;
 
+		if (rowCountSelection == true) {
+			rowCountNumber = ((Number) rowCount_r.getValue()).intValue();
+			if (rowCountNumber <= 0) // Nothing to preview
+				rowCountNumber = 100; // Default Value
+			csv_tableModel.setDisplayRowSelection(true, rowCountNumber);
+		}
+		
 		if (previewRowSelection == true) {
 			previewRowNumber = ((Number) preview_r.getValue()).intValue();
 			if (previewRowNumber <= 0) // Nothing to preview

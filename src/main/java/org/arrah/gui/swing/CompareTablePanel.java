@@ -53,7 +53,7 @@ import org.arrah.framework.rdbms.SqlType;
 
 public class CompareTablePanel implements ItemListener, ActionListener {
 	private JComboBox<String> table1, table2;
-	private Vector vector1[], vector2[];
+	private Vector<?> vector1[], vector2[];
 	private JComboBox<String> col1, col2;
 	private boolean init, ainit;
 	private JRadioButton rb1, rb2, rb3, rb4;
@@ -68,7 +68,8 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 	private int mX;
 	private boolean isEditable = false; // default value
 	private JDBCRowsetPanel rowsetPanel = null;
-
+	private JFrame frame;
+	
 	public CompareTablePanel() {
 		init = false;
 		ainit = false;
@@ -134,6 +135,12 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 		bt1.addKeyListener(new KeyBoardListener());
 		bt1.addActionListener(this);
 
+		// Add Close button also which is same as close frame
+		JButton closebt1 = new JButton("Cancel");
+		closebt1.addKeyListener(new KeyBoardListener());
+		closebt1.setActionCommand("cancel");
+		closebt1.addActionListener(this);
+		
 		ll1 = new JLabel("Table A");
 		ll2 = new JLabel("Table B");
 		ll3 = new JLabel(
@@ -229,7 +236,7 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 		tp.add(rb3);
 		tp.add(rb4);
 		tp.add(ft);
-		tp.add(bt1);
+		tp.add(bt1); tp.add(closebt1);
 		tp.add(up1);
 		tp.add(up2);
 		tp.add(tagP);
@@ -292,6 +299,10 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 		layout.putConstraint(SpringLayout.WEST, bt1, 0, SpringLayout.WEST, rb3);
 		layout.putConstraint(SpringLayout.NORTH, bt1, 15, SpringLayout.SOUTH,
 				rb3);
+		
+		layout.putConstraint(SpringLayout.WEST, closebt1, 20, SpringLayout.EAST, bt1);
+		layout.putConstraint(SpringLayout.NORTH, closebt1, 0, SpringLayout.NORTH,bt1);
+		
 		layout.putConstraint(SpringLayout.WEST, ll1, 10, SpringLayout.WEST,
 				tp_s);
 		layout.putConstraint(SpringLayout.NORTH, ll1, 5, SpringLayout.SOUTH,
@@ -328,7 +339,7 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 		layout.putConstraint(SpringLayout.NORTH, rowsetP, 15,
 				SpringLayout.SOUTH, ll5);
 
-		final JFrame frame = new JFrame("Compare Table Frame");
+		frame = new JFrame("Compare Table Frame");
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent evt) {
@@ -385,8 +396,16 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		
 		if (rowsetPanel != null) 
 			rowsetPanel.rowset.close();
+		
+		String command = e.getActionCommand();
+		if ("cancel".equals(command) == true ) {
+			frame.dispose();
+			return;
+		}
+		
 		str1 = (String) table1.getSelectedItem();
 		str2 = (String) table2.getSelectedItem();
 		str3 = (String) col1.getSelectedItem();
@@ -476,22 +495,49 @@ public class CompareTablePanel implements ItemListener, ActionListener {
 				String query = "";
 				
 				boolean isLeft = true;
-
-				if (s1 != null
-						&& s1.equals("<html><body><a href=\"\">Table A Match</A><body></html>")) {
-					query = qb.get_match_value(multiple, mX, true, true);
-
+				
+                if (s1 != null && s1.equals("<html><body><a href=\"\">Table A Match</A><body></html>")) {
+                    
+					if(Rdbms_conn.getDBType().compareToIgnoreCase("oracle_native") == 0
+					|| (Rdbms_conn.getDBType().compareToIgnoreCase("oracle_odbc") == 0)){
+						query=qb.get_col_match_value(multiple, mX, true, true);
+					}
+					else {
+						query = qb.get_match_value(multiple, mX, true, true);
+					}
+					
 				} else if (s1 != null
-						&& s1.equals("<html><body><a href=\"\">Table A No Match</A><body></html>")) {
-					query = qb.get_match_value(multiple, mX, false, true);
+					&& s1.equals("<html><body><a href=\"\">Table A No Match</A><body></html>")) {
+					if(Rdbms_conn.getDBType().compareToIgnoreCase("oracle_native") == 0
+					|| (Rdbms_conn.getDBType().compareToIgnoreCase("oracle_odbc") == 0)){
+						query=qb.get_col_match_value(multiple, mX, false, true);
+					}
+					else {
+						query = qb.get_match_value(multiple, mX, false, true);
+					}
+					
 				} else if (s1 != null
-						&& s1.equals("<html><body><a href=\"\">Table B No Match</A><body></html>")) {
+					&& s1.equals("<html><body><a href=\"\">Table B No Match</A><body></html>")) {
 					isLeft = false;
-					query = qb.get_match_value(multiple, mX, false, false);
+					if(Rdbms_conn.getDBType().compareToIgnoreCase("oracle_native") == 0
+					|| (Rdbms_conn.getDBType().compareToIgnoreCase("oracle_odbc") == 0)){
+						query=qb.get_col_match_value(multiple, mX, false, false);
+					}
+					else {
+						query = qb.get_match_value(multiple, mX, false, false);
+					}
 				} else {
 					isLeft = false;
-					query = qb.get_match_value(multiple, mX, true, false);
+					if(Rdbms_conn.getDBType().compareToIgnoreCase("oracle_native") == 0
+					|| (Rdbms_conn.getDBType().compareToIgnoreCase("oracle_odbc") == 0)){
+						query=qb.get_col_match_value(multiple, mX, true, false);
+					}
+					else {
+						query = qb.get_match_value(multiple, mX, true, false);
+					}
+					
 				}
+                
 				String pc=""; // Primary column to bring as first column
 				if ( isEditable == false ) {
 				Rdbms_conn.openConn();

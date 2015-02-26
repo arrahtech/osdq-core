@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2013      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -13,8 +13,8 @@ package org.arrah.gui.swing;
  ***********************************************/
 
 /*
- * This class defines popup Query Dialog
- * from the link of table to take condition
+ * This class defines create table Dialog
+ * and all the parameter related to that
  *
  */
 
@@ -55,17 +55,21 @@ import org.arrah.framework.rdbms.SqlType;
 
 public class QueryDialog extends JDialog implements ActionListener,
 		ItemListener, KeyListener {
-	private JList list;
-	private DefaultListModel lm;
-	protected Vector<JComboBox> cb_v;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JList<String> list;
+	private DefaultListModel<String> lm;
+	protected Vector<JComboBox<String>> cb_v;
 	protected Vector<JFormattedTextField> wt_v;
 	protected Vector<JTextField> tt_v;
-	protected Vector<JComboBox> aoc_v;
+	protected Vector<JComboBox <String>> aoc_v;
 	protected Vector<JTextField> t_type_v;
 	protected int index;
 	private int capacity;
 	private JPanel cp;
-	private Vector __type_v;
+	private Vector<?> __type_v;
 	private Vector dateVar[];
 	private String t_cond;
 	private String a_cond;
@@ -80,11 +84,11 @@ public class QueryDialog extends JDialog implements ActionListener,
 	public String tC;
 	public ReportTable _rt;
 
-	public QueryDialog(int i, String s, Vector avector[]) {
-		cb_v = new Vector<JComboBox>();
+	public QueryDialog(int i, String s, Vector<?> avector[]) {
+		cb_v = new Vector<JComboBox<String>>();
 		wt_v = new Vector<JFormattedTextField>();
 		tt_v = new Vector<JTextField>();
-		aoc_v = new Vector<JComboBox>();
+		aoc_v = new Vector<JComboBox<String>>();
 		t_type_v = new Vector<JTextField>();
 
 		index = 0;
@@ -96,8 +100,8 @@ public class QueryDialog extends JDialog implements ActionListener,
 		LEVEL = i;
 		_table = s;
 
-		lm = new DefaultListModel();
-		Enumeration enumeration = avector[0].elements();
+		lm = new DefaultListModel<String>();
+		Enumeration<String> enumeration = (Enumeration<String>) avector[0].elements();
 		int j = 0;
 		for (; enumeration.hasMoreElements(); lm.add(j++,
 				enumeration.nextElement()))
@@ -111,7 +115,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 		String s = actionevent.getActionCommand();
 		if (s.equals("move")) {
 			apply_b.setEnabled(false);
-			Object aobj[] = list.getSelectedValues();
+			Object aobj[] = list.getSelectedValuesList().toArray();
 			int ai[] = list.getSelectedIndices();
 			for (int i = aobj.length; index + i > capacity;)
 				addRow();
@@ -129,7 +133,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 							.get(ai[j])).intValue()));
 				else
 					jtextfield1.setText(obj.toString());
-				JComboBox jcombobox = (JComboBox) cb_v.get(index);
+				JComboBox<String> jcombobox = (JComboBox<String>) cb_v.get(index);
 				jcombobox.setEnabled(true);
 				index++;
 			}
@@ -188,7 +192,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 		else
 			tf.setEnabled(false);
 		JLabel jlabel2 = new JLabel("Rows");
-		list = new JList(lm);
+		list = new JList<String>(lm);
 		JScrollPane jscrollpane = new JScrollPane(list);
 		jscrollpane.setPreferredSize(new Dimension(175, 350));
 		JButton jbutton = new JButton(">>");
@@ -252,8 +256,8 @@ public class QueryDialog extends JDialog implements ActionListener,
 	}
 
 	private void addRow() {
-		JComboBox jcombobox = null;
-		JComboBox jcombobox1 = null;
+		JComboBox<String> jcombobox = null;
+		JComboBox<String> jcombobox1 = null;
 		JTextField jtextfield = null;
 		JTextField jtextfield1 = null;
 		JFormattedTextField jformattedtextfield = null;
@@ -263,7 +267,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 		jtextfield1 = new JTextField(8);
 		jtextfield1.setEditable(false);
 		t_type_v.add(capacity, jtextfield1);
-		jcombobox = new JComboBox(new String[] { "Condition", "--------------",
+		jcombobox = new JComboBox<String>(new String[] { "Condition", "--------------",
 				" IS NULL ", " IS NOT NULL ", " LIKE ", " NOT LIKE ", " = ",
 				" <> ", " < ", " <= ", " > ", " >= " });
 		jcombobox.setEnabled(false);
@@ -274,7 +278,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 		jformattedtextfield.setColumns(8);
 		jformattedtextfield.addKeyListener(this);
 		wt_v.add(capacity, jformattedtextfield);
-		jcombobox1 = new JComboBox(new String[] { " OR ", " AND " });
+		jcombobox1 = new JComboBox<String>(new String[] { " OR ", " AND " });
 		aoc_v.add(capacity, jcombobox1);
 		cp.add(jtextfield);
 		cp.add(jtextfield1);
@@ -291,11 +295,14 @@ public class QueryDialog extends JDialog implements ActionListener,
 		for (int j = 0; j < index; j++) {
 			String s4 = ((JTextField) tt_v.get(j)).getText();
 			
-			// mysql does not allow quotes for table and columns
-			if (Rdbms_conn.getDBType().compareToIgnoreCase("mysql") != 0)
+			// mysql and hive does not allow quotes for table and columns
+			
+			if ((Rdbms_conn.getDBType().compareToIgnoreCase("mysql") != 0) &&
+			(Rdbms_conn.getDBType().compareToIgnoreCase("hive") != 0) &&
+			(Rdbms_conn.getDBType().compareToIgnoreCase("informix") != 0))
 				s4 = "\"" + s4 + "\"";
 
-			JComboBox jcombobox = (JComboBox) cb_v.get(j);
+			JComboBox<String> jcombobox = (JComboBox<String>) cb_v.get(j);
 			int k = jcombobox.getSelectedIndex();
 			if (k <= 1)
 				continue;
@@ -352,10 +359,19 @@ public class QueryDialog extends JDialog implements ActionListener,
 								"Date Format error", JOptionPane.ERROR_MESSAGE);
 						return null;
 					}
-					dateVar[0].add(i, date);
-					dateVar[1].add(i, s7);
-					i++;
-					s5 = "?";
+					
+					// This will not work with Hive as it does not support setDate option
+					// query need to build here
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+						SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // Default format for Hive UnixTimeCall
+						s5 = "unix_timestamp(\'"+sd.format(date) +"\')";
+						
+					} else { // for RDBMS
+						dateVar[0].add(i, date);
+						dateVar[1].add(i, s7);
+						i++;
+						s5 = "?"; // Parameterized query
+					}
 				} else if (s7.indexOf("Char") != -1 && !s5.startsWith("'"))
 					s5 = "'" + s5 + "'";
 				s1 = s4 + s6 + s5;
@@ -363,7 +379,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 			}
 			if (!s3.equals(""))
 				s1 = s3 + s1;
-			s3 = ((JComboBox) aoc_v.get(j)).getSelectedItem().toString();
+			s3 = ((JComboBox<String>) aoc_v.get(j)).getSelectedItem().toString();
 			s2 = s2 + s1;
 		}
 
@@ -449,7 +465,7 @@ public class QueryDialog extends JDialog implements ActionListener,
 		int i = cb_v.indexOf(itemevent.getSource());
 		if (itemevent.getStateChange() == 2)
 			return;
-		JComboBox jcombobox = (JComboBox) cb_v.get(i);
+		JComboBox<String> jcombobox = (JComboBox<String>) cb_v.get(i);
 		JFormattedTextField jformattedtextfield = (JFormattedTextField) wt_v
 				.get(i);
 		int j = jcombobox.getSelectedIndex();

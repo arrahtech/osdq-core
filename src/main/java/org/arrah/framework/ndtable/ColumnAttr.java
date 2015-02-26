@@ -1,14 +1,19 @@
 package org.arrah.framework.ndtable;
 
 /***********************************************
- * Copyright to Vivek Kumar Singh * * Any part of code or file can be changed, *
- * redistributed, modified with the copyright * information intact * * Author$ :
- * Vivek Singh * *
+ * Copyright to Vivek Kumar Singh              * 
+ * Any part of code or file can be changed,    *
+ * redistributed, modified with the copyright  * 
+ * information intact                          *
+ *                                             * 
+ *  Author$ :Vivek Singh                       * 
+ *                                             *
  ***********************************************/
 
 /*
- * This class defines the get/set for Attributes of Columns that is used for
- * displaying the columns for importing files
+ * This class defines the get/set for Attributes of Columns
+ *  that is used for displaying the columns for importing files
+ *  
  */
 
 public class ColumnAttr {

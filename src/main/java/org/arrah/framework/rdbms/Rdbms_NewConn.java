@@ -75,9 +75,10 @@ public class Rdbms_NewConn {
 		try {
 			String s = _d_url;
 			if (s == null || "".equals(s)) {
-			if (_d_type.compareToIgnoreCase("oracle_native") == 0)
+			if (_d_type.compareToIgnoreCase("oracle_native") == 0) {
 				conn = DriverManager.getConnection(__d_protocol + ":@" + _d_dsn,
 						_d_user, _d_passwd);
+			}
 			else {
 				conn = DriverManager.getConnection(__d_protocol + ":" + _d_dsn,
 						_d_user, _d_passwd);
@@ -86,6 +87,7 @@ public class Rdbms_NewConn {
 			}
 		} catch (Exception exception) {
 			System.out.println("\n ERROR:Connection can not be created");
+			System.out.println("DSN:"+_d_dsn);
 			System.out.println(exception.getMessage());
 			// System.exit(0);
 			return false;
@@ -125,7 +127,7 @@ public class Rdbms_NewConn {
 		return preparedstatement;
 	}
 
-	public  ResultSet executeQuery(PreparedStatement preparedstatement)
+	public  ResultSet executePreparedQuery(PreparedStatement preparedstatement)
 			throws SQLException {
 		ResultSet resultset = preparedstatement.executeQuery();
 		return resultset;
@@ -135,8 +137,16 @@ public class Rdbms_NewConn {
 		if (s.indexOf(" ?") == -1) {
 			Statement statement;
 			if (_d_type.compareToIgnoreCase("ms_access") == 0
-					|| _d_type.compareToIgnoreCase("oracle_odbc") == 0)
+					|| _d_type.compareToIgnoreCase("oracle_odbc") == 0
+					|| _d_type.compareToIgnoreCase("hive") == 0 
+					|| _d_type.compareToIgnoreCase("Informix") == 0 
+					|| _d_type.compareToIgnoreCase("Splice") == 0)
 				statement = conn.createStatement();
+			else if(_d_type.compareToIgnoreCase("db2") == 0)
+				statement = conn.createStatement(1003, 1007);
+			else if(_d_type.compareToIgnoreCase("Others") == 0)
+				statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
+						Integer.parseInt(getHValue("Database_ResultsetConcur")));
 			else
 				statement = conn.createStatement(1004, 1007);
 			ResultSet resultset = statement.executeQuery(s);
@@ -164,8 +174,16 @@ public class Rdbms_NewConn {
 	public  ResultSet runQuery(String s, int i) throws SQLException {
 		Statement statement;
 		if (_d_type.compareToIgnoreCase("ms_access") == 0
-				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0)
+				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0
+				|| _d_type.compareToIgnoreCase("hive") == 0 
+				|| _d_type.compareToIgnoreCase("Informix") == 0
+				|| _d_type.compareToIgnoreCase("Splice") == 0)
 			statement = conn.createStatement();
+		else if(_d_type.compareToIgnoreCase("db2") == 0)
+			statement = conn.createStatement(1003, 1007);
+		else if(_d_type.compareToIgnoreCase("Others") == 0)
+			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
+					Integer.parseInt(getHValue("Database_ResultsetConcur")));
 		else
 			statement = conn.createStatement(1004, 1007);
 		statement.setMaxRows(i);
@@ -176,8 +194,16 @@ public class Rdbms_NewConn {
 	public  int executeUpdate(String s) throws SQLException {
 		Statement statement;
 		if (_d_type.compareToIgnoreCase("ms_access") == 0
-				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0)
+				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0
+				|| _d_type.compareToIgnoreCase("hive") == 0
+				|| _d_type.compareToIgnoreCase("Informix") == 0
+				|| _d_type.compareToIgnoreCase("Splice") == 0)
 			statement = conn.createStatement();
+		else if(_d_type.compareToIgnoreCase("db2") == 0)
+			statement = conn.createStatement(1003, 1007);
+		else if(_d_type.compareToIgnoreCase("Others") == 0)
+			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
+					Integer.parseInt(getHValue("Database_ResultsetConcur")));
 		else
 			statement = conn.createStatement(1004, 1007);
 		return statement.executeUpdate(s);
@@ -187,8 +213,16 @@ public class Rdbms_NewConn {
 		Statement statement = null;
 		boolean flag = false;
 		if (_d_type.compareToIgnoreCase("ms_access") == 0
-				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0)
+				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0
+				|| _d_type.compareToIgnoreCase("hive") == 0 
+				|| _d_type.compareToIgnoreCase("Informix") == 0 
+				|| _d_type.compareToIgnoreCase("Splice") == 0)
 			statement = conn.createStatement();
+		else if(_d_type.compareToIgnoreCase("db2") == 0)
+			statement = conn.createStatement(1003, 1007);
+		else if(_d_type.compareToIgnoreCase("Others") == 0)
+			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
+					Integer.parseInt(getHValue("Database_ResultsetConcur")));
 		else
 			statement = conn.createStatement(1004, 1007);
 		flag = statement.execute(s);
@@ -229,8 +263,16 @@ public class Rdbms_NewConn {
 		Statement statement = null;
 		conn.setAutoCommit(false);
 		if (_d_type.compareToIgnoreCase("ms_access") == 0
-				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0)
+				|| _d_type.compareToIgnoreCase("oracle_odbc") == 0
+				|| _d_type.compareToIgnoreCase("hive") == 0 
+				|| _d_type.compareToIgnoreCase("Informix") == 0 
+				|| _d_type.compareToIgnoreCase("Splice") == 0)
 			statement = conn.createStatement();
+		else if(_d_type.compareToIgnoreCase("db2") == 0)
+			statement = conn.createStatement(1003, 1007);
+		else if(_d_type.compareToIgnoreCase("Others") == 0)
+			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
+					Integer.parseInt(getHValue("Database_ResultsetConcur")));
 		else
 			statement = conn.createStatement(1004, 1007);
 		statement.execute(s);

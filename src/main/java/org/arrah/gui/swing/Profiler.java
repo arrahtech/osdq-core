@@ -1,8 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2013      *
- *     http://www.arrah.in                     *
+ *     Copyright to Arrah Technology 2014      *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -60,6 +59,7 @@ import javax.swing.tree.TreePath;
 
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.util.KeyValueParser;
 
 public class Profiler extends JPanel implements TreeSelectionListener {
 	/**
@@ -244,6 +244,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 				}
 				rightView.setLabel(select_info);
 				QueryBuilder.unsetCond();
+
 			} else if (tp.getTabCount() == 2)
 				tp.removeTabAt(1);
 		} finally {
@@ -255,8 +256,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 
 	}
 
-	private void createNodes(DefaultMutableTreeNode defaultmutabletreenode)
-			throws SQLException {
+	private void createNodes(DefaultMutableTreeNode defaultmutabletreenode) throws SQLException {
 		// Rdbms_conn.init(_fileParse); Test Connection has set it.
 		String s = (String) _fileParse.get("Database_SchemaPattern");
 		String s1 = (String) _fileParse.get("Database_TablePattern");
@@ -288,36 +288,51 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		Rdbms_conn.openConn();
 		DatabaseMetaData databasemetadata = Rdbms_conn.getMetaData();
 
-		ResultSet resultset1;
+		ResultSet resultset1 = null;
+		
+	for (Enumeration<?> enumeration = defaultmutabletreenode.children(); enumeration
+				.hasMoreElements(); ) { // moving out resultset1.close
 		try {
-		for (Enumeration<?> enumeration = defaultmutabletreenode.children(); enumeration
-				.hasMoreElements(); resultset1.close()) {
 			DefaultMutableTreeNode defaultmutabletreenode3 = (DefaultMutableTreeNode) enumeration
 					.nextElement();
 			String s6 = defaultmutabletreenode3.toString();
 			ConsoleFrame.addText("\n Getting information for Table:" + s6);
 			int j = 0;
-			DefaultMutableTreeNode defaultmutabletreenode2;
-			for (resultset1 = databasemetadata.getColumns(s3, s, s6, null); resultset1
-					.next(); defaultmutabletreenode3
-					.add(defaultmutabletreenode2)) {
-				j++;
-				String s8 = resultset1.getString(4);
-				String s9 = s8 + ":";
-				s9 = s9 + resultset1.getString(6);
-				String s10 = s8 + " <BR>Desc:" + resultset1.getString(12);
-				_tooltip.put(s6 + "." + s9, "<html>" + j + "." + s10
+			DefaultMutableTreeNode defaultmutabletreenode2 = null;
+			
+			try {
+				resultset1 = databasemetadata.getColumns(s3, s, s6, null);
+				while ( resultset1.next() ) { // moving out node.add
+					try {
+					j++;
+					String s8 = resultset1.getString(4);
+					String s9 = s8 + ":";
+					s9 = s9 + resultset1.getString(6);
+					String s10 = s8 + " <BR>Desc:" + resultset1.getString(12);
+					_tooltip.put(s6 + "." + s9, "<html>" + j + "." + s10
 						+ "</html>");
-				defaultmutabletreenode2 = new DefaultMutableTreeNode(s9);
+					defaultmutabletreenode2 = new DefaultMutableTreeNode(s9);
+					defaultmutabletreenode3.add(defaultmutabletreenode2); 
+					} catch (Exception exp) {
+						// ignore if any error in column type
+					}
+				}
+			} catch (Exception exp) {
+				ConsoleFrame.addText("\n Table:"+s6+":"+exp.getLocalizedMessage() );
+				System.out.println("Table:"+s6+":"+exp.getLocalizedMessage());
 			}
-
-		} } catch (Exception exp) {
-			ConsoleFrame.addText("\n Exception in Creating Node");
+			
+		 if (resultset1 != null) resultset1.close();
+		} catch (Exception exp) {
+			ConsoleFrame.addText("\n Exception in Creating Table Node");
 			System.out.println("Error:" + exp.getMessage());
 			JOptionPane.showMessageDialog(null, exp.getMessage(),
 					"Error Message", 0);
-			System.exit(0);
+			// System.exit(0); why should we exit
+		} finally {
+			
 		}
+	} // End of for loop for tables
 
 		try {
 			Rdbms_conn.closeConn();
@@ -336,6 +351,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jframe.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		profiler.setOpaque(true);
 		jframe.setContentPane(profiler);
+		
 		JMenuBar jmenubar = new JMenuBar();
 		jframe.setJMenuBar(jmenubar);
 		JMenu jmenu = new JMenu("File");
@@ -427,6 +443,21 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		JMenuItem jmenuitem38 = new JMenuItem("Data Dictionary");
 		jmenuitem38.addActionListener(new DBMetaInfoPanel(jmenubar));
 		jmenu1.add(jmenuitem38);
+		jmenu1.addSeparator();
+		JMenu jmenu10 = new JMenu("Search");
+		JMenuItem jmenuitem40 = new JMenuItem("Table Name");
+		jmenuitem40.addActionListener(new DBMetaInfoPanel(jmenubar));
+		jmenu10.add(jmenuitem40);
+		JMenuItem jmenuitem41 = new JMenuItem("Column Name");
+		jmenuitem41.addActionListener(new DBMetaInfoPanel(jmenubar));
+		jmenu10.add(jmenuitem41);
+		JMenuItem jmenuitem42 = new JMenuItem("Native Datatype");
+		jmenuitem42.addActionListener(new DBMetaInfoPanel(jmenubar));
+		jmenu10.add(jmenuitem42);
+		JMenuItem jmenuitem43 = new JMenuItem("SQL Datatype");
+		jmenuitem43.addActionListener(new DBMetaInfoPanel(jmenubar));
+		jmenu10.add(jmenuitem43);
+		jmenu1.add(jmenu10);
 		
 
 		JMenu jmenu6 = new JMenu("Tools");
@@ -434,17 +465,65 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenubar.add(jmenu6);
 		JMenuItem jmenuitem20 = new JMenuItem("SQL Interface");
 		jmenuitem20.addActionListener(new ToolListener(jmenubar));
-		jmenuitem20.setAccelerator(KeyStroke.getKeyStroke(83, 10));
+		jmenuitem20.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, 10));
 		jmenu6.add(jmenuitem20);
 		jmenu6.addSeparator();
-		JMenuItem jmenuitem21 = new JMenuItem("Import File");
-		jmenuitem21.addActionListener(new ToolListener(jmenubar));
-		jmenuitem21.setAccelerator(KeyStroke.getKeyStroke(73, 10));
-		jmenu6.add(jmenuitem21);
+		JMenuItem create_t = new JMenuItem("Create Table");
+		create_t.addActionListener(new ToolListener(jmenubar));
+		create_t.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, 10));
+		jmenu6.add(create_t);
 		jmenu6.addSeparator();
+		
+		// Import file will become Menu and load csv, xml and XLS
+		// will become menu item
+		JMenu impFile = new JMenu("Open File");
+		
+		JMenuItem jmenuitem21 = new JMenuItem("CSV Format");
+		impFile.add(jmenuitem21);
+		jmenuitem21.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, 10));
+		jmenuitem21.addActionListener(new ToolListener(jmenubar));
+		
+		JMenuItem impXML = new JMenuItem("XML Format");
+		impFile.add(impXML);
+		impXML.addActionListener(new ToolListener(jmenubar));
+		
+		JMenuItem impXLS = new JMenuItem("XLS Format");
+		impFile.add(impXLS);
+		impXLS.addActionListener(new ToolListener(jmenubar));
+		
+		JMenuItem impMultiLine = new JMenuItem("Multi-Line Format");
+		impFile.add(impMultiLine);
+		impMultiLine.addActionListener(new ToolListener(jmenubar));
+		
+		jmenu6.add(impFile);
+		jmenu6.addSeparator(); // end of import file
+		
+		// This menu will give options to copy file
+		// to/from HDFS file system
+		
+		JMenu copyFile = new JMenu("Copy File");
+		
+		JMenuItem toHdfs = new JMenuItem("To HDFS");
+		copyFile.add(toHdfs);
+		toHdfs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, 10));
+		toHdfs.addActionListener(new ToolListener(jmenubar));
+		
+		JMenuItem fromHdfs = new JMenuItem("From HDFS");
+		copyFile.add(fromHdfs);
+		fromHdfs.addActionListener(new ToolListener(jmenubar));
+		
+		jmenu6.add(copyFile);
+		jmenu6.addSeparator(); // end of import file
+		
+		JMenuItem diffFile = new JMenuItem("Diff File");
+		diffFile.addActionListener(new ToolListener(jmenubar));
+		jmenu6.add(diffFile);
+		jmenu6.addSeparator(); // end of diff file
+		
+		
 		JMenuItem jmenuitem22 = new JMenuItem("Create Format");
 		jmenuitem22.addActionListener(new ToolListener(jmenubar));
-		jmenuitem22.setAccelerator(KeyStroke.getKeyStroke(70, 10));
+		jmenuitem22.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, 10));
 		jmenu6.add(jmenuitem22);
 		jmenu6.addSeparator();
 		JMenuItem jmenuitem34 = new JMenuItem("Create Regex");
@@ -466,6 +545,35 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenuitem36.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, 10));
 		jmenuitem36.addActionListener(new ToolListener(jmenubar));
 		jmenu6.add(jmenuitem36);
+		
+		// Add record related item here
+		jmenu6.addSeparator();
+		JMenu recordM = new JMenu("Record Match");
+		JMenuItem recordMSingle = new JMenuItem("Single File Match");
+		recordMSingle.addActionListener(new ToolListener(jmenubar));
+		recordM.add(recordMSingle);
+		JMenuItem recordMMulti = new JMenuItem("Multiple File Match");
+		recordMMulti.addActionListener(new ToolListener(jmenubar));
+		recordM.add(recordMMulti);
+		jmenu6.add(recordM);
+		jmenu6.addSeparator();
+		JMenuItem recordLink1n = new JMenuItem("1:N Record Linkage");
+		recordLink1n.addActionListener(new ToolListener(jmenubar));
+		jmenu6.add(recordLink1n);
+		jmenu6.addSeparator();
+		JMenuItem recordLink11 = new JMenuItem("1:1 Record Linkage");
+		recordLink11.addActionListener(new ToolListener(jmenubar));
+		jmenu6.add(recordLink11);
+		jmenu6.addSeparator();
+		JMenu recordMerge = new JMenu("Record Merge");
+		JMenuItem recordMergeSingle = new JMenuItem("Single File Merge");
+		recordMergeSingle.addActionListener(new ToolListener(jmenubar));
+		recordMerge.add(recordMergeSingle);
+		JMenuItem recordMergeMulti = new JMenuItem("Multiple File Merge");
+		recordMergeMulti.addActionListener(new ToolListener(jmenubar));
+		recordMerge.add(recordMergeMulti);
+		jmenu6.add(recordMerge);
+		
 		
 		JMenu jmenu7 = new JMenu("Data Quality");
 		jmenu7.setMnemonic('Q');
@@ -541,17 +649,51 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenuitem32.addActionListener(new QualityListener());
 		jmenu7.add(jmenuitem32);
 		jmenu7.addSeparator();
+		JMenuItem crossColval = new JMenuItem("Cross Column Search");
+		crossColval.addActionListener(new QualityListener());
+		jmenu7.add(crossColval);
+		jmenu7.addSeparator();
+		JMenu dscomp = new JMenu("DataSource Comparison");
 		JMenuItem jmenuitem33 = new JMenuItem("Table Comparison");
 		jmenuitem33.addActionListener(new QualityListener());
-		jmenu7.add(jmenuitem33);
-		jmenu7.addSeparator();
+		dscomp.add(jmenuitem33);
 		JMenuItem jmenuitem37 = new JMenuItem("DB Comparison");
 		jmenuitem37.addActionListener(new QualityListener());
-		jmenu7.add(jmenuitem37);
-		jmenu7.addSeparator();
+		dscomp.add(jmenuitem37);
 		JMenuItem jmenuitem39 = new JMenuItem("Schema Comparison");
 		jmenuitem39.addActionListener(new QualityListener());
-		jmenu7.add(jmenuitem39);
+		dscomp.add(jmenuitem39);
+		jmenu7.add(dscomp);
+		jmenu7.addSeparator();
+		JMenuItem boxPlot = new JMenuItem("Box Plot");
+		boxPlot.addActionListener(new QualityListener());
+		jmenu7.add(boxPlot);
+		jmenu7.addSeparator();
+		JMenuItem kMean = new JMenuItem("K Mean Cluster");
+		kMean.addActionListener(new QualityListener());
+		jmenu7.add(kMean);
+		
+		// Business Rule Menu
+		// Testing needs to be done for business rules
+		
+		JMenu businessrule = new JMenu("Business Rules");
+		businessrule.setMnemonic('B');
+		jmenubar.add(businessrule);
+		JMenuItem addnewdb = new JMenuItem("Add DB");
+		addnewdb.addActionListener(new BusinesRuleListener());
+		businessrule.add(addnewdb);
+		businessrule.addSeparator();
+		JMenuItem buildrule = new JMenuItem("Build Rule");
+		buildrule.addActionListener(new BusinesRuleListener());
+		businessrule.add(buildrule);
+		businessrule.addSeparator();
+		JMenuItem executerule = new JMenuItem("Execute Rule");
+		executerule.addActionListener(new BusinesRuleListener());
+		businessrule.add(executerule);
+		businessrule.addSeparator();
+		JMenuItem schedulerule = new JMenuItem("Schedule Rule");
+		schedulerule.addActionListener(new BusinesRuleListener());
+		businessrule.add(schedulerule);
 		
 
 		jframe.addWindowListener(new WindowAdapter() {
@@ -648,10 +790,29 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 	}
 
 	public static void main(String args[]) {
+		boolean success = false;
 		
-		TestConnectionDialog tcd = new TestConnectionDialog(0); // Default main connection
-		tcd.createGUI();
-		_fileParse = tcd.getDBParam();
+		if ((args.length > 0) && ( args[0] != null || "".equals(args[0]) == false)) { // open the confileFile.txt
+			_fileParse = KeyValueParser.parseFile(args[0]);
+			try {
+				Rdbms_conn.init(_fileParse);
+				String status = Rdbms_conn.testConn();
+				if ("Connection Successful".equals(status)) {
+					Rdbms_conn.openConn();
+					success = true;
+				} else {
+					System.out.println(" Can not open connection. Check configuration File:"+args[0]);
+				}
+			} catch (Exception e) {
+				System.out.println(" Exception:"+e.getMessage());
+			}
+		} 
+		// If configFile fails
+		if ( success == false){
+			TestConnectionDialog tcd = new TestConnectionDialog(0); // Default main connection
+			tcd.createGUI();
+			_fileParse = tcd.getDBParam();
+		}
 		
 		Thread t = new Thread(new Runnable() {
 			public void run() {

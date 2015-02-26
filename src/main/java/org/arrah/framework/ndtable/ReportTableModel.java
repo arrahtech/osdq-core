@@ -115,11 +115,20 @@ public class ReportTableModel implements Serializable, Cloneable {
 
 			public boolean isCellEditable(int row, int col) {
 				String colN = this.getColumnName(col);
-				if (isEditable == false && colN.endsWith("Editable") == false)
-					return false;
-				else
+				int[] colIndex = new int[1];
+				colIndex[0] = col;
+				
+				if (isEditable == true) {
 					return true;
-			}
+				}
+				else { // isEditable False
+					if (colN.endsWith("Editable") == true ) {
+						return true;
+					} else  { // colN.endsWith("Editable") not true
+						return false;
+					}
+				}
+			} // end of isCellEditable
 
 			public Class<?> getColumnClass(int col) {
 				if (showClass == true)
@@ -325,4 +334,58 @@ public class ReportTableModel implements Serializable, Cloneable {
 		int i = tabModel.getRowCount();
 		removeRows(0, i);
 	}
+	
+	public boolean isEmptyRow (int rowid) {
+		Object[] rowObj = this.getRow(rowid);
+		for (int i=0 ; i < rowObj.length ; i++) {
+			if (!(rowObj[i] == null || "".equals(rowObj[i].toString()))) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean isEmptyExceptCols (int rowid, int[] colIndex) {
+		boolean isColMatch = false;
+		Object[] rowObj = this.getRow(rowid);
+		for (int i=0 ; i < rowObj.length ; i++) {
+			isColMatch = false;
+			for (int j=0; j < colIndex.length; j++){
+				if ( i == colIndex[j]) isColMatch = true;
+			}
+			if (isColMatch == false && (!(rowObj[i] == null || "".equals(rowObj[i].toString())))) {
+				return false;
+			}
+		}
+		return true;
+	}
+	// Static utility method
+	public static int getColumnIndex(ReportTableModel rpt, String colName) {
+		int row_c = rpt.getModel().getColumnCount();
+		for (int i = 0; i < row_c; i++) {
+			if (colName.equals(rpt.getModel().getColumnName(i)))
+				return i;
+		}
+		return -1;
+	}
+	
+	// public method
+	public  int getColumnIndex(String colName) {
+		int row_c = this.getModel().getColumnCount();
+		for (int i = 0; i < row_c; i++) {
+			if (colName.equals(this.getModel().getColumnName(i)))
+				return i;
+		}
+		return -1;
+	}
+	
+	public  Object[] getAllColName() {
+		int colC = this.getModel().getColumnCount();
+		Object[] colN = new Object[colC];
+		for (int i = 0; i < colC; i++)
+		 colN[i] = this.getModel().getColumnName(i);	
+		return colN;
+	}
+	
+
 } // End of ReportTableModel class

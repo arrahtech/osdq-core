@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2013      *
+ *     Copyright to Arrah Technology 2014      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -19,6 +19,8 @@ package org.arrah.gui.swing;
  */
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
@@ -28,10 +30,14 @@ import java.util.Vector;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -39,6 +45,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
 
+import org.arrah.framework.analytics.RTMDiffUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.profile.DBMetaInfo;
 import org.arrah.framework.profile.NewConnTableMetaInfo;
@@ -46,7 +53,7 @@ import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.Rdbms_conn;
 
-public class CompareSchemaDialog implements TreeSelectionListener {
+public class CompareSchemaDialog implements TreeSelectionListener, ActionListener {
 
 	private JPanel topTablePane = new JPanel(),botTablePane = new JPanel();
 	private DefaultMutableTreeNode priTop = new DefaultMutableTreeNode("Primary DB");
@@ -103,9 +110,52 @@ public class CompareSchemaDialog implements TreeSelectionListener {
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setDividerLocation(200);
 		
+		
+		
+		// Add Menu bar
+		JMenuBar menubar = new JMenuBar();
+		JMenu diff = new JMenu("Diff Summary");
+		menubar.add(diff);
+		
+		JMenuItem param = new JMenuItem("Parameter");
+		param.setActionCommand("parameter");
+		param.addActionListener(this);
+		diff.add(param);
+		
+		JMenuItem procedure = new JMenuItem("Procedure");
+		procedure.setActionCommand("procedure");
+		procedure.addActionListener(this);
+		diff.add(procedure);
+		
+		JMenuItem tabName = new JMenuItem("Table Name");
+		tabName.setActionCommand("tablename");
+		tabName.addActionListener(this);
+		diff.add(tabName);
+		
+		JMenuItem tabMeta = new JMenuItem("Table MetaData");
+		tabMeta.setActionCommand("tablemeta");
+		tabMeta.addActionListener(this);
+		diff.add(tabMeta);
+		
+		JMenuItem tabSumm = new JMenuItem("Table Summary Data");
+		tabSumm.setActionCommand("tablesummary");
+		tabSumm.addActionListener(this);
+		diff.add(tabSumm);
+		
+		JMenuItem tabInd = new JMenuItem("Table Index");
+		tabInd.setActionCommand("tableindex");
+		tabInd.addActionListener(this);
+		diff.add(tabInd);
+		
+		JMenuItem tabKey = new JMenuItem("Table Key");
+		tabKey.setActionCommand("tablekey");
+		tabKey.addActionListener(this);
+		diff.add(tabKey);
+		
 		JDialog jd = new JDialog();
 		jd.setTitle("Schema Comparison Dialog");
 		jd.setLocation(75, 75);
+		jd.setJMenuBar(menubar); // Add Menu bar here
 		jd.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent evt) {
 				try {
@@ -222,7 +272,7 @@ public class CompareSchemaDialog implements TreeSelectionListener {
 					rt = new ReportTable(rtm2);
 					createPanel(rt, false);
 					break;
-				case 6 :
+				case 6 : // Key data
 					NewConnTableMetaInfo newTableInfo3 = new NewConnTableMetaInfo(newConn);
 					rtm3 = newTableInfo3.tableKeyInfo(table_v.get(i));
 					rt = new ReportTable(rtm3);
@@ -356,4 +406,140 @@ public class CompareSchemaDialog implements TreeSelectionListener {
 		}
 
 	}
-}
+	
+	
+	public void actionPerformed(ActionEvent e) {
+		String command = e.getActionCommand();
+		JTabbedPane tabPane = new JTabbedPane(JTabbedPane.TOP,JTabbedPane.SCROLL_TAB_LAYOUT);
+		RTMDiffUtil rtmdiff = null;
+		
+		if (command.equals("parameter") == true ) {
+			try {
+				DBMetaInfo dbmetaleft = new DBMetaInfo();
+				ReportTableModel rtmL = dbmetaleft.getParameterInfo();
+				
+				DBMetaInfo dbmetaright = new DBMetaInfo(newConn);
+				ReportTableModel rtmR = dbmetaright.getParameterInfo();
+				
+				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
+				boolean com = rtmdiff.compare(true);
+				if ( com == false) {
+					ConsoleFrame.addText("\n Parameter Comparison Failed");
+					return;
+				}
+				
+			} catch( Exception eaction) {
+				ConsoleFrame.addText("\n Parameter Exception:" +eaction.getLocalizedMessage());
+			}
+		} // Parameter
+		
+		else if (command.equals("procedure") == true ) {
+			try {
+				DBMetaInfo dbmetaL= new DBMetaInfo();
+				ReportTableModel rtmL = dbmetaL.getProcedureInfo();
+				
+				DBMetaInfo dbmetaR = new DBMetaInfo(newConn);
+				ReportTableModel rtmR = dbmetaR.getProcedureInfo();
+				
+				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
+				boolean com = rtmdiff.compare(true);
+				if ( com == false) {
+					ConsoleFrame.addText("\n Procedure Comparison Failed");
+					return;
+				}
+				
+			} catch( Exception eaction) {
+				ConsoleFrame.addText("\n Procedure Exception:" +eaction.getLocalizedMessage());
+			}
+		} // Procedure
+		
+		else if (command.equals("tablename") == true ) {
+				ReportTableModel rtmL = new ReportTableModel(new String[] {"Table Name"});
+				ReportTableModel rtmR = new ReportTableModel(new String[] {"Table Name"});
+				
+				Vector<String> priTable = Rdbms_conn.getTable();
+				Vector<String> secTable = newConn.getTable();
+				for (String tab: priTable )
+					rtmL.addFillRow(new String[] {tab});
+				for (String tab: secTable )
+					rtmR.addFillRow(new String[] {tab});
+				
+				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
+				boolean com = rtmdiff.compare(true);
+				if ( com == false) {
+					ConsoleFrame.addText("\n Table Name Comparison Failed");
+					return;
+				}
+		} // Table Name
+		else {
+		
+		// Following options will take table name as input
+		String tabName = JOptionPane.showInputDialog("Please enter Table Name");
+		if (tabName == null || tabName.compareTo("") == 0) 
+			return;
+		
+		Vector<String> priTable = Rdbms_conn.getTable();
+		Vector<String> secTable = newConn.getTable();
+		int lefti = priTable.indexOf(tabName);
+		int righti = secTable.indexOf(tabName);
+		
+		if (lefti < 0 || righti < 0 ) {
+			 JOptionPane.showMessageDialog(null,"Table:"+ tabName + " does not exist in both schemas");
+			 return;
+		}
+		NewConnTableMetaInfo newTableInfo = new NewConnTableMetaInfo(newConn); // new Connection
+		int tableType = -1; ReportTableModel rtmL = null, rtmR = null ;
+		
+		if (command.equals("tableindex") == true ) 
+			tableType = 1;
+		if (command.equals("tablemeta") == true )
+			tableType = 2;
+		if (command.equals("tablesummary") == true )
+			tableType = 4;
+		if (tableType == 1 ||  tableType == 2 || tableType == 4) {
+			try {
+				
+				rtmL = TableMetaInfo.populateTable(tableType, lefti, lefti+1, rtmL);
+				rtmR = newTableInfo.populateTable(tableType, righti, righti+1, rtmR);
+				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
+				boolean com = rtmdiff.compare(true);
+				if ( com == false) {
+					ConsoleFrame.addText("\n Table Info Comparison Failed");
+					return;
+				}
+			} catch( Exception eaction) {
+				ConsoleFrame.addText("\n Table Info Exception:" +eaction.getLocalizedMessage());
+			}
+		}
+		
+		if (command.equals("tablekey") == true ) {
+			try {
+				rtmL = TableMetaInfo.tableKeyInfo(tabName);
+				rtmR = newTableInfo.tableKeyInfo(tabName);
+				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
+				boolean com = rtmdiff.compare(true);
+				if ( com == false) {
+					ConsoleFrame.addText("\n Index Key Failed");
+					return;
+				}
+			} catch( Exception eaction) {
+				ConsoleFrame.addText("\n Table Key Exception:" +eaction.getLocalizedMessage());	
+			}
+		}
+		} // Table Info
+		
+		tabPane.add("Matched Record",new ReportTable(rtmdiff.getMatchedRTM()));
+		tabPane.add("Primary No Match",new ReportTable(rtmdiff.leftNoMatchRTM()));
+		tabPane.add("Secondary No Match",new ReportTable(rtmdiff.rightNoMatchRTM()));
+		
+		JDialog db_d = new JDialog();
+		db_d.setTitle("Difference Summary Dialog");
+		db_d.getContentPane().add(tabPane);
+		db_d.setModal(true);
+		db_d.setLocation(200, 100);
+		db_d.pack();
+		db_d.setVisible(true);
+		}
+				
+
+} // end of class

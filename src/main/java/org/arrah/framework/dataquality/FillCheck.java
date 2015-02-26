@@ -52,7 +52,7 @@ public class FillCheck {
 	
 	public static int[] getEmptyCount(Object[][] dataset) {
 		if (dataset == null) return null;
-		int[] emptyCount = new int[dataset[0].length];
+		int[] emptyCount = new int[dataset[0].length +1 ]; // one extra for all columns null
 		Arrays.fill(emptyCount, 0);
 		
 		for (int i=0; i < dataset.length; i++) {
@@ -68,7 +68,7 @@ public class FillCheck {
 		int rowc = rtm.getModel().getRowCount();
 		int colc = rtm.getModel().getColumnCount();
 		
-		int[] emptyCount = new int[colc];
+		int[] emptyCount = new int[colc +1]; // one extra for all columns null
 		Arrays.fill(emptyCount, 0);
 		
 		for (int i=0; i <rowc; i++ ) {

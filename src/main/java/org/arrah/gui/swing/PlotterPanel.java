@@ -494,7 +494,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 			return;
 		Graphics g = getGraphics();
 		if (g == null) {
-			ConsoleFrame.addText("\n Graphics Null");
+			ConsoleFrame.addText("\n Information: Graphics not in view");
 			return;
 		} else {
 			drawBarChart(g);
@@ -506,7 +506,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		if (!init)
 			return;
 		if (g == null) {
-			ConsoleFrame.addText("\n Graphics Null");
+			ConsoleFrame.addText("\n Information: Graphics not in view");
 			return;
 		} else {
 			drawgridForHistogram(g);

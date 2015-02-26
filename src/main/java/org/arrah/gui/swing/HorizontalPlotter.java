@@ -149,7 +149,7 @@ public class HorizontalPlotter extends PlotterPanel {
 			return;
 		Graphics graphics = getGraphics();
 		if (graphics == null) {
-			ConsoleFrame.addText("\n Graphics Null");
+			ConsoleFrame.addText("\n Information: Graphics not in view");
 			return;
 		}
 		drawBarChart(graphics);
@@ -159,7 +159,7 @@ public class HorizontalPlotter extends PlotterPanel {
 		if (init == false)
 			return;
 		if (graphics == null) {
-			ConsoleFrame.addText("\n Graphics Null");
+			ConsoleFrame.addText("\n Information: Graphics not in view");
 			return;
 
 		}

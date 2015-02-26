@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2012      *
+ *     Copyright to Arrah Technology 2014      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -17,6 +17,7 @@ package org.arrah.gui.swing;
  */
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -24,9 +25,11 @@ import java.awt.event.FocusListener;
 import java.util.Hashtable;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -36,6 +39,7 @@ import javax.swing.SpringLayout;
 
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.xml.XmlWriter;
 
 public class TestConnectionDialog extends JDialog implements ActionListener {
 	/**
@@ -43,12 +47,13 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	private Hashtable<String,String> _dbparam;
-	private JComboBox<String> jc;
+	private JComboBox<String> jc,restype,resconcur,jccon;
 	private JPasswordField passfield ;
-	private JTextField dsn,user,driver,protocol,jdbc_cs;
+	private JTextField dsn,user,driver,protocol,jdbc_cs,coname;
 	private JTextField catalog,schemaPattern,tablePattern,colPattern,type;
 	private JTextArea info;
-	private JButton ok_b;
+	private JButton ok_b,add_b;
+	private JCheckBox quoteC;
 	
 	private String infoStatus ="INFORMATION: \n$ORACLE_HOME/lib should be in LIBPATH (for AIX), \n" +
 			"LD_LIBRARY_PATH (for Solaris) or \nSHLIBPATH (for HP) for UNIX user. \n\n"+
@@ -72,6 +77,9 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		_dbparam.put("Database_TablePattern", "");
 		_dbparam.put("Database_ColumnPattern", "");
 		_dbparam.put("Database_TableType", "TABLE"); // Default show tables
+		_dbparam.put("Database_ResultsetType", "");
+		_dbparam.put("Database_ResultsetConcur", "");
+		_dbparam.put("Database_SupportQuote", "");
 		
 		this.setConnectionType(connectionType);
 		this.setLocation(400, 200);
@@ -83,24 +91,41 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		dp.setLayout(new BorderLayout());
 		
 		
-		String[] labels = {" *DB Type: ", " *DB Name: ", " *User: ", " *Password: "," DB Driver"," DB Protocol",
+		String[] labels = {" *DB Connections: ", " *DB Connection Name", " *DB Type: ", " *DB Name: ", " *User: ", " *Password: "," DB Driver"," DB Protocol",
 				"JDBC URL","DB Catalog" ,"DB Schema Pattern", "DB Table Pattern","DB Column Pattern","DB Show Type"}; 
 		int numPairs = labels.length;  
 		
-		String[] dbtype = {"Oracle JDBC Client","Oracle Windows Bridge","Mysql JDBC Client","Mysql Windows Bridge","SQLServer Windows Bridge",
-		"Access Windows Bridge","Postgres JDBC Client","Others (JDBC Bridge)","Others (Windows Bridge)"};
+		String[] dbtype = {"Oracle JDBC Client","Oracle Windows Bridge","Mysql JDBC Client","Mysql Windows Bridge",
+							"SQLServer JDBC Client","SQLServer Windows Bridge",
+							"Access Windows Bridge","Postgres JDBC Client","DB2 JDBC Client",
+							"Hive JDBC Client","Informix JDBC Client","Splice Derby Client","Others (JDBC Bridge)","Others (Windows Bridge)"}; String[] cname = {"New Connection"};
 		jc = new JComboBox<String>(dbtype);
 		jc.addActionListener(this);
+                
+        jccon = new JComboBox<String>(cname);
 		
 		//Create and populate the panel which is enhanced by Advance button        
 		JPanel p = new JPanel(new SpringLayout());   
 		
 		JLabel l = new JLabel(labels[0], JLabel.TRAILING);             
 		p.add(l);                        
+		l.setLabelFor(jccon);             
+		p.add(jccon);
+                
+                l = new JLabel(labels[1], JLabel.TRAILING);             
+		p.add(l);             
+		coname = new JTextField(10);
+		l.setLabelFor(coname);             
+		p.add(coname); 
+		coname.setText("");
+		coname.addFocusListener(new ConnFocusEvent("cname"));
+                
+		l = new JLabel(labels[2], JLabel.TRAILING);             
+		p.add(l);                        
 		l.setLabelFor(jc);             
 		p.add(jc); 
 		
-		l = new JLabel(labels[1], JLabel.TRAILING);             
+		l = new JLabel(labels[3], JLabel.TRAILING);             
 		p.add(l);             
 		dsn = new JTextField(10);
 		l.setLabelFor(dsn);             
@@ -108,21 +133,21 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		dsn.setText("//hostname/SID");
 		dsn.addFocusListener(new ConnFocusEvent("dsn"));
 		
-		l = new JLabel(labels[2], JLabel.TRAILING);             
+		l = new JLabel(labels[4], JLabel.TRAILING);             
 		p.add(l);             
 		user = new JTextField(10);             
 		l.setLabelFor(user);             
 		p.add(user); 
 		user.addFocusListener(new ConnFocusEvent("user"));
 		
-		JLabel pass = new JLabel(labels[3], JLabel.TRAILING);             
+		JLabel pass = new JLabel(labels[5], JLabel.TRAILING);             
 		p.add(pass);                        
 		passfield = new JPasswordField();
 		pass.setLabelFor(passfield); 
 		p.add(passfield); 
 		passfield.addFocusListener(new ConnFocusEvent("passfield"));
 		
-		JLabel driver_l = new JLabel(labels[4], JLabel.TRAILING);             
+		JLabel driver_l = new JLabel(labels[6], JLabel.TRAILING);             
 		p.add(driver_l);                        
 		driver = new JTextField("oracle.jdbc.OracleDriver");
 		pass.setLabelFor(driver); 
@@ -130,7 +155,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		driver.setEditable(false);
 		driver.addFocusListener(new ConnFocusEvent("driver"));
 		
-		JLabel protocol_l = new JLabel(labels[5], JLabel.TRAILING);             
+		JLabel protocol_l = new JLabel(labels[7], JLabel.TRAILING);             
 		p.add(protocol_l); 
 		// protocol = new JTextField("jdbc:oracle:oci8");
 		protocol = new JTextField("jdbc:oracle:thin");
@@ -139,7 +164,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		protocol.setEditable(false);
 		protocol.addFocusListener(new ConnFocusEvent("protocol"));
 		
-		JLabel jdbc_cs_l = new JLabel(labels[6], JLabel.TRAILING);             
+		JLabel jdbc_cs_l = new JLabel(labels[8], JLabel.TRAILING);             
 		p.add(jdbc_cs_l); 
 		jdbc_cs = new JTextField();
 		jdbc_cs_l.setLabelFor(jdbc_cs); 
@@ -147,35 +172,35 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		jdbc_cs.setEditable(false);
 		jdbc_cs.addFocusListener(new ConnFocusEvent("jdbc_cs"));
 		
-		l = new JLabel(labels[7], JLabel.TRAILING);             
+		l = new JLabel(labels[9], JLabel.TRAILING);             
 		p.add(l);             
 		catalog = new JTextField(10);             
 		l.setLabelFor(catalog);             
 		p.add(catalog); 
 		catalog.addFocusListener(new ConnFocusEvent("catalog"));
 		
-		l = new JLabel(labels[8], JLabel.TRAILING);             
+		l = new JLabel(labels[10], JLabel.TRAILING);             
 		p.add(l);             
 		schemaPattern = new JTextField(10);             
 		l.setLabelFor(schemaPattern);             
 		p.add(schemaPattern); 
 		schemaPattern.addFocusListener(new ConnFocusEvent("schemaPattern"));
 		
-		l = new JLabel(labels[9], JLabel.TRAILING);             
+		l = new JLabel(labels[11], JLabel.TRAILING);             
 		p.add(l);             
 		tablePattern = new JTextField(10);             
 		l.setLabelFor(tablePattern);             
 		p.add(tablePattern);
 		tablePattern.addFocusListener(new ConnFocusEvent("tablePattern"));
 		
-		l = new JLabel(labels[10], JLabel.TRAILING);             
+		l = new JLabel(labels[12], JLabel.TRAILING);             
 		p.add(l);             
 		colPattern = new JTextField(10);             
 		l.setLabelFor(colPattern);             
 		p.add(colPattern);
 		colPattern.addFocusListener(new ConnFocusEvent("colPattern"));
 		
-		l = new JLabel(labels[11], JLabel.TRAILING);             
+		l = new JLabel(labels[13], JLabel.TRAILING);             
 		p.add(l);             
 		type = new JTextField(10);             
 		l.setLabelFor(type);
@@ -190,13 +215,35 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 				6, 6);       //xPad, yPad          
 		
 
-		JPanel bp = new JPanel();
+		JPanel bp = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 25));
+		bp.setPreferredSize(new Dimension(500,70));
 
 		JButton tstc = new JButton("Test Connection");
 		tstc.setActionCommand("testconn");
 		tstc.addKeyListener(new KeyBoardListener());
 		tstc.addActionListener(this);
 		bp.add(tstc);
+		
+		add_b = new JButton("Add");
+		add_b.setActionCommand("addconn");
+		add_b.addKeyListener(new KeyBoardListener());
+		add_b.addActionListener(this);
+		bp.add(add_b);
+		add_b.setEnabled(false);
+                
+		JButton modc = new JButton("Modify");
+		modc.setActionCommand("modconn");
+		modc.addKeyListener(new KeyBoardListener());
+		modc.addActionListener(this);
+		bp.add(modc);
+        modc.setEnabled(false);
+		
+		JButton delc = new JButton("Delete");
+		delc.setActionCommand("delconn");
+		delc.addKeyListener(new KeyBoardListener());
+		delc.addActionListener(this);
+		bp.add(delc);
+                delc.setEnabled(false);
 		
 		ok_b = new JButton("Continue");
 		ok_b.setActionCommand("continue");
@@ -212,27 +259,32 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		bp.add(cn_b);
 		
 		// Create Information Panel
-		JPanel infoPanel = new JPanel();
+		JPanel infoPanel = new JPanel(new BorderLayout());
 		
 		
 		info = new JTextArea(20,20);
 		info.setEditable(false);
 		info.setWrapStyleWord(true);
+                info.setLineWrap(true);
 		info.setBackground(this.getBackground());
 		JScrollPane scrollPane = new JScrollPane(info);
 		scrollPane.setPreferredSize(new Dimension(300, 300));
 
-		infoPanel.add(scrollPane);
+		infoPanel.add(scrollPane,BorderLayout.CENTER);
 		info.setText(infoStatus);
+		// Add resultset Input
+		JPanel respanel = createResultsetInputPanel();
+		infoPanel.add(respanel,BorderLayout.PAGE_END);
 		
 		dp.add(p, BorderLayout.CENTER);
 		dp.add(infoPanel,BorderLayout.EAST);
-		dp.add(bp, BorderLayout.PAGE_END);
+		dp.add(bp, BorderLayout.SOUTH);
 		
 
 		this.setTitle("Arrah Technology Connection Dialog");
 		this.getContentPane().add(dp,BorderLayout.CENTER);
 		this.pack();
+                this.setLocationRelativeTo(null);
 		this.setVisible(true);
 
 	}
@@ -261,6 +313,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        					"For Windows user PATH variable should be set." +
 	        					"\n\n $ORACLE_HOME/jdbc/lib/ojdbc*.jar should be in CLASSPATH";
 	        		 info.setText(infoStatus);
+	        		 disableResInput();
 	        		break;
 	        	case 1 :
 	        		_dbparam.put("Database_Type", "ORACLE_ODBC");
@@ -271,6 +324,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		driver.setEditable(false);
 	        		protocol.setEditable(false);
 	        		jdbc_cs.setEditable(false);
+	        		disableResInput();
 	        		break;
 	        	case 2 :
 	        		_dbparam.put("Database_Type", "MYSQL");
@@ -282,6 +336,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		protocol.setEditable(false);
 	        		jdbc_cs.setEditable(false);
 	        		dsn.setText("//hostname/db");
+	        		disableResInput();
 	        		break;
 	        	case 3 :
 	        		_dbparam.put("Database_Type", "MYSQL");
@@ -292,8 +347,21 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		driver.setEditable(false);
 	        		protocol.setEditable(false);
 	        		jdbc_cs.setEditable(false);
+	        		disableResInput();
 	        		break;
 	        	case 4 :
+	        		_dbparam.put("Database_Type", "SQL_SERVER");
+	        		driver.setText("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+	        		protocol.setText("jdbc:sqlserver");
+	        		_dbparam.put("Database_Driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+	        		_dbparam.put("Database_Protocol", "jdbc:sqlserver");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//hostname;databaseName=db");
+	        		disableResInput();
+	        		break;
+	        	case 5 :
 	        		_dbparam.put("Database_Type", "SQL_SERVER");
 	        		driver.setText("sun.jdbc.odbc.JdbcOdbcDriver");
 	        		protocol.setText("jdbc:odbc");
@@ -302,8 +370,9 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		driver.setEditable(false);
 	        		protocol.setEditable(false);
 	        		jdbc_cs.setEditable(false);
+	        		disableResInput();
 	        		break;
-	        	case 5 :
+	        	case 6 :
 	        		_dbparam.put("Database_Type", "MS_ACCESS");
 	        		driver.setText("sun.jdbc.odbc.JdbcOdbcDriver");
 	        		protocol.setText("jdbc:odbc");
@@ -312,17 +381,62 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		driver.setEditable(false);
 	        		protocol.setEditable(false);
 	        		jdbc_cs.setEditable(false);
+	        		disableResInput();
 	        		break;
-	        	case 6 :
+	        	case 7 :
 	        		_dbparam.put("Database_Type", "POSTGRES");
 	        		driver.setText("org.postgresql.Driver");
 	        		protocol.setText("jdbc:postgresql");
 	        		driver.setEditable(false);
 	        		protocol.setEditable(false);
 	        		jdbc_cs.setEditable(false);
-	        		dsn.setText("//hostname/db");	        		
+	        		dsn.setText("//hostname/db");
+	        		disableResInput();
 	        		break;
-	        	case 7 :
+	        	case 8 :
+	        		_dbparam.put("Database_Type", "DB2");
+	        		driver.setText("com.ibm.db2.jcc.DB2Driver");
+	        		protocol.setText("jdbc:db2");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//hostname/db");
+	        		disableResInput();
+	        		break;
+	        		
+	        	case 9 :
+	        		_dbparam.put("Database_Type", "HIVE");
+	        		driver.setText("org.apache.hadoop.hive.jdbc.HiveDriver");
+	        		protocol.setText("jdbc:hive");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//hostname/db");
+	        		disableResInput();
+	        		break;
+	        	case 10 :
+	        		_dbparam.put("Database_Type", "INFORMIX");
+	        		driver.setText("com.informix.jdbc.IfxDriver");
+	        		protocol.setText("jdbc:informix-sqli");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//hostname/db");
+	        		disableResInput();
+	        		break;
+	        		
+	        	case 11 :
+	        		_dbparam.put("Database_Type", "SPLICE");
+	        		driver.setText("org.apache.derby.jdbc.ClientDriver");
+	        		protocol.setText("jdbc:derby");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//hostname/db");
+	        		disableResInput();
+	        		break;
+
+	        	case 12 :
 	        		_dbparam.put("Database_Type", "Others");
 	        		driver.setText("jdbc.DbNameDriver");
 	        		protocol.setText("jdbc:dbname");
@@ -333,6 +447,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		jdbc_cs.setText("Enter JDBC Connect String");
 	        		info.setText("Enter JDBC connect string if using JDBC driver.\n" +
 	        				"Make sure JDBC driver is in CLASSPATH");
+	        		enableResInput();
 	        		
 	        		break;
 	        	default:
@@ -345,6 +460,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		dsn.setText("Enter DSN ");
 	        		info.setText("Enter DSN if using Window odbc Driver \n" +
 	        				"Start --> Control Panel-->Administrative Tools-->Data Sources-->System DSN");
+	        		enableResInput();
 	        }
 	        	
 		}
@@ -362,6 +478,48 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 			return;
 		}
 		
+        if( "addconn".equals(command) ) {
+                    
+            String dsn_s = dsn.getText();
+            String user_s = user.getText();
+            char[] passwd = passfield.getPassword();
+            String driver_s = driver.getText();
+            String protocol_s = protocol.getText();
+            String catalog_s = catalog.getText();
+            String schemaPattern_s = schemaPattern.getText();
+            String tablePattern_s = tablePattern.getText();
+            String colPattern_s = colPattern.getText();
+            String type_s = type.getText();
+            String jdbc_cs_s = jdbc_cs.getText();
+            String db_name = coname.getText().trim();
+            String db_type = jc.getSelectedItem().toString();
+            
+            if(db_name != null) _dbparam.put("Database_ConnectionName", db_name);
+            if(dsn_s != null) _dbparam.put("Database_DSN", dsn_s);
+            if(user_s != null)_dbparam.put("Database_User", user_s);
+            if(passwd != null)_dbparam.put("Database_Passwd", new String(passwd) );
+            if(driver_s != null)_dbparam.put("Database_Driver", driver_s);
+            if(protocol_s != null)_dbparam.put("Database_Protocol", protocol_s);
+            if(catalog_s != null)_dbparam.put("Database_Catalog", catalog_s);
+            if(schemaPattern_s != null)_dbparam.put("Database_SchemaPattern", schemaPattern_s);
+            if(tablePattern_s != null)_dbparam.put("Database_TablePattern", tablePattern_s);
+            if(colPattern_s != null)_dbparam.put("Database_ColumnPattern", colPattern_s);
+            if(type_s != null)_dbparam.put("Database_TableType", type_s);
+            if(jdbc_cs_s != null)_dbparam.put("Database_JDBC", jdbc_cs_s);
+            
+            // Make sure Test connection is done before Add
+            if(db_type != null)_dbparam.put("Database_Type", _dbparam.get("Database_Type"));
+            
+            new XmlWriter().writeConnection(_dbparam);
+            
+            cleanText();
+            coname.setText("");
+            
+            infoStatus = "Database Connection Successfully Added";
+            info.setText(infoStatus);
+                
+        }
+                
 		if ("testconn".equals(command)) {
 			// Prompt here for null fields
 			
@@ -377,6 +535,26 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 			String colPattern_s = colPattern.getText();
 			String type_s = type.getText();
 			String jdbc_cs_s = jdbc_cs.getText();
+			String restype_s = restype.getSelectedItem().toString();
+			String resconcur_s = resconcur.getSelectedItem().toString();
+			String quote_s = quoteC.isSelected()==true?"YES":"NO";
+			
+			// Validate resconcur_s resconcur_s
+			if (restype.isEnabled() == true || resconcur.isEnabled() == true) {
+				if (restype_s.compareToIgnoreCase("ResultSet Type") == 0 || 
+						resconcur_s.compareToIgnoreCase("ResultSet Concurrency")==0 ) {
+					JOptionPane.showMessageDialog(null, "Please choose Resultset Type and Concurrency");
+					return;
+				}
+				resconcur_s = resconcur_s.compareToIgnoreCase("CONCUR_READ_ONLY") ==0 ?"1007" : "1008";
+				if (restype_s.compareToIgnoreCase("TYPE_FORWARD_ONLY") == 0)
+					restype_s="1003";
+				if (restype_s.compareToIgnoreCase("TYPE_SCROLL_INSENSITIVE") == 0)
+					restype_s="1004";
+				if (restype_s.compareToIgnoreCase("TYPE_SCROLL_SENSITIVE") == 0)
+					restype_s="1005";
+					
+			}
 			
 			if(dsn_s != null) _dbparam.put("Database_DSN", dsn_s);
 			if(user_s != null)_dbparam.put("Database_User", user_s);
@@ -389,9 +567,12 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 			if(colPattern_s != null)_dbparam.put("Database_ColumnPattern", colPattern_s);
 			if(type_s != null)_dbparam.put("Database_TableType", type_s);
 			if(jdbc_cs_s != null)_dbparam.put("Database_JDBC", jdbc_cs_s);
-			
+			if(restype_s != null)_dbparam.put("Database_ResultsetType", restype_s);
+			if(resconcur_s != null)_dbparam.put("Database_ResultsetConcur", resconcur_s);
+			if(quote_s != null)_dbparam.put("Database_SupportQuote", quote_s);
 			
 			try {
+				
 				if (connectionType == 0 ) { // Default connection
 				Rdbms_conn.init(_dbparam);
 				status = Rdbms_conn.testConn();
@@ -409,6 +590,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 			}
 			if("Connection Successful".equals(status))
 				ok_b.setEnabled(true);
+                                add_b.setEnabled(true);
 			
 			return;
 		}
@@ -428,15 +610,25 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		
 	@Override
 	public void focusGained(FocusEvent e) {
+                if( "cname".equals(sel_id) ) {
+                    infoStatus = "Enter Database Connection Name";
+                    info.setText(infoStatus);
+                }
 		if ("dsn".equals(sel_id)) {
 			switch (dbIndex) {
 			case 0:
 				infoStatus = "Enter Oracle SID value. \nFormat should be //hostname[:port]/SID \nCheck tnsnames.ora file for Details.";
 				break;
-			case 2:case 6:
+			case 4:
+				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[[\\instanceName][:port]][;databaseName==value][;property=value]" ;
+				break;
+			case 2:case 7:case 8:case 9:case 11:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname.";
 				break;
-			case 1: case 3: case 4: case 5:
+			case 10:
+				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname::INFORMIXSERVER=name[;property=value]" ;
+				break;
+			case 1: case 3: case 5: case 6:
 				infoStatus = "Enter System DSN of your window. \n" +
 						"Start --> Control Panel-->Administrative Tools-->Data Sources-->System DSN.";
 				break;
@@ -455,7 +647,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		}
 		if ("driver".equals(sel_id)) {
 			switch (dbIndex) {
-			case 0: case 1: case 2: case 3: case 4: case 5: case 6:
+			case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:case 8:case 9: case 10: case 11:
 				infoStatus = "Default Database Driver is shown.";
 				 break;
 			default:
@@ -465,7 +657,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		}
 		if ("protocol".equals(sel_id)) {
 			switch (dbIndex) {
-			case 0: case 1: case 2: case 3: case 4: case 5:case 6:
+			case 0: case 1: case 2: case 3: case 4: case 5:case 6: case 7:case 8:case 9: case 10: case 11:
 				infoStatus = "Default Connection Protocol is shown.";
 				 break;
 			default:
@@ -524,6 +716,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	
 	// It is a utility function which clean all JTextfield except type and default values
 	private void cleanText() {
+                jccon.setSelectedIndex(0);
 		dsn.setText("");
 		user.setText("");
 		passfield.setText("");
@@ -543,5 +736,25 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		this.connectionType = connectionType;
 	}
 
+	// This UI function will have input to take take parameters for 
+	// double quote, resultSetType, resultSetConcurrency
+	
+	private JPanel createResultsetInputPanel() {
+		JPanel rpanel = new JPanel();
+		quoteC = new JCheckBox("Double Quote");
+		restype = new JComboBox<String>(new String[] {"ResultSet Type","TYPE_FORWARD_ONLY", "TYPE_SCROLL_INSENSITIVE", "TYPE_SCROLL_SENSITIVE"});
+		resconcur = new JComboBox<String>(new String[] {"ResultSet Concurrency","CONCUR_READ_ONLY","CONCUR_UPDATABLE"});
+		rpanel.add(quoteC);rpanel.add(restype);rpanel.add(resconcur);
+		disableResInput();
+		
+		return rpanel;
+	}
+	private void enableResInput() {
+		quoteC.setEnabled(true);restype.setEnabled(true);resconcur.setEnabled(true);
+		
+	}
+	private void disableResInput() {
+		quoteC.setEnabled(false);restype.setEnabled(false);resconcur.setEnabled(false);
+	}
 
 }

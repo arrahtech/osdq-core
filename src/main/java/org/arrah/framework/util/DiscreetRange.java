@@ -13,7 +13,9 @@ package org.arrah.framework.util;
 
 /*
  * This class is used to implement
- * discreet range analysis
+ * discreet range analysis.
+ * It matches one vector set with another
+ * vector set and utilities related to that
  *
  */
 
@@ -73,5 +75,48 @@ public class DiscreetRange {
 			vec.add(tokenA[i++]);
 		return vec;
 	}
+	
+	public static Vector<Integer> mergeSet(Vector<Integer> leftSet,
+			Vector<Integer> rightSet, String mergeType) {
+		if (leftSet == null || rightSet == null)
+			return null;
+
+		if (mergeType.trim().compareToIgnoreCase("or") == 0) { // OR set
+			Vector<Integer> orSet = new Vector<Integer>();
+			orSet = leftSet;
+			for (int i = 0; i < rightSet.size(); i++) {
+				if (orSet.contains(rightSet.get(i)) == false)
+					orSet.add(rightSet.get(i));
+			}
+			return orSet;
+		} else if (mergeType.trim().compareToIgnoreCase("and") == 0) { // AND
+																		// set
+			Vector<Integer> andSet = new Vector<Integer>();
+			if (leftSet.size() > rightSet.size()) {
+				for (int i = 0; i < rightSet.size(); i++) {
+					if (leftSet.contains(rightSet.get(i)) == true)
+						andSet.add(rightSet.get(i));
+				}
+			} else {
+				for (int i = 0; i < leftSet.size(); i++) {
+					if (rightSet.contains(leftSet.get(i)) == true)
+						andSet.add(leftSet.get(i));
+				}
+			}
+			return andSet;
+		} else if (mergeType.trim().compareToIgnoreCase("xor") == 0) { // XoR
+																		// set
+			// Left is Universal Set and right Set is getting Exclusive XoR
+			Vector<Integer> xorSet = new Vector<Integer>();
+			for (int i = 0; i < leftSet.size(); i++) {
+				if (rightSet.contains(leftSet.get(i)) == false)
+					xorSet.add(leftSet.get(i));
+			}
+			return xorSet;
+
+		}
+		return leftSet;
+	}
+	
 
 }

@@ -97,91 +97,133 @@ public class DataDictionaryPDF {
 		document.close();
 	}
 	
-	/**
-	 * Writes DD as pdf into output stream
-	 */
-	public void createDDPDF(OutputStream outputStream) throws FileNotFoundException, DocumentException, SQLException {
-		
-		Document document=new Document();
-		PdfWriter.getInstance(document, outputStream);
-		document.open();
-		addTitlePage(document);
-
-		for (int i=0; i < _tableN.size(); i++) {
-			Paragraph comment = new Paragraph((i+1)+"."+_tableN.get(i));
-			comment.setAlignment(Element.ALIGN_LEFT);
-			document.add(comment);
-			addEmptyLine(document,1);
-			
-			comment = new Paragraph("Metadata Information");
-			comment.setAlignment(Element.ALIGN_LEFT);
-			document.add(comment);
-			addEmptyLine(document,1);
-			PdfPTable pdfTable = getTableMetaData(i);
-			pdfTable.setWidthPercentage(100.00f);
-			document.add(pdfTable);
-			addEmptyLine(document,1);
-		
-			comment = new Paragraph("Data Information");
-			comment.setAlignment(Element.ALIGN_LEFT);
-			document.add(comment);
-			addEmptyLine(document,1);
-			pdfTable = getTableData(i);
-			pdfTable.setWidthPercentage(100.00f);
-			document.add(pdfTable);
-			addEmptyLine(document,1);
-
-			comment = new Paragraph("PK-FK Information");
-			comment.setAlignment(Element.ALIGN_LEFT);
-			document.add(comment);
-			addEmptyLine(document,1);
-			pdfTable = getTableKey(_tableN.get(i));
-			pdfTable.setWidthPercentage(100.00f);
-			document.add(pdfTable);
-			addEmptyLine(document,1);
-			
-			comment = new Paragraph("Index Information");
-			comment.setAlignment(Element.ALIGN_LEFT);
-			document.add(comment);
-			addEmptyLine(document,1);
-			pdfTable = getTableIndex(i);
-			pdfTable.setWidthPercentage(100.00f);
-			document.add(pdfTable);
-			addEmptyLine(document,1);
-		}
-		Paragraph proc = new Paragraph("Procedure Information");
-		proc.setAlignment(Element.ALIGN_LEFT);
-	    document.add(proc);
-	    addEmptyLine(document, 2);
-	    
-	    PdfPTable pdfTable = getDBProcedure();
-	    pdfTable.setWidthPercentage(100.00f);
-	    document.add(pdfTable);
-		addEmptyLine(document,2);
-		
-		Paragraph param = new Paragraph("Parameter Information");
-		param.setAlignment(Element.ALIGN_LEFT);
-		pdfTable.setWidthPercentage(100.00f);
-	    document.add(param);
-	    addEmptyLine(document, 2);
-	    
-	    pdfTable = getDBParameter();
-	    document.add(pdfTable);
-		addEmptyLine(document,2);
-		
-		Paragraph eoDoc = new Paragraph("End of Document");
-		eoDoc.setAlignment(Element.ALIGN_CENTER);
-	    document.add(eoDoc);
-		 
-		document.close();
-		System.out.println("\n Data Dictionary File saved successfully");
-
-		
+	public void createDDPDF(OutputStream output) throws FileNotFoundException,
+			DocumentException, SQLException {
+			Document document = new Document();
+			PdfWriter.getInstance(document, output);
+			document.open();
+			addTitlePage(document);
+			createPDFBody(document);
 	}
+	//Function to create PDF Body
+		public void createPDFBody(Document document) throws DocumentException,
+				SQLException {
+			try {
+			for (int i=0; i < _tableN.size(); i++) {
+				Paragraph comment = new Paragraph((i+1)+"."+_tableN.get(i));
+				comment.setAlignment(Element.ALIGN_LEFT);
+				document.add(comment);
+				addEmptyLine(document,1);
+				
+				comment = new Paragraph("Metadata Information");
+				comment.setAlignment(Element.ALIGN_LEFT);
+				document.add(comment);
+				addEmptyLine(document,1);
+				PdfPTable pdfTable = getTableMetaData(i);
+				if (pdfTable == null ) continue;
+				pdfTable.setWidthPercentage(100.00f);
+				document.add(pdfTable);
+				addEmptyLine(document,1);
+			
+				comment = new Paragraph("Data Information");
+				comment.setAlignment(Element.ALIGN_LEFT);
+				document.add(comment);
+				addEmptyLine(document,1);
+				pdfTable = getTableData(i);
+				if (pdfTable == null ) continue;
+				pdfTable.setWidthPercentage(100.00f);
+				document.add(pdfTable);
+				addEmptyLine(document,1);
+
+				try {
+					comment = new Paragraph("PK-FK Information");
+					comment.setAlignment(Element.ALIGN_LEFT);
+					document.add(comment);
+					addEmptyLine(document,1);
+					pdfTable = getTableKey(_tableN.get(i));
+					pdfTable.setWidthPercentage(100.00f);
+					document.add(pdfTable);
+					addEmptyLine(document,1);
+				} catch (SQLException sqlex) {
+					System.out.println("\n Method getTableKey Not Supported.");
+					// Do nothing
+				}
+				
+				comment = new Paragraph("Index Information");
+				comment.setAlignment(Element.ALIGN_LEFT);
+				document.add(comment);
+				addEmptyLine(document,1);
+				pdfTable = getTableIndex(i);
+				if (pdfTable == null ) continue;
+				pdfTable.setWidthPercentage(100.00f);
+				document.add(pdfTable);
+				addEmptyLine(document,1);
+			}
+			Paragraph proc = new Paragraph("Procedure Information");
+			proc.setAlignment(Element.ALIGN_LEFT);
+		    document.add(proc);
+		    addEmptyLine(document, 2);
+		    PdfPTable pdfTable = null;
+		    
+		    try {
+		    	pdfTable = getDBProcedure();
+		    	if (pdfTable != null) {
+		    		pdfTable.setWidthPercentage(100.00f);
+		    		document.add(pdfTable);
+		    		addEmptyLine(document,2);
+		    	}
+		    } catch (SQLException sqlexp) {
+		    	System.out.println("\n Method getDBProcedure Not Supported.");
+				// Do nothing
+		    }
+
+			Paragraph param = new Paragraph("Parameter Information");
+			param.setAlignment(Element.ALIGN_LEFT);
+		    document.add(param);
+		    addEmptyLine(document, 2);
+			try {		   
+		    	pdfTable = getDBParameter();
+		    	if (pdfTable != null ) {
+		    		pdfTable.setWidthPercentage(100.00f);
+		    		document.add(pdfTable);
+		    		addEmptyLine(document,2);
+		    	}
+		    } catch (SQLException sqlexp) {
+		    	System.out.println("\n Method getDBParameter Not Supported.");
+				// Do nothing
+		    }
+			
+			Paragraph eoDoc = new Paragraph("End of Document");
+			eoDoc.setAlignment(Element.ALIGN_CENTER);
+		    document.add(eoDoc);
+			 
+			document.close();
+			System.out.println("\n Data Dictionary File saved successfully");
+			} catch (Exception e) {
+				document.close();
+				System.out.println("\n Data Dictionary File closed Abnormally");
+				try {
+					throw e;
+				} catch (Exception e1) {
+					// do nothing
+				}
+			}
+			finally {
+				document.close();
+			}
+		}
+
 	
 	// Data Dictionary PDF
 	public void createDDPDF(File pdfFile) throws FileNotFoundException, DocumentException, SQLException {
-		createDDPDF(new FileOutputStream(pdfFile));
+
+		
+		Document document=new Document();
+		PdfWriter.getInstance(document,new FileOutputStream(pdfFile));
+		document.open();
+		addTitlePage(document);
+		createPDFBody(document);
+
 	} // End of createDDPDF
 	
 	 private void addEmptyLine(Document doc, int number) throws DocumentException {

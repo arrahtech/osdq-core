@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2013      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -58,6 +58,10 @@ import org.arrah.framework.rdbms.Rdbms_conn;
 
 public class PlotterDataPanel extends JPanel implements PropertyChangeListener,
 		KeyListener, FocusListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JFormattedTextField text[] = new JFormattedTextField[11]; // 11 for
 																		// 10
 																		// bin
@@ -65,7 +69,7 @@ public class PlotterDataPanel extends JPanel implements PropertyChangeListener,
 	private JTextField binName[] = new JTextField[10];
 	private String _dsn = "", _table = "", _column = "", _type = "";
 	private double[] r_values = new double[10];
-	private JComboBox c_combo;
+	private JComboBox<String> c_combo;
 	private int color_index = 0;
 	private double[] values = new double[text.length];
 
@@ -103,7 +107,7 @@ public class PlotterDataPanel extends JPanel implements PropertyChangeListener,
 		}
 		this.add(text[10]);
 
-		c_combo = new JComboBox(
+		c_combo = new JComboBox<String>(
 				new String[] { "Red", "Green", "Yellow", "Blue" });
 		c_combo.setRenderer(new MyCellRenderer());
 
@@ -117,7 +121,7 @@ public class PlotterDataPanel extends JPanel implements PropertyChangeListener,
 
 	}
 
-	public void init(Hashtable map) {
+	public void init(Hashtable<String, String> map) {
 		_dsn = (String) map.get("Schema");
 		_type = (String) map.get("Type");
 		_table = (String) map.get("Table");
@@ -251,6 +255,11 @@ public class PlotterDataPanel extends JPanel implements PropertyChangeListener,
 	}
 
 	private class MyCellRenderer extends JLabel implements ListCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		public MyCellRenderer() {
 			setOpaque(true);
 		}

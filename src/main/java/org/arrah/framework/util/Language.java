@@ -1,14 +1,19 @@
 package org.arrah.framework.util;
 
 /***********************************************
- * Copyright to Vivek Kumar Singh * * Any part of code or file can be changed, *
- * redistributed, modified with the copyright * information intact * * Author$ :
- * Vivek Singh * *
+ * Copyright to Vivek Kumar Singh              * 
+ * Any part of code or file can be changed,    *
+ * redistributed, modified with the copyright  * 
+ * information intact                          *
+ *                                             * 
+ *  Author$ :Vivek Singh                       * 
+ *                                             *
  ***********************************************/
 
 /*
- * This file is used to fetch language types name from unicode and codepoint
- * information.
+ * This file is used to fetch language types name from 
+ * unicode and codepoint information.
+ * 
  */
 
 public class Language {

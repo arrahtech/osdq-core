@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2014      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -13,7 +13,7 @@ package org.arrah.gui.swing;
  ***********************************************/
 
 /* This files is used for creating Header
- * for editable values 
+ * for editable reportTable 
  *
  */
 
@@ -45,6 +45,10 @@ import org.arrah.framework.ndtable.TableSorter;
 /* TableRowHeader.java is used by ReportTable */
 
 public class TableRowHeader extends JTable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private TableCellRenderer render = new RowHeaderRenderer();
 	private JTable _table;
 	private ReportTable _rt;
@@ -84,11 +88,15 @@ public class TableRowHeader extends JTable {
 		return new Dimension(16, super.getPreferredSize().height);
 	}
 
-	public TableCellRenderer getDefaultRenderer(Class c) {
+	public TableCellRenderer getDefaultRenderer(Class<?> c) {
 		return render;
 	}
 
 	static class RowHeaderModel extends AbstractTableModel {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		JTable table;
 
 		protected RowHeaderModel(JTable tableToMirror) {
@@ -109,6 +117,11 @@ public class TableRowHeader extends JTable {
 	}
 
 	private class RowHeaderRenderer extends DefaultTableCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelect, boolean hasFocus, int row,
 				int column) {

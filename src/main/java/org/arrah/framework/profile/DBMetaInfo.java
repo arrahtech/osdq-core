@@ -1054,7 +1054,7 @@ public class DBMetaInfo {
 		int j1 = 0;
 		String s31 = tb_pattern;
 
-		rtm__ = new ReportTableModel(new String[] { "Table", "Column", "Type",
+		rtm__ = new ReportTableModel(new String[] { "Table", "Column", "DBType", "SQLType",
 				"Size", "Precision", "Radix", "Remark", "Default", "Bytes",
 				"Ordinal Pos", "Nullable" });
 		if (s31 == null || s31.compareTo("") == 0)
@@ -1068,6 +1068,8 @@ public class DBMetaInfo {
 			j1++;
 			String s40 = resultset6.getString(3);
 			String s45 = resultset6.getString(4);
+			int i52 = resultset6.getInt(5);
+			String s52 = SqlType.getTypeName(i52);
 			String s51 = resultset6.getString(6);
 			String s58 = resultset6.getString(7);
 			String s67 = resultset6.getString(9);
@@ -1077,7 +1079,7 @@ public class DBMetaInfo {
 			String s87 = resultset6.getString(16);
 			String s88 = resultset6.getString(17);
 			String s89 = resultset6.getString(18);
-			as11 = (new String[] { s40, s45, s51, s58, s67, s75, s81, s85, s87,
+			as11 = (new String[] { s40, s45, s51, s52, s58, s67, s75, s81, s85, s87,
 					s88, s89 });
 		}
 
@@ -1226,5 +1228,19 @@ public class DBMetaInfo {
 			_rt.addFillRow(obj);
 		}
 		return _rt;
+	}
+	public static Vector<String> getDataTypeInfo() throws SQLException {
+		Rdbms_conn.openConn();
+		DatabaseMetaData dbmd = Rdbms_conn.getMetaData();
+		
+		Vector<String> dataTypeName = new Vector<String>();
+		ResultSet resultset1;
+		for (resultset1 = dbmd.getTypeInfo(); resultset1.next(); ) {
+			String s15 = resultset1.getString(1);
+			dataTypeName.add(s15);
+		}
+		resultset1.close();
+		Rdbms_conn.closeConn();
+		return dataTypeName;
 	}
 }

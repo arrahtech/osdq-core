@@ -200,7 +200,16 @@ public class SqlTablePanel extends JPanel implements ActionListener {
 		};
 
 		public void actionPerformed(ActionEvent e) {
-			String sql_s = sql_t.getText().trim().replaceAll("\\s+", " ");
+			String sql_s ="";
+			sql_s = sql_t.getSelectedText(); // get only selected text
+			if (sql_s == null || "".equals(sql_s))
+			sql_s = sql_t.getText();
+			if (sql_s == null || "".equals(sql_s)) {
+				bot_scroll.setViewportView(new JLabel(
+						"Error: Empty Query String."));
+				return;
+			}
+			sql_s = sql_s.trim().replaceAll("\\s+", " ");
 
 			String[] sp_v = sql_s.split(" "); // Split to get words
 			if (sp_v[0] == null || sp_v[0].compareTo("") == 0) {

@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2013      *
  *     http://www.arrah.in                     *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -46,20 +46,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 
 import org.arrah.framework.rdbms.JDBCRowset;
+import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.UpdatableJdbcRowsetImpl;
 
-import com.sun.rowset.JdbcRowSetImpl;
 
 public class JDBCRowsetPanel extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private ReportTable _rt, _newRT;
-	private JdbcRowSetImpl rows;
+	private UpdatableJdbcRowsetImpl rows;
 	public JDBCRowset rowset; // a hack into JDBCRowset
 	private String[] col_name;
-	private String[] tbl_name;
 	private int[] col_type;
-	private boolean isEdit;
+	
 	private JFormattedTextField ft, ft_p;
-	private JLabel l_e, l_s;
+	private JLabel l_e;
 	private int totalP = 1;
 	private int currentP = 1;
 	private int rowC = 0;
@@ -71,16 +71,26 @@ public class JDBCRowsetPanel extends JPanel implements ActionListener {
 	private Hashtable<Integer, Integer> modelToRow = null;
 	private JDialog jd;
 	private int numberOfColumns = 0;
+	
+	/* Need to keep constructor parameters for calling populate function again*/
+	private boolean isEdit;
+	private String _query = null;
+	private Vector<Integer> _vc_t = null;
+	private Vector<Object> _vc_v = null;
+	private boolean isConstCall = false;
 
 	/* IF YOU WANT GUI */
 	public JDBCRowsetPanel(String query, boolean editable, String pc)
 			throws SQLException {
+		_query = query;
+		isConstCall = true;
 		try {
 			rowset = new JDBCRowset(query, -1, editable);
 			rows = rowset.getRowset();
 			rowC = rowset.getRowCount();
 
 		} catch (SQLException e) {
+			System.err.println("Error in JDBCRowsetPanel Constructor:" +e.getLocalizedMessage());
 			throw e;
 		}
 		isEdit = editable;
@@ -90,13 +100,18 @@ public class JDBCRowsetPanel extends JPanel implements ActionListener {
 	}
 
 	/* IF YOU WANT GUI IN Prepared query */
+	// Hive will not support Prepared query
 	public JDBCRowsetPanel(String query, boolean editable, String pc,
 			Vector<Integer> vc_t, Vector<Object> vc_v) throws SQLException {
+		_query = query;
+		isConstCall = true;
+		_vc_t = vc_t; _vc_v = vc_v;
 		try {
 			rowset = new JDBCRowset(query, editable, vc_t, vc_v);
 			rows = rowset.getRowset();
 			rowC = rowset.getRowCount();
 		} catch (SQLException e) {
+			System.err.println("Error in JDBCRowsetPanel Constructor:" +e.getLocalizedMessage());
 			throw e;
 		}
 		isEdit = editable;
@@ -174,8 +189,29 @@ public class JDBCRowsetPanel extends JPanel implements ActionListener {
 	}
 
 	private void populateTable(int fromIndex, int toIndex) throws SQLException {
+		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 		rows.absolute(fromIndex);
 		rows.previous();
+		} else {
+			/* Hive does not guarantee same order of row. Its cursor is not movable*/
+			/* We need to call again and re-populate the rowset */
+			
+			JOptionPane.showMessageDialog(null,
+					"Hive does not guarantee same sequence of rows for same operation",
+					"Hive Information Message", JOptionPane.INFORMATION_MESSAGE);
+
+			if (isConstCall != true) {
+				if(_vc_t != null && _vc_v != null ) {
+					rowset = new JDBCRowset(_query, isEdit, _vc_t, _vc_v);
+				} else {
+					rowset = new JDBCRowset(_query, -1, isEdit);
+				}
+				rows = rowset.getRowset();
+				rowC = rowset.getRowCount();
+			}
+			
+			isConstCall = false;
+		}
 		int counter = 0;
 		if (_rt != null)
 			_rt.cleanallRow();
@@ -639,7 +675,6 @@ public class JDBCRowsetPanel extends JPanel implements ActionListener {
 	}
 
 	public ReportTable getAddTablePanel() {
-		final Object[] obj = new Object[col_name.length];
 		ReportTable newRT = new ReportTable(col_name, col_type, true, true);
 		newRT.addRows(0, 1);
 		return newRT;

@@ -1,8 +1,8 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2013      *
- *     http://www.arrah.in                     *
+ *     Copyright to Arrah Technology 2014      *
+ *                                             *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -47,7 +47,7 @@ import org.arrah.framework.profile.FirstInformation;
 import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
-import org.arrah.framework.util.LicenseManager;
+// import org.arrah.framework.util.LicenseManager;
 
 public class FirPanel extends JPanel {
 	/**
@@ -85,7 +85,6 @@ public class FirPanel extends JPanel {
 				int i = vector.indexOf(s);
 				ReportTable reporttable = null;
 				ReportTableModel rtm = null;
-				Object obj = null;
 				String s1 = ((JLabel) mouseevent.getSource()).getText();
 				if (s1 != null) {
 					if (s1.equals("<html><body><a href=\"\">Show Condition</A></body></html>")) {
@@ -98,7 +97,7 @@ public class FirPanel extends JPanel {
 						return;
 					} else if (s1
 							.equals("<html><body><a href=\"\">Save As Image</A></body></html>")) {
-						ImageUtil imgutil = new ImageUtil(_comp, "png");
+						new ImageUtil(_comp, "png");
 						return;
 					} else if (s1
 							.equals("<html><body><a href=\"\">Table View</A></body></html>")) {
@@ -501,7 +500,9 @@ public class FirPanel extends JPanel {
 
 	private JPanel createTopPanel() {
 		JPanel jpanel = new JPanel();
-		String s = null;
+		// String s = null;
+		
+		/* Under LGPL or Apache
 		LicenseManager licensemanager = new LicenseManager();
 		if (licensemanager.isValid()) {
 			if (licensemanager.isEval) {
@@ -515,8 +516,9 @@ public class FirPanel extends JPanel {
 			s = "Does not have Enterprise  License...<BR>";
 			s = "Community License (LGPL) used. ";
 		}
-		
-		s = "<html> <B> <I> <U> &copy; 2006-2013  Arrah Technology </U> <BR>"
+		*/
+		String s = " Community License (LGPL) or Apache . ";
+		s = "<html> <B> <I> <U> &copy; 2006-2015  Arrah Technology </U> <BR>"
 				+ s + "</I></B> </html>";
 		
 		jpanel.setLayout(new GridLayout(12, 1));

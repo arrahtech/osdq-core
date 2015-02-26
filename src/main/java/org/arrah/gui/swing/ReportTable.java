@@ -47,6 +47,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EventObject;
@@ -58,6 +60,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -83,6 +86,7 @@ import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.ndtable.ReportTableSorter;
 import org.arrah.framework.ndtable.TableSorter;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
+import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.xls.XlsReader;
 import org.arrah.framework.xml.DTDGenerator;
 import org.arrah.framework.xml.XmlWriter;
@@ -194,8 +198,41 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 				} else {
 					c.setBackground(getBackground());
 				}
+				
+				Object value = this.getValueAt(row, col);
+				if (value == null) // If null make it Gray color
+					c.setBackground(new Color(100, 100, 100, 100));
 				if (this.isRowSelected(row) && this.isColumnSelected(col))
 					c.setBackground(Color.YELLOW);
+				
+				// Default Date Format
+		        if( value instanceof java.util.Date) {
+		        	String format = Rdbms_conn.getHValue("DateFormat");
+		        	if (format == null || "".equals(format))
+		        		return c;
+		        	try {
+		        		SimpleDateFormat df = new SimpleDateFormat(format);
+		        		value = df.format(value);
+		        		((JLabel)c).setText(value.toString());
+		        	} catch (Exception e){
+		        		return c;
+		        	}
+		        }
+		     // Default Number Format
+		        if( value instanceof java.lang.Number) {
+		        	String format = Rdbms_conn.getHValue("NumberFormat");
+		        	if (format == null || "".equals(format))
+		        		return c;
+		        	try {
+		        		
+		        		DecimalFormat df = new DecimalFormat(format);
+		        		value = df.format(value);
+		        		((JLabel)c).setText(value.toString());
+		        	} catch (Exception e){
+		        		return c;
+		        	}
+		        }
+				
 				return c;
 			}
 
@@ -576,11 +613,20 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 			menu2.addActionListener(new TableMenuListener(table));
 			popup.add(menu2);
 			popup.addSeparator();
-			JMenuItem menu3 = new JMenuItem("Regex Search");
-			menu3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
-					InputEvent.CTRL_MASK));
-			menu3.addActionListener(new TableMenuListener(table));
+			
+			JMenu menu3 = new JMenu("Regex Search");
 			popup.add(menu3);
+			JMenuItem regex_col = new JMenuItem("Across Column");
+			regex_col.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
+					InputEvent.CTRL_MASK));
+			regex_col.addActionListener(new TableMenuListener(table));
+			menu3.add(regex_col);
+			JMenuItem regex_table = new JMenuItem("Across Table");
+			regex_table.addActionListener(new TableMenuListener(table));
+			menu3.add(regex_table);
+			popup.add(menu3);
+			
+			
 			popup.addSeparator();
 			JMenuItem menu4 = new JMenuItem("Analyse Selected");
 			menu4.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
