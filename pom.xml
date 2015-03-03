@@ -175,7 +175,7 @@
 	</dependencies>
 	<issueManagement>
 		<system>github</system>
-		<url>https://github.com/issues</url>
+		<url>https://github.com/arunwizz/profiler/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>drone.io</system>
@@ -183,6 +183,6 @@
 	</ciManagement>
 	<organization>
 		<name>arrah</name>
-		<url>arrah.in</url>
+		<url>http://arrah.in</url>
 	</organization>
 </project>
