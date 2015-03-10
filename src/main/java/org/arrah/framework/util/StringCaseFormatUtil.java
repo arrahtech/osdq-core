@@ -2,7 +2,7 @@ package org.arrah.framework.util;
 
 /***********************************************
  *     Copyright to Arrah Technology 2013      *
- *     http://www.arrah.in                     *
+ *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *

@@ -2,7 +2,7 @@ package org.arrah.gui.swing;
 
 /***********************************************
  *     Copyright to Arrah Technology 2012      *
- *     http://www.arrah.in                     *
+ *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
