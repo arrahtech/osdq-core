@@ -8,7 +8,7 @@
 	<packaging>jar</packaging>
 
 	<name>profiler</name>
-	<url>http://arrah.in</url>
+	<url>http://www.arrahtec.org</url>
 
 	<scm>
 		<connection>scm:git:git@github.com:arrah/profiler.git</connection>
@@ -182,7 +182,7 @@
 		<url>https://drone.io/github.com/arrah/profiler</url>
 	</ciManagement>
 	<organization>
-		<name>arrah</name>
-		<url>http://arrah.in</url>
+		<name>Arrah Technology</name>
+		<url>>http://www.arrahtec.org</url>
 	</organization>
 </project>
