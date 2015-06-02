@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2013      *
+ *     Copyright to Arrah Technology 2015      *
  *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -28,6 +28,7 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
@@ -49,11 +50,12 @@ public class RandomColGenPanel implements ActionListener {
 	private JFormattedTextField jft_low, jft_high;
 	private JFormattedTextField jfs_low, jfs_high;
 	private JFormattedTextField jrn_low, jrn_high;
-	private JRadioButton rd1, rd2, rd3;
-	private JSpinner jsp_low, jsp_high;
+	private JRadioButton rd1, rd2, rd3, rd4;
+	private JSpinner jsp_low, jsp_high, jsp_low_time, jsp_high_time;
 	private JComboBox<String> typeCombo, lanCombo, strType;
 	private Border line_b;
 	private int beginIndex, endIndex;
+	private JCheckBox sortCheck;
 
 	public RandomColGenPanel(ReportTable rt, int colIndex) {
 		_rt = rt;
@@ -63,21 +65,24 @@ public class RandomColGenPanel implements ActionListener {
 	}; // Constructor
 
 	private void createDialog() {
-		JPanel jp = new JPanel(new GridLayout(5, 1));
+		JPanel jp = new JPanel(new GridLayout(6, 1));
 		line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 
 		rd1 = new JRadioButton("Number");
 		rd2 = new JRadioButton("String");
 		rd3 = new JRadioButton("Date");
+		rd4 = new JRadioButton("Time");
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(rd1);
 		bg.add(rd2);
 		bg.add(rd3);
+		bg.add(rd4);
 		rd1.setSelected(true);
 
 		jp.add(createNumPanel());
 		jp.add(createStringPanel());
 		jp.add(createDatePanel());
+		jp.add(createTimePanel());
 		jp.add(createRowNumPanel());
 
 		JPanel bp = new JPanel();
@@ -136,10 +141,14 @@ public class RandomColGenPanel implements ActionListener {
 		jrn_high.setValue(new Long(_rowC+1));
 		jrn_high.setColumns(8);
 		
+		//CheckBox for sorted value
+		sortCheck = new JCheckBox("Incremental");
+		
 		rownnumjp.add(lrange);
 		rownnumjp.add(jrn_low);
 		rownnumjp.add(torange);
 		rownnumjp.add(jrn_high);
+		rownnumjp.add(sortCheck);
 		rownnumjp.setBorder(line_b);
 		return rownnumjp;
 	}
@@ -156,6 +165,22 @@ public class RandomColGenPanel implements ActionListener {
 		datejp.add(jsp_low);
 		datejp.add(toRange);
 		datejp.add(jsp_high);
+		datejp.setBorder(line_b);
+		return datejp;
+	}
+	private JPanel createTimePanel() {
+		JPanel datejp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		jsp_low_time = new JSpinner(new SpinnerDateModel());
+		jsp_high_time = new JSpinner(new SpinnerDateModel());
+		jsp_low_time.setEditor(new JSpinner.DateEditor(jsp_low_time, "HH:mm:ss"));
+		jsp_high_time.setEditor(new JSpinner.DateEditor(jsp_high_time, "HH:mm:ss"));
+		JLabel lrange = new JLabel("  Range:", JLabel.LEADING);
+		JLabel toRange = new JLabel("  to:", JLabel.LEADING);
+		datejp.add(rd4);
+		datejp.add(lrange);
+		datejp.add(jsp_low_time);
+		datejp.add(toRange);
+		datejp.add(jsp_high_time);
 		datejp.setBorder(line_b);
 		return datejp;
 	}
@@ -214,6 +239,8 @@ public class RandomColGenPanel implements ActionListener {
 							.updateColumnRandomInt(
 									((Long) jft_high.getValue()).longValue(),
 									((Long) jft_low.getValue()).longValue());
+					if (sortCheck.isSelected() == true)
+						vc.sort(null);
 					for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 						_rt.setTableValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
 					}
@@ -222,6 +249,8 @@ public class RandomColGenPanel implements ActionListener {
 							.updateColumnRandomDouble(
 									((Long) jft_high.getValue()).longValue(),
 									((Long) jft_low.getValue()).longValue());
+					if (sortCheck.isSelected() == true)
+						vc.sort(null);
 					for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 						_rt.setTableValueAt(vc.get(i- (beginIndex -1)).toString(), i, _colIndex);
 					}
@@ -232,15 +261,27 @@ public class RandomColGenPanel implements ActionListener {
 								((Long) jfs_low.getValue()),
 								lanCombo.getSelectedIndex(),
 								strType.getSelectedIndex());
+				if (sortCheck.isSelected() == true)
+					vc.sort(null);
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 					_rt.setTableValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
 				}
 			}
-			if (rd3.isSelected() == true) {
-				long min = ((Date) jsp_low.getValue()).getTime();
-				long max = ((Date) jsp_high.getValue()).getTime();
+			if (rd3.isSelected() == true || rd4.isSelected() == true) {
+				long min=0,max=0;
+				if (rd3.isSelected() == true) {
+				 min = ((Date) jsp_low.getValue()).getTime();
+				 max = ((Date) jsp_high.getValue()).getTime();
+				}
+				else {
+				 min = ((Date) jsp_low_time.getValue()).getTime();
+				 max = ((Date) jsp_high_time.getValue()).getTime();
+				}
+				
 				Vector<Date> vc = new RandomColGen(numGenerate)
 						.updateColumnRandomDate(max, min);
+				if (sortCheck.isSelected() == true)
+					vc.sort(null);
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 					_rt.setTableValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
 				}

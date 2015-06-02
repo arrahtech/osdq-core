@@ -39,7 +39,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerDateModel;
 import javax.swing.SpringLayout;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -53,18 +55,19 @@ public class GroupingPanel implements ActionListener, ItemListener {
 	private int _colIndex = 0;
 	private JDialog d_f;
 	private JFormattedTextField jrn_low, jrn_high;
-	private JRadioButton rd1, rd3;
+	private JRadioButton rd1, rd3, rd2;
 	private JComboBox<String> colSel, timeGroup, timeFormat;
 	private Border line_b;
 	private int beginIndex, endIndex;
 	private JLabel colType, dateInfo;
-	private Vector<JTextField> grpName_v,otherValue_v;
+	private Vector<JTextField> grpName_v,otherValue_v,grpName_vS;
 	private Vector<JFormattedTextField>jft_low_v, jft_high_v;
-	private JPanel cp; // for adding more row for number grouping
-	private Vector<Boolean> validNum_bv;
+	private Vector<JSpinner>jft_low_vS, jft_high_vS;
+	private JPanel cp,cps; // for adding more row for number grouping
+	private Vector<Boolean> validNum_bv,validDate_bvS;
 	private Vector<Vector<Double>> otherNum_v;
 	
-	private int capacity;
+	private int capacity, capacityS;
 	
 	public GroupingPanel(ReportTable rt, int colIndex) {
 		_rt = rt;
@@ -79,17 +82,20 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 
 		rd1 = new JRadioButton("Number");
+		rd2 = new JRadioButton("Seasonality");
 		rd3 = new JRadioButton("Date");
 		ButtonGroup bg = new ButtonGroup();
-		bg.add(rd1);
-		bg.add(rd3);
+		bg.add(rd1);bg.add(rd2);bg.add(rd3);
+		
 		rd3.setSelected(true);
 
 		JPanel header = new JPanel(new GridLayout(2,1));
 		header.add(createSelectionPanel());header.add(createDatePanel());
 		jp.add(header,BorderLayout.NORTH);
 
-		jp.add(createNumPanel(),BorderLayout.CENTER);
+		JPanel body = new JPanel(new GridLayout(2,1));
+		body.add(createSeasonPanel());body.add(createNumPanel());
+		jp.add(body,BorderLayout.CENTER);
 
 		JPanel bp = new JPanel();
 		JButton ok = new JButton("OK");
@@ -112,7 +118,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		d_f.setModal(true);
 		d_f.setTitle("Grouping  Dialog");
 		d_f.setLocation(100, 100);
-		d_f.setPreferredSize(new Dimension(900,550));
+		d_f.setPreferredSize(new Dimension(950,850));
 		d_f.getContentPane().add(jp);
 		d_f.pack();
 		d_f.setVisible(true);
@@ -148,6 +154,36 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		
 		return numjp;
 	}
+	
+	/* User can choose multiple options to group date so that */
+	private JPanel createSeasonPanel() {
+		
+		grpName_vS = new Vector<JTextField>();
+		jft_low_vS = new Vector<JSpinner>();
+		jft_high_vS = new Vector<JSpinner>();
+				
+		JPanel numjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		numjp.add(rd2);
+		numjp.setBorder(line_b);
+		
+		JButton addcol = new JButton("Add Column");
+		addcol.setActionCommand("addcolseason");
+		addcol.addActionListener(this);
+		addcol.addKeyListener(new KeyBoardListener());
+		cps = new JPanel(new SpringLayout());
+		for (int i = 0; i < 8; i++) // create default 8 col Name
+			addSeasonRow();
+
+		SpringUtilities.makeCompactGrid(cps, capacityS, 6, 3, 3, 3, 3);
+		JScrollPane jscrollpane1 = new JScrollPane(cps);
+		jscrollpane1.setPreferredSize(new Dimension(850, 250));
+		
+		numjp.add(addcol);
+		numjp.add(jscrollpane1);
+		
+		return numjp;
+	}
+	
 	private JPanel createRowNumPanel() {
 		JPanel rownnumjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		JLabel lrange = new JLabel("  Row Numbers to Populate : From (Inclusive)", JLabel.LEADING);
@@ -170,7 +206,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		JPanel datejp = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		datejp.add(rd3);
 		timeGroup = new JComboBox<String>(new String[] {"Year","Year - Qrt","Qrt","Year - Month","Month",
-				"Day","Hour","Week of Year"});
+				"Day","Hour","Half Hour","15 Min","10 Min","5 Min","Min","Week of Year","Weekend"});
 		timeGroup.addItemListener(this);
 		datejp.add(timeGroup);
 		dateInfo = new JLabel();
@@ -213,6 +249,13 @@ public class GroupingPanel implements ActionListener, ItemListener {
 			cp.setLayout(new SpringLayout());
 			SpringUtilities.makeCompactGrid(cp, capacity, 8, 3, 3, 3, 3);
 			cp.revalidate();
+			return;
+		}
+		if (action.equals("addcolseason")) {
+			addSeasonRow();
+			cps.setLayout(new SpringLayout());
+			SpringUtilities.makeCompactGrid(cps, capacityS, 6, 3, 3, 3, 3);
+			cps.revalidate();
 			return;
 		}
 		if (action.equals("ok")) {
@@ -272,6 +315,43 @@ public class GroupingPanel implements ActionListener, ItemListener {
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 			} // end of Number
+			if (rd2.isSelected() == true) {
+				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
+				// Check if it date type
+				boolean dateValidated = false;
+				
+				validateDateInput();
+				
+				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
+					Object colObject = _rt.getValueAt(i, selColIndex);
+					 if (colObject == null) continue;
+					 if (dateValidated == false) {
+						 if (colObject instanceof java.util.Date) {
+								d_f.dispose(); // now dispose
+								dateValidated = true;
+						} else {
+							ConsoleFrame.addText("\n Input String is not in Date format");
+								JOptionPane.showMessageDialog(null, "Input is not of Date Type\n Please format to Date type ", 
+										"Date Type Error", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+					 }
+					 String colVal = "";
+					 for (int j=0; j < capacityS; j++) {
+							if (validDate_bvS.get(j) == true) {
+								Date mindate = (Date) jft_low_vS.get(j).getValue();
+								Date maxdate = (Date) jft_high_vS.get(j).getValue();
+								if ( ((Date)colObject).compareTo(mindate) >= 0 && ((Date)colObject).before(maxdate)) {
+									colVal = grpName_vS.get(j).getText();
+									break; // break the loop and setValue then get next value
+								}
+								
+							} else continue; // not valid value	
+					}
+					_rt.setTableValueAt(colVal, i, _colIndex);
+				}
+				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
+			} // end of Seasonality
 			if (rd3.isSelected() == true) { // Date Type
 				
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
@@ -282,10 +362,10 @@ public class GroupingPanel implements ActionListener, ItemListener {
 					case 1: case 2:
 						format = TimeUtil.monthCalValue(timeFormat.getSelectedItem().toString());
 						break;
-					case 7:
+					case 12:
 						format = TimeUtil.weekCalValue(timeFormat.getSelectedItem().toString());
 						break;
-					case 6 :
+					case 6 :case 7 :case 8 :case 9 :case 10 :case 11 :
 						format = timeFormat.getSelectedIndex();
 						break;
 					default:
@@ -330,7 +410,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 				// Show options for date
 				int index = timeGroup.getSelectedIndex();
 				switch (index) {
-					case 0: case 3: case 4: case 5: default:
+					case 0: case 3: case 4: case 5: case 13: default:
 						dateInfo.setText("");
 						timeFormat.setEnabled(false);
 						break;
@@ -343,7 +423,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 						timeFormat.addItem("Oct");timeFormat.addItem("Nov");timeFormat.addItem("Dec");
 						timeFormat.setEnabled(true);
 						break;
-					case 6:
+					case 6:case 7:case 8:case 9:case 10:case 11:
 						dateInfo.setText("   Hour Format:");
 						timeFormat.removeAllItems();
 						timeFormat.addItem("AM PM");
@@ -351,7 +431,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 						timeFormat.setEnabled(true);
 						break;
 						
-					case 7:
+					case 12:
 						dateInfo.setText("   Starting Day:");
 						timeFormat.removeAllItems();
 						timeFormat.addItem("Sun");timeFormat.addItem("Mon");timeFormat.addItem("Tue");
@@ -440,4 +520,56 @@ public class GroupingPanel implements ActionListener, ItemListener {
 			validNum_bv.add(i, true); // All valid
 		}
 	}
+	
+	/* This function will be used to add row to season grouping feature */
+	private void addSeasonRow() {
+		
+		JLabel grpNameL = new JLabel("Season ID:");
+		JTextField grpName = new JTextField(10);
+		grpName.setText("Season_"+ (capacityS+1));
+		grpName.setToolTipText("Enter Season Name");
+		
+		JSpinner jsp_low = new JSpinner(new SpinnerDateModel());
+		JSpinner jsp_high = new JSpinner(new SpinnerDateModel());
+		jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "dd/MM/yyyy HH:mm:ss"));
+		jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "dd/MM/yyyy HH:mm:ss"));
+		
+		JLabel lrange = new JLabel("Start Date:", JLabel.LEADING);
+		JLabel hrange = new JLabel("End Date:", JLabel.LEADING);
+		
+		grpName_vS.add(capacityS,grpName);
+		jft_low_vS.add(capacityS,jsp_low);
+		jft_high_vS.add(capacityS,jsp_high);
+
+		
+		/* Add value to Panel */
+		cps.add(grpNameL);
+		cps.add(grpName);
+		cps.add(lrange);
+		cps.add(jsp_low);
+		cps.add(hrange);
+		cps.add(jsp_high);
+		capacityS++;
+	}
+	
+	// Validate the date
+	private void validateDateInput() {
+		validDate_bvS = new Vector<Boolean>();
+		
+		for (int i=0; i < capacityS; i++) {
+			String grpName = grpName_vS.get(i).getText();
+			if (grpName == null || "".equals(grpName) ){
+				validDate_bvS.add(i, false);
+				continue;
+			}
+			Date mindate = (Date) jft_low_vS.get(i).getValue();
+			Date maxdate = (Date) jft_high_vS.get(i).getValue();
+			if ( mindate == null || maxdate == null || maxdate.before(mindate) == true ) {
+				validDate_bvS.add(i, false);
+				continue;
+			}
+			validDate_bvS.add(i, true); // All valid
+		}
+	}
+
 }

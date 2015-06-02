@@ -151,7 +151,10 @@ public class DataExplosionPanel implements ActionListener {
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			_dg.dispose();
+			
+			try {	
+			_dg.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+			
 			beginIndex = ((Long) jrn_low.getValue()).intValue();
 			endIndex = ((Long) jrn_high.getValue()).intValue();
 			int rowC = _rt.getModel().getRowCount();
@@ -165,7 +168,10 @@ public class DataExplosionPanel implements ActionListener {
 			_rt.getModel().setValueAt(burstVal[i - (beginIndex -1)], i, _selColIndex);
 
 			return;
-		}
+		} finally {
+			_dg.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+			_dg.dispose();
+		} }
 
 	}
 

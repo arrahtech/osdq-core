@@ -387,5 +387,26 @@ public class ReportTableModel implements Serializable, Cloneable {
 		return colN;
 	}
 	
-
+	public  Object[] getColData(int index) {
+		int row_c = this.getModel().getRowCount();
+		Object[] colN = new Object[row_c];
+		for (int i = 0; i < row_c; i++)
+		 colN[i] = this.getModel().getValueAt(i, index);
+		return colN;
+	}
+	
+	public  Vector<Object> getColDataV(int index) {
+		int row_c = this.getModel().getRowCount();
+		Vector<Object> vc = new Vector<Object>();
+		for (int i = 0; i < row_c; i++)
+			vc.add(this.getModel().getValueAt(i, index));
+		return vc;
+	}
+	
+	public  Object[] getColData(String colName) {
+		int colI = getColumnIndex( colName);
+		if ( colI  < 0 ) return null;
+		return getColData(colI);
+	}
+	
 } // End of ReportTableModel class

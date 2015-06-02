@@ -197,6 +197,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 			
 			if (queryString == null || queryString.equals("") == true)
 				continue;
+			
 			Query qry = _simcheck.parseQuery(queryString);
 			Hits hit = _simcheck.searchIndex(qry);
 			if (hit == null || hit.length() <= 1)

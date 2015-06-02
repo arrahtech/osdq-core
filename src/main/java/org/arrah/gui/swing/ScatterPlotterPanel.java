@@ -60,6 +60,11 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		ChangeListener, Serializable
 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public PlotterPanel g_p; // Accessed for repainting
 
 	private String _dsn = "", _table = "", _column = "", _type = "";
@@ -93,7 +98,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		JPanel topPane = new JPanel();
 		topPane.setLayout(new GridLayout(0, 7));
 
-		final JComboBox c_combo = new JComboBox(new String[] { "Red", "Green",
+		final JComboBox<String> c_combo = new JComboBox<String>(new String[] { "Red", "Green",
 				"Yellow", "Blue" });
 		c_combo.setBorder(new EmptyBorder(0, 4, 0, 0));
 		c_combo.setRenderer(new MyCellRenderer());
@@ -139,7 +144,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 
 	}
 
-	public void init(Hashtable map) {
+	public void init(Hashtable<String,String> map) {
 		_dsn = (String) map.get("Schema");
 		_type = (String) map.get("Type");
 		_table = (String) map.get("Table");
@@ -159,7 +164,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 
 	}
 
-	public Vector fillValues() {
+	public Vector<Double> fillValues() {
 
 		final int gc = getGC();
 		if (gc == 0)
@@ -220,7 +225,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 						.setCursor(
 								java.awt.Cursor
 										.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-				Vector vc = fillValues();
+				Vector<Double> vc = fillValues();
 				if (vc == null || (size = vc.size()) == 0) {
 					JOptionPane.showMessageDialog(null, "No Data fetched",
 							"Error Message", JOptionPane.ERROR_MESSAGE);
@@ -277,19 +282,24 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		} else if (click_val.equalsIgnoreCase("Reset")) {
 			g_p.setZoomFactor(1);
 			g_p.showBubbleChart();
-			// Set the Sliderbar
+			// Set the Slider bar
 			sm_min.setValue(sm_min.getMinimum());
 			sm_max.setValue(sm_max.getMaximum());
 
 		}
 	}
 
-	private class MyCellRenderer extends JLabel implements ListCellRenderer {
+	private class MyCellRenderer extends JLabel implements ListCellRenderer<Object> {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		public MyCellRenderer() {
 			setOpaque(true);
 		}
 
-		public Component getListCellRendererComponent(JList list, Object value,
+		public Component getListCellRendererComponent(JList<?> list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			JLabel l = new JLabel(value.toString());
 			l.setOpaque(true);
