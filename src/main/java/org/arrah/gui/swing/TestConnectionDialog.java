@@ -98,7 +98,8 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		String[] dbtype = {"Oracle JDBC Client","Oracle Windows Bridge","Mysql JDBC Client","Mysql Windows Bridge",
 							"SQLServer JDBC Client","SQLServer Windows Bridge",
 							"Access Windows Bridge","Postgres JDBC Client","DB2 JDBC Client",
-							"Hive JDBC Client","Informix JDBC Client","Splice Derby Client","Others (JDBC Bridge)","Others (Windows Bridge)"}; String[] cname = {"New Connection"};
+							"Hive JDBC Client","Informix JDBC Client","Splice Derby Client","Others (JDBC Bridge)","Others (Windows Bridge)"}; 
+		String[] cname = {"New Connection"};
 		jc = new JComboBox<String>(dbtype);
 		jc.addActionListener(this);
                 

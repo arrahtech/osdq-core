@@ -65,7 +65,8 @@ public class TimeUtil {
 		}
 	}
 	/* This function will be used by grouping algo to 
-	 * group date/ time
+	 * group date/ time. Month and Day are ok but hour
+	 * should be grouped in next hour
 	 */
 	public static String timeValue(Date date, int timeH, int anchorTime) {
 		if (date == null || (date instanceof Date) == false)
@@ -77,6 +78,8 @@ public class TimeUtil {
 		int month = cal.get(Calendar.MONTH);
 		int day = cal.get(Calendar.DAY_OF_WEEK);
 		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int min = cal.get(Calendar.MINUTE);
+		int sec = cal.get(Calendar.SECOND);
 
 		switch (timeH) {
 		case 0: // Year
@@ -92,11 +95,38 @@ public class TimeUtil {
 		case 5: // Day
 			return getDayName(Integer.toString(day));
 		case 6: // Hour
-			return ampmDateForm(hour,anchorTime); // will use anchor Time for am pm or 24 hrs format
-		case 7: // Week of Year
+			if (min > 0) hour++; // group into next hour
+			return ampmDateForm(hour,min,false,anchorTime); // will use anchor Time for am pm or 24 hrs format
+		case 7: // Half Hour
+			// group into half hour
+			if (min > 30) { min = 0; hour++; }
+			else min = 30;
+			return ampmDateForm(hour,min,true,anchorTime); // will use anchor Time for am pm or 24 hrs format
+		case 8: // 15 Min
+			int i15 = min % 15;
+			i15++; // next 15 min
+			min = 15*i15; if ( min >= 60){ min = 0; hour++; }
+			return ampmDateForm(hour,min,true,anchorTime); // will use anchor Time for am pm or 24 hrs format
+		case 9: // 10 Min
+			int i10 = min % 10;
+			i10++; // next 10 min
+			min = 10*i10; if ( min >= 60){ min = 0; hour++; }
+			return ampmDateForm(hour,min,true,anchorTime); // will use anchor Time for am pm or 24 hrs format
+		case 10: // 5 Min
+			int i5 = min % 5;
+			i5++; // next 5 min
+			min = 5*i5; if ( min >= 60){ min = 0; hour++; }
+			return ampmDateForm(hour,min,true,anchorTime); // will use anchor Time for am pm or 24 hrs format
+		case 11: // Min
+			if (sec > 0) min++;
+			if ( min >= 60){ min = 0; hour++; }
+			return ampmDateForm(hour,min,true,anchorTime); // will use anchor Time for am pm or 24 hrs format
+		case 12: // Week of Year
 			cal.setFirstDayOfWeek(anchorTime); // Starting day
 			int weekY = cal.get(Calendar.WEEK_OF_YEAR);
 			return Integer.toString(weekY);
+		case 13: // Weekend
+			return getWeekend(Integer.toString(day));
 		default:
 			return date.toString();
 		}
@@ -183,6 +213,16 @@ public class TimeUtil {
 			return OTHER;
 		}
 	}
+	// Return weekend or weekdays
+	public static String getWeekend(String code) { // Good for Sorting
+		int day = Integer.parseInt(code);
+		switch (day) {
+		case Calendar.SUNDAY: case Calendar.SATURDAY:
+			return "Weekend";
+		default:
+			return "Weekday";
+		}
+	}
 
 	/* This is standard qrt method starting from Jan
 	 * 
@@ -265,20 +305,38 @@ public class TimeUtil {
 			return diagonalLen+diff;
 	}
 	
-	public static String ampmDateForm(int hour, int ampmformat) {
-		if (ampmformat < 1 ) { // select AM PM format
-			if (hour < 12 )
-				return Integer.toString(hour)+ " AM";
-			else if (hour == 12 || hour < 24)
-				return Integer.toString(hour)+ " PM"; // mid day 12 pm
-			else if ( hour < 24)
-				return Integer.toString(hour -12)+ " PM";
-			else if ( hour == 24)
-				return Integer.toString(hour -12)+ " AM"; // mid nigh 12 am
-			else
+	public static String ampmDateForm(int hour,int min, boolean useMin,int ampmformat) {
+		if (hour > 24) hour = 0;
+		if (useMin == false) {
+			if (ampmformat < 1 ) { // select AM PM format
+				if (hour < 12 )
+					return Integer.toString(hour)+ " AM";
+				else if (hour == 12 && hour < 24)
+					return Integer.toString(hour)+ " PM"; // mid day 12 pm
+				else if ( hour < 24)
+					return Integer.toString(hour -12)+ " PM";
+				else if ( hour == 24)
+					return Integer.toString(hour -12)+ " AM"; // mid nigh 12 am
+				else
+					return Integer.toString(hour);
+			} else // 24 hrs format
 				return Integer.toString(hour);
-		} else // 24 hrs format
-			return Integer.toString(hour);
+		} else {
+			if (ampmformat < 1 ) { // select AM PM format
+				if (hour < 12 )
+					return Integer.toString(hour)+":"+Integer.toString(min)+ " AM";
+				else if (hour == 12 && hour < 24)
+					return Integer.toString(hour)+":"+Integer.toString(min)+ " PM"; // mid day 12 pm
+				else if ( hour < 24)
+					return Integer.toString(hour -12)+":"+Integer.toString(min)+ " PM";
+				else if ( hour == 24)
+					return Integer.toString(hour -12)+":"+Integer.toString(min)+ " AM"; // mid nigh 12 am
+				else
+					return Integer.toString(hour)+":"+Integer.toString(min);
+			} else // 24 hrs format
+				return Integer.toString(hour)+":"+Integer.toString(min);
+			
+		}
 	}
 	
 	/* This function will return java.Calendar values of month  name */

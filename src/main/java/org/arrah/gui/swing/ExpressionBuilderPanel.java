@@ -230,18 +230,22 @@ public class ExpressionBuilderPanel implements ActionListener {
 		}
 		if (command.equals("ok")) {
 			String exp = _expane.getText();
+			try {
+				_dg.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+				
+				beginIndex = ((Long) jrn_low.getValue()).intValue();
+				endIndex = ((Long) jrn_high.getValue()).intValue();
+				int rowC = _rt.getModel().getRowCount();
+				if (beginIndex <= 0 || beginIndex > rowC)
+					beginIndex = 1;
+				if (endIndex <= 0 || endIndex > (rowC+1) || endIndex < beginIndex )
+					endIndex = rowC+1;
+				preparseJeval(exp, _rt, _selColIndex,beginIndex,endIndex);
+				return;
+		} finally {
+			_dg.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 			_dg.dispose();
-			beginIndex = ((Long) jrn_low.getValue()).intValue();
-			endIndex = ((Long) jrn_high.getValue()).intValue();
-			int rowC = _rt.getModel().getRowCount();
-			if (beginIndex <= 0 || beginIndex > rowC)
-				beginIndex = 1;
-			if (endIndex <= 0 || endIndex > (rowC+1) || endIndex < beginIndex )
-				endIndex = rowC+1;
-			preparseJeval(exp, _rt, _selColIndex,beginIndex,endIndex);
-
-			return;
-		}
+		}}
 
 	}
 

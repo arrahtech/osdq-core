@@ -1,4 +1,4 @@
-profiler V6.0.5
+profiler V6.0.6
 ===========
 
 **Description**
@@ -24,3 +24,16 @@ It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Creat
 - Address Correction, Single View of Customer, Product, Golden merge for records
 - Record Match, Linkage and Merge added based on fuzzy logic
 - Format Creation, Format Matching ( Phone, Date, String and Number), Format standardization
+
+
+Getting Started
+---------------
+
+Building from source
+
+1. Clone the project url 
+2. mvn package
+3. cd target
+4. unzip the profiler-<version>-SNAPSHOT-distribution.zip
+5. cd profiler-<version>-SNAPSHOT
+6. java -jar profiler-<version>-SNAPSHOT.jar

@@ -153,7 +153,6 @@ public class AggrCumRTM {
 	
 	
 	/* This is utility function to get ReportTableModel data into vector */
-	
 	public static Vector<Double> getColumnNumberData(ReportTableModel rpt, int columnIndex) {
 		Vector<Double> columnDataVector = new Vector<Double>();
 		int rowCount = rpt.getModel().getRowCount();
@@ -183,6 +182,40 @@ public class AggrCumRTM {
 		return output = value.split(regex,2);
 	}
 	
+	/* This is a utility function to split String in subString*/
+	public static String[] splitColSubString(String value, String regex) {
+		String[] output = null;
+		
+		if (value == null || "".equals(value) )
+				return output;
+	
+		return output = value.split(regex);
+	}
+	
+	/* This is a utility function to Remove Metadata from String */
+	public static String removeMetaDataString(String oldString, String skipString) {
+		String newString="";
+		for (int curIndex = 0; curIndex < oldString.length(); curIndex++ ) {
+			 char c = oldString.charAt(curIndex);
+			 Character ch = new Character(c);
+			 if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
+			 newString += ch.toString();
+		 }
+		return newString;
+	}
+	
+	/* This is a utility function to Remove Character from String */
+	public static String removeCharacterString(String oldString, String skipString) {
+		String newString="";
+		for (int curIndex = 0; curIndex < oldString.length(); curIndex++ ) {
+			 char c = oldString.charAt(curIndex);
+			 Character ch = new Character(c);
+			 if ( skipString.contains(ch.toString()) == false)
+			 newString += ch.toString();
+		 }
+		return newString;
+	}
+	
 	/* This is a utility function which will take date and give output as millisecond */
 	public static long dateIntoSecond(java.util.Date date) {
 		if (date == null ) return 0;
@@ -201,4 +234,4 @@ public class AggrCumRTM {
 	}
 	
 	
-} // End of AggrCumTM
+} // End of AggrCumRTM

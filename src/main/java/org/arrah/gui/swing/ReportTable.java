@@ -646,7 +646,7 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 						+ PrintException.getMessage());
 			}
 		} else if (but_c.compareTo("Save as..") == 0) {
-			Object[] saveTypes = { "XML", "XLS", "CSV", "PDF"};
+			Object[] saveTypes = { "XML", "XLS", "CSV", "PDF","Screen Render as CSV"};
 			String saveFormat = (String) JOptionPane
 					.showInputDialog(null, "Save as XML,XLS, CSV or PDF",
 							"Save Format", JOptionPane.QUESTION_MESSAGE, null,
@@ -659,8 +659,10 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 				saveAsXls();
 			} else if (saveFormat.equals("PDF")) {
 				saveAsPdf();
+			} else if (saveFormat.equals("Screen Render as CSV")) {
+				saveAsCsv(1);
 			} else {
-				saveAsCsv();
+				saveAsCsv(0);
 			}
 		}
 	} // End of ActionPerformed
@@ -988,7 +990,7 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 	/**
 	 * save the table as comma separated values (CSV)
 	 */
-	private void saveAsCsv() {
+	private void saveAsCsv(int type) {
 		Object[] possible = { "Comma(,)", "Tab(\\t)", "Colon(:)",
 				"Semi Colon(;)", "Space( )" };
 		String des_input = (String) JOptionPane.showInputDialog(null,
@@ -1037,9 +1039,15 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 			for (int i = 0; i < rowCount; i++) {
 				for (int j = 0; j < columnCount; j++) {
 					if ((columnCount - j) > 1 == true) {
-						row_v.append(getValueAt(i, j) + getFieldSep());
+						if (type == 1) // render screen
+							row_v.append(getTextValueAt(i, j) + getFieldSep());
+						else
+							row_v.append(getValueAt(i, j) + getFieldSep());
 					} else {
-						row_v.append(getValueAt(i, j));
+						if (type == 1) // render screen
+							row_v.append(getTextValueAt(i, j));
+						else
+							row_v.append(getValueAt(i, j));
 					}
 					// Do not add separator in last field
 				}

@@ -4,7 +4,7 @@
 
 	<groupId>org.arrahtec</groupId>
 	<artifactId>profiler</artifactId>
-	<version>6.0.5-SNAPSHOT</version>
+	<version>6.0.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>profiler</name>
@@ -30,8 +30,8 @@
 					<version>3.2</version>
 					<configuration>
 						<!-- put your configurations here -->
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 			</plugins>

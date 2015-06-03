@@ -19,7 +19,9 @@ package org.arrah.framework.util;
  *
  */
 
+import java.util.Hashtable;
 import java.util.Vector;
+
 
 public class DiscreetRange {
 
@@ -117,6 +119,23 @@ public class DiscreetRange {
 		}
 		return leftSet;
 	}
+	
+	// This function will unique values assuming low cardinality
+	public static Hashtable<Object,Integer> getUnique(Vector<Object> list){
+		
+		Hashtable <Object,Integer> newUniq = new Hashtable <Object,Integer>();
+		for (Object o: list) {
+			if (o == null) continue; // null not counted
+			if (newUniq.containsKey(o) == true ) {
+				int prev = newUniq.get(o);
+				newUniq.put(o,++prev); // Increase counter by one
+			} else {
+				newUniq.put(o, 1);
+			}
+		}
+		return newUniq;
+	}
+
 	
 
 }

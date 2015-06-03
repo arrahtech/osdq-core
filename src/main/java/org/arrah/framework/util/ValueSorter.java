@@ -81,7 +81,7 @@ public class ValueSorter implements Comparable <Object> {
 		return obj;
 	}
 	
-	// OTHER is defualt strin value like "undefined" "NA"
+	// OTHER is defualt string value like "undefined" "NA"
 	public static Object[] sortKey(Hashtable<String, Double> map, String OTHER) {
 		Object[] obj = null;
 		if (map.containsKey(OTHER) == false) {

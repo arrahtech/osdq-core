@@ -36,11 +36,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
+import org.arrah.framework.datagen.EncryptRTM;
 import org.arrah.framework.datagen.ShuffleRTM;
 
 
@@ -50,8 +52,10 @@ public class MaskingPanel implements ActionListener {
 	private int _colIndex = 0;
 	private JDialog d_f;
 	private JFormattedTextField jfs_low, jfs_high;
+	private JTextField key_enter, key_reenter;
+	private JTextField decrypt_key;
 	private JFormattedTextField jrn_low, jrn_high;
-	private JRadioButton rd1, rd2, rd3;
+	private JRadioButton rd1, rd2, rd3,rd4,rd5;
 	private Border line_b;
 	private JList<String> collist;
 	private int beginIndex, endIndex;
@@ -69,10 +73,12 @@ public class MaskingPanel implements ActionListener {
 		rd1 = new JRadioButton("Shuffle Record");
 		rd2 = new JRadioButton("Shuffle Record across Table");
 		rd3 = new JRadioButton("Mask Record");
+		rd4 = new JRadioButton("Encrypt Record");
+		rd5 = new JRadioButton("Decrypt Record");
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(rd1);
 		bg.add(rd2);
-		bg.add(rd3);
+		bg.add(rd3);bg.add(rd4);bg.add(rd5);
 		rd1.setSelected(true);
 
 		JPanel shP = createShufflePanel();
@@ -81,6 +87,12 @@ public class MaskingPanel implements ActionListener {
 		jp.add(shTableP);
 		JPanel masT = createMaskPanel();
 		jp.add(masT);
+		JPanel encrpt = createEncryptPanel();
+		jp.add(encrpt);
+		JPanel decrypt = createDecryptPanel();
+		jp.add(decrypt);
+				
+				
 		JPanel rowNP = createRowNumPanel();
 		jp.add(rowNP);
 
@@ -100,7 +112,7 @@ public class MaskingPanel implements ActionListener {
 
 		SpringLayout layout = new SpringLayout();
 		jp.setLayout(layout);
-		jp.setPreferredSize(new Dimension(815, 450));
+		jp.setPreferredSize(new Dimension(815, 550));
 
 		layout.putConstraint(SpringLayout.NORTH, shP, 4, SpringLayout.NORTH, jp);
 		layout.putConstraint(SpringLayout.WEST, shP, 4, SpringLayout.WEST,jp);
@@ -108,7 +120,11 @@ public class MaskingPanel implements ActionListener {
 		layout.putConstraint(SpringLayout.WEST, shTableP, 4, SpringLayout.WEST,jp);
 		layout.putConstraint(SpringLayout.NORTH, masT, 4, SpringLayout.SOUTH, shTableP);
 		layout.putConstraint(SpringLayout.WEST, masT, 4, SpringLayout.WEST,jp);
-		layout.putConstraint(SpringLayout.NORTH, rowNP, 8, SpringLayout.SOUTH, masT);
+		layout.putConstraint(SpringLayout.NORTH, encrpt, 4, SpringLayout.SOUTH, masT);
+		layout.putConstraint(SpringLayout.WEST, encrpt, 4, SpringLayout.WEST,jp);
+		layout.putConstraint(SpringLayout.NORTH, decrypt, 4, SpringLayout.SOUTH, encrpt);
+		layout.putConstraint(SpringLayout.WEST, decrypt, 4, SpringLayout.WEST,jp);
+		layout.putConstraint(SpringLayout.NORTH, rowNP, 8, SpringLayout.SOUTH, decrypt);
 		layout.putConstraint(SpringLayout.WEST, rowNP, 4, SpringLayout.WEST,jp);
 		layout.putConstraint(SpringLayout.NORTH, bp, 15, SpringLayout.SOUTH, rowNP);
 		layout.putConstraint(SpringLayout.WEST, bp, 300, SpringLayout.WEST,jp);
@@ -234,6 +250,46 @@ public class MaskingPanel implements ActionListener {
 
 		return maskjp;
 	}
+	private JPanel createEncryptPanel() {
+		JPanel encrptjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		key_enter = new JTextField();
+		key_enter.setText(new String("key1234"));
+		key_enter.setColumns(8);
+		
+		
+		key_reenter = new JTextField();
+		key_reenter.setText(new String("key1234"));;
+		key_reenter.setColumns(8);
+		
+		
+		JLabel strLen = new JLabel("  Enter Key(Recommended 16 byte):", JLabel.LEADING);
+		JLabel andLabel = new JLabel(" Re Enter Key:", JLabel.LEADING);
+		
+		encrptjp.add(rd4);
+		encrptjp.add(strLen);
+		encrptjp.add(key_enter);
+		encrptjp.add(andLabel);
+		encrptjp.add(key_reenter);
+		
+		encrptjp.setBorder(line_b);
+		return encrptjp;
+	}
+	
+	private JPanel createDecryptPanel() {
+		JPanel decrptjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		decrypt_key = new JTextField();
+		decrypt_key.setText(new String("Enter key"));
+		decrypt_key.setColumns(8);
+
+		JLabel strLen = new JLabel("  Decrypt Key:", JLabel.LEADING);
+		decrptjp.add(rd5);
+		
+		decrptjp.add(strLen);
+		decrptjp.add(decrypt_key);
+
+		decrptjp.setBorder(line_b);
+		return decrptjp;
+	}
 
 	public void actionPerformed(ActionEvent e) {
 		String action = e.getActionCommand();
@@ -255,36 +311,71 @@ public class MaskingPanel implements ActionListener {
 				numGenerate = _rowC; // default behavior for Invalid number
 				beginIndex = 1;endIndex = _rowC+1;
 			}
-			
-			if (rd1.isSelected() == true) {
-				ShuffleRTM.shuffleRecord(_rt.getRTMModel(), _colIndex, beginIndex -1 , endIndex -1);
-			}
-			if (rd2.isSelected() == true) {
-				int[] selCols = collist.getSelectedIndices();
-				if (selCols == null || selCols.length == 0) {
-					JOptionPane.showMessageDialog(null,
-							"No Column Selected", "Input Validation Error",
-							JOptionPane.ERROR_MESSAGE);
-					return;
+			try {
+				d_f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+				if (rd1.isSelected() == true) {
+					ShuffleRTM.shuffleRecord(_rt.getRTMModel(), _colIndex, beginIndex -1 , endIndex -1);
 				}
-				ShuffleRTM.shuffleColumns(_rt.getRTMModel(), selCols, beginIndex -1 , endIndex -1);
-			}
-			if (rd3.isSelected() == true) {
-				String val = jfs_low.getText();
-				int index = (Integer) jfs_high.getValue();
-				if (index < 0) index = -1; //start from End
-				
-				if(val == null || "".equals(val)) {
-					JOptionPane.showMessageDialog(null,
-							"Mask String not Chosen", "Input Validation Error",
-							JOptionPane.ERROR_MESSAGE);
-					return;
+				if (rd2.isSelected() == true) {
+					int[] selCols = collist.getSelectedIndices();
+					if (selCols == null || selCols.length == 0) {
+						JOptionPane.showMessageDialog(null,
+								"No Column Selected", "Input Validation Error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					ShuffleRTM.shuffleColumns(_rt.getRTMModel(), selCols, beginIndex -1 , endIndex -1);
 				}
-				ShuffleRTM.maskColumn(_rt.getRTMModel(), _colIndex, beginIndex -1, endIndex -1,
-						val, index);
+				if (rd3.isSelected() == true) {
+					String val = jfs_low.getText();
+					int index = (Integer) jfs_high.getValue();
+					if (index < 0) index = -1; //start from End
+					
+					if(val == null || "".equals(val)) {
+						JOptionPane.showMessageDialog(null,
+								"Mask String not Chosen", "Input Validation Error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					ShuffleRTM.maskColumn(_rt.getRTMModel(), _colIndex, beginIndex -1, endIndex -1,
+							val, index);
+				}
+				if (rd4.isSelected() == true) {
+					String key = key_enter.getText();
+					String keyre = key_reenter.getText();
+					
+					if ("".equals(key) == true || key.equals(keyre) == false) {
+						JOptionPane.showMessageDialog(null,
+								"Re Entered Key not maching", "Key Validation Error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					} else {
+						JOptionPane.showMessageDialog(null,
+								"Remember key for decryption ", "Key Information",
+								JOptionPane.INFORMATION_MESSAGE);
+						
+					}
+					EncryptRTM encrpt = new EncryptRTM(); // can't be static as security
+					encrpt.encryptColumn(_rt.getRTMModel(), _colIndex, beginIndex -1, endIndex -1,key);
+					return;
 			}
-			return;
+			if (rd5.isSelected() == true) {
+					String key = decrypt_key.getText();
+					
+					if (key == null || "".equals(key) == true ) {
+						JOptionPane.showMessageDialog(null,
+								"Re Entered Key not maching", "Key Validation Error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					} 
+					EncryptRTM encrpt = new EncryptRTM(); // can't be static as security
+					encrpt.decryptColumn(_rt.getRTMModel(), _colIndex, beginIndex -1, endIndex -1,key);
+					return;
+			}
+			} finally {
+				d_f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 		}
 	}
+	}
 
-}
+} // End of class

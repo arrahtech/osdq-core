@@ -157,6 +157,21 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		JMenu column_m = new JMenu("Column");
 		column_m.setMnemonic('C');
 		menubar.add(column_m);
+		
+		// Data Preparation Menu
+		JMenu preparation_m = new JMenu("Preparation");
+		preparation_m.setMnemonic('P');
+		menubar.add(preparation_m);
+		
+		JMenuItem ordinal_m = new JMenuItem("Ordinal");
+		ordinal_m.addActionListener(this);
+		ordinal_m.setActionCommand("ordinal");
+		preparation_m.add(ordinal_m);
+		
+		JMenuItem enrich_m = new JMenuItem("Seasonality");
+		enrich_m.addActionListener(this);
+		enrich_m.setActionCommand("seasonality");
+		preparation_m.add(enrich_m);
 
 		JMenu analytics_m = new JMenu("Analytics");
 		analytics_m.setMnemonic('A');
@@ -212,8 +227,6 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		analytics_m.add(timeliness);
 		
 		analytics_m.addSeparator();
-		
-
 		
 
 		/*** Outlier Analysis ***/
@@ -1192,6 +1205,23 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				}
 				return;
 			}
+			// Data Preparation 
+			if (command.equals("ordinal")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new OrdinalPanel(_rt,index);
+				return;
+			}
+			if (command.equals("seasonality")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new GroupingPanel(_rt,index);
+				return;
+			}
+			
+			
 
 		} finally {
 			frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

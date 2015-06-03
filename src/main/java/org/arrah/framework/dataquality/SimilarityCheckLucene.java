@@ -203,6 +203,7 @@ public class SimilarityCheckLucene {
 		String queryString = query;
 		if (queryString == null || queryString.equals("") == true)
 			return;
+		
 		Query qry = parseQuery(queryString);
 		Hits hit = searchIndex(qry);
 		if (hit == null || hit.length() <= 1)
