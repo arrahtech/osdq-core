@@ -135,7 +135,21 @@ public class DiscreetRange {
 		}
 		return newUniq;
 	}
-
 	
-
+	// This function will unique values assuming low cardinality
+	public static Hashtable<Object,Integer> getUniqueInclusive(Vector<Object> list){
+		
+		Hashtable <Object,Integer> newUniq = new Hashtable <Object,Integer>();
+		for (Object o: list) {
+			if (o == null) // Increase the null key
+				o = new String("Null-Arrah"); // to make sure it is not matching common string
+			if (newUniq.containsKey(o) == true ) {
+				int prev = newUniq.get(o);
+				newUniq.put(o,++prev); // Increase counter by one
+			} else {
+				newUniq.put(o, 1);
+			}
+		}
+		return newUniq;
+	}
 }

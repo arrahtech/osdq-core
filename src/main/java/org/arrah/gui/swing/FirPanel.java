@@ -47,7 +47,6 @@ import org.arrah.framework.profile.FirstInformation;
 import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
-// import org.arrah.framework.util.LicenseManager;
 
 public class FirPanel extends JPanel {
 	/**

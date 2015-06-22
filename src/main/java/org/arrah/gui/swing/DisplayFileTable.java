@@ -78,6 +78,7 @@ import org.arrah.framework.hadooputil.HiveQueryBuilder;
 import org.arrah.framework.ndtable.RTMUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.ndtable.ResultsetToRTM;
+import org.arrah.framework.profile.FileProfile;
 import org.arrah.framework.profile.InterTableInfo;
 import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.QueryBuilder;
@@ -172,7 +173,14 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		enrich_m.addActionListener(this);
 		enrich_m.setActionCommand("seasonality");
 		preparation_m.add(enrich_m);
+		
+		JMenuItem nullrep_m = new JMenuItem("Enrichment");
+		nullrep_m.addActionListener(this);
+		nullrep_m.setActionCommand("nullreplace");
+		preparation_m.add(nullrep_m);
 
+
+		// Analytics Menu
 		JMenu analytics_m = new JMenu("Analytics");
 		analytics_m.setMnemonic('A');
 		menubar.add(analytics_m);
@@ -243,10 +251,15 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		kmean.setActionCommand("kmean");
 		analytics_m.add(kmean);
 		
-		JMenuItem regress = new JMenuItem("Regression");
+		JMenuItem regress = new JMenuItem("Number Regression");
 		regress.addActionListener(this);
 		regress.setActionCommand("regression");
 		analytics_m.add(regress);
+		
+		JMenuItem tregress = new JMenuItem("Time Regression");
+		tregress.addActionListener(this);
+		tregress.setActionCommand("timeregression");
+		analytics_m.add(tregress);
 		
 		analytics_m.addSeparator();
 		
@@ -262,6 +275,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		strlength.setActionCommand("stringlen");
 		analytics_m.add(strlength);
 
+		// Column Menu
 		JMenuItem addC_m = new JMenuItem("Add Column");
 		addC_m.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A,
 				InputEvent.ALT_MASK));
@@ -338,12 +352,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		caseFormatC_m.add(sentenceC_m);
 		column_m.addSeparator();
 		
-		JMenuItem fillInfo_m = new JMenuItem("Table Fill Info");
-		fillInfo_m.addActionListener(this);
-		fillInfo_m.setActionCommand("fillInfo");
-		column_m.add(fillInfo_m);
-		
+		JMenuItem patternC_m = new JMenuItem("Pattern Info");
+		patternC_m.addActionListener(this);
+		patternC_m.setActionCommand("patterninfo");
+		column_m.add(patternC_m);
 
+		//Options menu
 		JMenuItem addR_m = new JMenuItem("Insert Rows");
 		addR_m.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
 				InputEvent.ALT_MASK));
@@ -388,7 +402,17 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		formatC_m.setActionCommand("format");
 		option_m.add(formatC_m);
 		option_m.addSeparator();
+		
+		JMenuItem fillInfo_m = new JMenuItem("Table Fill Info");
+		fillInfo_m.addActionListener(this);
+		fillInfo_m.setActionCommand("fillInfo");
+		option_m.add(fillInfo_m);
 
+		JMenuItem profile_m = new JMenuItem("Profile");
+		profile_m.addActionListener(this);
+		profile_m.setActionCommand("profile");
+		option_m.add(profile_m);
+		
 		JMenuItem analyseC_m = new JMenuItem("Analyse");
 		analyseC_m.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y,
 				InputEvent.ALT_MASK));
@@ -531,6 +555,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("timefore")) {
 				 new FileAnalyticsListener(_rt, 17);
+				return;
+			}
+			if (command.equals("timeregression")) {
+				 new FileAnalyticsListener(_rt, 18);
 				return;
 			}
 			if (command.equals("undocond")) {
@@ -888,6 +916,38 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				caseFormat(4);
 				return;
 			}
+			if (command.equals("patterninfo")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				String[] colHeader = new String[]{"Value","Count"};
+				ReportTable rt = new ReportTable(colHeader);
+				Vector<Object> colV = _rt.getRTMModel().getColDataV(index);
+				Hashtable<Object,Integer> htable = DiscreetRange.getUniqueInclusive(colV);
+				Hashtable<Object,Integer> htableP = new FileProfile().showPattern(htable);
+				int rowI = 0;
+				
+				for (Enumeration<Object> e1 = htableP.keys(); e1.hasMoreElements();) {
+					rt.addRow();
+					Object key = e1.nextElement();
+					if (key.toString().equals("Null-Arrah") == true )
+						rt.table.setValueAt("Null", rowI, 0);
+					else
+						rt.table.setValueAt(key.toString(), rowI, 0);
+					Object val = htableP.get(key);
+					rt.table.setValueAt(val.toString(), rowI, 1);
+					rowI++;
+				}
+				
+				JDialog jd = new JDialog();
+				jd.setTitle("Pattern Info");
+				jd.setLocation(150, 150);
+				jd.getContentPane().add(rt);
+				jd.setModal(true);
+				jd.pack();
+				jd.setVisible(true);
+				return;
+			}
 			if (command.equals("fillInfo")) {
 				double tabCount = _rt.getModel().getRowCount();
 				int[] fillCount = FillCheck.getEmptyCount(_rt.getRTMModel());
@@ -1021,6 +1081,30 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			if (command.equals("deleterow")) {
 				actionType = DELETION;
 				inputDialog();
+				return;
+			}
+			if (command.equals("profile")) {
+				int colC = _rt.getModel().getColumnCount();
+				String[] colHeader = new String[]{"Column","Total","Unique","Pattern","Null"};
+				ReportTable rt = new ReportTable(colHeader);
+				Object[] colName = _rt.getRTMModel().getAllColName();
+				for (int i=0; i < colC; i++) {
+					rt.addRow();
+					Vector<Object> colV = _rt.getRTMModel().getColDataV(i);
+					Hashtable<Object,Integer> htable = DiscreetRange.getUniqueInclusive(colV);
+					Integer[] val = new FileProfile().getProfiledValue(htable);
+					rt.table.setValueAt(colName[i].toString(), i, 0); // First Col Name
+					for (int j=1; j < 5; j++)
+						rt.table.setValueAt(val[j -1].toString(), i, j); 
+				}
+				JDialog jd = new JDialog();
+				jd.setTitle("Profile Info");
+				jd.setLocation(150, 150);
+				jd.getContentPane().add(rt);
+				jd.setModal(true);
+				jd.pack();
+				jd.setVisible(true);
+				
 				return;
 			}
 			if (command.equals("analyse")) {
@@ -1220,9 +1304,13 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				new GroupingPanel(_rt,index);
 				return;
 			}
+			if (command.equals("nullreplace")) {
+				new FileAnalyticsListener(_rt, 19);
+				revalidate();
+				repaint();
+				return;
+			}
 			
-			
-
 		} finally {
 			frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}

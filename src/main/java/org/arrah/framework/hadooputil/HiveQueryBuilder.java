@@ -222,6 +222,7 @@ public class HiveQueryBuilder extends QueryBuilder {
 			column = cols.nextElement().toString();
 			if (_dtype.compareToIgnoreCase("mysql") != 0
 					&& _dtype.compareToIgnoreCase("hive") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0 
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) 

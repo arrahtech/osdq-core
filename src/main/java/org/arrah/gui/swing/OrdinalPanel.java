@@ -153,7 +153,6 @@ public class OrdinalPanel implements ActionListener, ItemListener {
 		colSel.addItemListener(this);
 		selectionjp.add(colSel);
 		colType=new JLabel("  ");
-		// colType = new JLabel("        "+_rt.getModel().getColumnClass(0).getName());
 		selectionjp.add(colType);
 		return selectionjp;
 	}

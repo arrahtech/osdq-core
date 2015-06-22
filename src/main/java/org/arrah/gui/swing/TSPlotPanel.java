@@ -23,10 +23,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Iterator;
 
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
@@ -39,24 +39,15 @@ import net.sourceforge.openforecast.models.PolynomialRegressionModel;
 import net.sourceforge.openforecast.models.RegressionModel;
 
 import org.arrah.framework.datagen.TimeUtil;
-import org.arrah.framework.ndtable.ReportTableModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.time.Day;
-import org.jfree.data.time.Hour;
-import org.jfree.data.time.Millisecond;
-import org.jfree.data.time.Minute;
-import org.jfree.data.time.Quarter;
-import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.Month;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
-import org.jfree.data.time.Week;
-import org.jfree.data.time.Year;
+
 
 
 public class TSPlotPanel extends JPanel implements ActionListener, Serializable {
@@ -73,51 +64,14 @@ public class TSPlotPanel extends JPanel implements ActionListener, Serializable 
 		addMouseListener(new PopupListener());
 	}
 	
-	public void addRTMDataSet(ReportTableModel rtm, String datecol1, String numcol2, int timed) throws Exception {
-		int rowC= rtm.getModel().getRowCount();		
-		int index = rtm.getColumnIndex(datecol1);
-		int comIndex = rtm.getColumnIndex(numcol2);
-		
-		for (int i=0; i < rowC; i++) {
-			try {
-				Object dcell = rtm.getModel().getValueAt(i, index);
-				Object ncell = rtm.getModel().getValueAt(i, comIndex);
-				switch(timed) {
-					case 0: //year
-						dataset.addOrUpdate(new Year((Date)dcell) , (Double)ncell);
-						break;
-					case 1: //Quarter
-						dataset.addOrUpdate(new Quarter((Date)dcell) , (Double)ncell);
-						break;
-					case 2: //Month
-						dataset.addOrUpdate(new Month((Date)dcell) , (Double)ncell);
-						break;
-					case 3: //Week
-						dataset.addOrUpdate(new Week((Date)dcell) , (Double)ncell);
-						break;
-					case 4: //Day
-						dataset.addOrUpdate(new Day((Date)dcell) , (Double)ncell);
-						break;
-					case 5: //Hour
-						dataset.addOrUpdate(new Hour((Date)dcell) , (Double)ncell);
-						break;
-					case 6: //Minute
-						dataset.addOrUpdate(new Minute((Date)dcell) , (Double)ncell);
-						break;
-					case 7: //Second
-						dataset.addOrUpdate(new Second((Date)dcell) , (Double)ncell);
-						break;
-					case 8: //Millisecond
-						dataset.addOrUpdate(new Millisecond((Date)dcell) , (Double)ncell);
-						break;
-						
-					default:
-				}
-			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
-			}
-		}
+	public void setTimeSeries(TimeSeries _dataset) {
+		dataset = _dataset;	
 	}
+	
+	public TimeSeries getTimeSeries() {
+		return dataset;	
+	}
+	
 	// Create the Time Series Plot
 	public void drawTSPlot() throws Exception {
 		TimeSeriesCollection tsdataset = new TimeSeriesCollection();
@@ -221,7 +175,7 @@ public class TSPlotPanel extends JPanel implements ActionListener, Serializable 
 	 
 	// Create the Time Series Forecasting plot
 		public void drawTSForecastPlot() throws Exception {
-		
+			
 			DataSet initDataSet = getDataSet( dataset);
 			TimeSeries fc = TimeUtil.getForecastData(dataset, 10); // forecast hardcoded to 10%
 			int diff = fc.getItemCount() - dataset.getItemCount();
@@ -238,6 +192,8 @@ public class TSPlotPanel extends JPanel implements ActionListener, Serializable 
 	         polyRegressSeries
 	            = getForecastTimeSeries(new PolynomialRegressionModel("t",4),
 	                                    initDataSet,fc, "4th Polynomial regression");
+			} else {
+				JOptionPane.showMessageDialog(null, "Not enough data points to forcast");
 			}
 			
 		TimeSeriesCollection tsdataset = new TimeSeriesCollection();

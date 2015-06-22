@@ -146,6 +146,8 @@ public class Rdbms_conn {
 				statement = conn.createStatement();
 			else if(_d_type.compareToIgnoreCase("db2") == 0)
 				statement = conn.createStatement(1003, 1007);
+			else if (_d_type.compareToIgnoreCase("ms_access_jdbc") == 0 )
+				statement = conn.createStatement(1005, 1008); //ucanaccess
 			else if(_d_type.compareToIgnoreCase("Others") == 0)
 				statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
 						Integer.parseInt(getHValue("Database_ResultsetConcur")));
@@ -185,6 +187,8 @@ public class Rdbms_conn {
 			statement = conn.createStatement();
 		else if(_d_type.compareToIgnoreCase("db2") == 0)
 			statement = conn.createStatement(1003, 1007);
+		else if (_d_type.compareToIgnoreCase("ms_access_jdbc") == 0 )
+			statement = conn.createStatement(1005, 1008); //ucanaccess
 		else if(_d_type.compareToIgnoreCase("Others") == 0)
 			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
 					Integer.parseInt(getHValue("Database_ResultsetConcur")));
@@ -205,6 +209,8 @@ public class Rdbms_conn {
 			statement = conn.createStatement();
 		else if(_d_type.compareToIgnoreCase("db2") == 0)
 			statement = conn.createStatement(1003, 1007);
+		else if (_d_type.compareToIgnoreCase("ms_access_jdbc") == 0 )
+			statement = conn.createStatement(1005, 1008); //ucanaccess
 		else if(_d_type.compareToIgnoreCase("Others") == 0)
 			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
 					Integer.parseInt(getHValue("Database_ResultsetConcur")));
@@ -224,6 +230,8 @@ public class Rdbms_conn {
 			statement = conn.createStatement();
 		else if(_d_type.compareToIgnoreCase("db2") == 0)
 			statement = conn.createStatement(1003, 1007);
+		else if (_d_type.compareToIgnoreCase("ms_access_jdbc") == 0 )
+			statement = conn.createStatement(1005, 1008); //ucanaccess
 		else if(_d_type.compareToIgnoreCase("Others") == 0)
 			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
 					Integer.parseInt(getHValue("Database_ResultsetConcur")));
@@ -274,6 +282,8 @@ public class Rdbms_conn {
 			statement = conn.createStatement();
 		else if(_d_type.compareToIgnoreCase("db2") == 0)
 			statement = conn.createStatement(1003, 1007);
+		else if (_d_type.compareToIgnoreCase("ms_access_jdbc") == 0 )
+			statement = conn.createStatement(1005, 1008); //ucanaccess
 		else if(_d_type.compareToIgnoreCase("Others") == 0)
 			statement = conn.createStatement(Integer.parseInt(getHValue("Database_ResultsetType")), 
 					Integer.parseInt(getHValue("Database_ResultsetConcur")));

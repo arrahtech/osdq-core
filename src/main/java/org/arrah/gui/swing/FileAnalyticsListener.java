@@ -51,6 +51,9 @@ import org.arrah.framework.datagen.TimeUtil;
 import org.arrah.framework.ndtable.RTMUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.util.ValueSorter;
+import org.jfree.data.statistics.Regression;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 public class FileAnalyticsListener implements ActionListener, ItemListener {
 	private ReportTable _rt;
@@ -90,6 +93,8 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 	static private int TIMELINESS = 15;
 	static private int STRINGLENGTH = 16;
 	static private int TIMEFORECAST = 17;
+	static private int TIMEREGRESSION = 18;
+	static private int DATAENRICHMENT = 19;
 
 	private static String OTHER = "UNDEFINED"; // Null or Undefined Key
 
@@ -499,7 +504,6 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 		jd.setModal(true);
 		jd.pack();
 		jd.setVisible(true);
-
 	}
 
 	private void createRegressionDialog() {
@@ -552,6 +556,64 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 		jd.setVisible(true);
 
 	}
+	
+	private void createTimeRegressionDialog() {
+		JPanel jp = new JPanel(new BorderLayout());
+
+		for (int i = 0; i < _colC; i++) {
+			col_n[i] = _rt.table.getColumnName(i);
+		}
+		
+		JPanel timeserP = new JPanel(new GridLayout(4,2));
+		JLabel info = new JLabel("  Select Date Column  :");
+		timeserP.add(info);
+		comboLat = new JComboBox<String>(col_n);
+		timeserP.add(comboLat);
+		
+		JLabel cenLat = new JLabel(" Select Number Column :");
+		timeserP.add(cenLat);
+		comboLon = new JComboBox<String>(col_n);
+		timeserP.add(comboLon);
+		
+		JLabel dim = new JLabel("Time Dimension");
+		timeserP.add(dim);
+		comboT = new JComboBox<String>(new String[] {"Year","Quarter","Month","Week", "Day",
+				"Hour","Minute","Second","Milli Second"});
+		timeserP.add(comboT);
+		
+		JLabel rtype = new JLabel("Regression Type");
+		timeserP.add(rtype);
+		comboAggr = new JComboBox<String>(new String[] {"Linear","Polynomial","Power"});
+		timeserP.add(comboAggr);
+		
+		jp.add(timeserP,BorderLayout.CENTER);
+		
+
+		JPanel bp = new JPanel();
+		JButton ok = new JButton("OK");
+		ok.addKeyListener(new KeyBoardListener());
+		ok.setActionCommand("timeregressionok");
+		ok.addActionListener(this);
+		bp.add(ok);
+		JButton can = new JButton("Cancel");
+		can.addKeyListener(new KeyBoardListener());
+		can.setActionCommand("cancel");
+		can.addActionListener(this);
+		bp.add(can);
+
+		jp.add(bp,BorderLayout.SOUTH);
+		
+		jp.setPreferredSize(new Dimension(350, 175));
+		jd = new JDialog();
+		jd.setTitle("Time Regression Parameters Input");
+		jd.setLocation(150, 150);
+		jd.getContentPane().add(jp);
+		jd.setModal(true);
+		jd.pack();
+		jd.setVisible(true);
+
+	}
+	
 	
 	private void createTimelinessDialog() {
 		JPanel jp = new JPanel(new BorderLayout());
@@ -680,7 +742,7 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			int aggrIndex = 0; // dummy
 			int dimIndex = comboT.getSelectedIndex();
 			showTSPlot(comboLat.getSelectedItem().toString(),comboLon.getSelectedItem().toString(),aggrIndex,dimIndex);
-		} else if ( _chartType == REGRESSION) {
+		} else if ( _chartType == REGRESSION ) {
 			createRegressionDialog();
 			if (cancel_clicked)
 				return;
@@ -704,6 +766,19 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			int aggrIndex = 0; // dummy
 			int dimIndex = comboT.getSelectedIndex();
 			showTSForecastPlot(comboLat.getSelectedItem().toString(),comboLon.getSelectedItem().toString(),aggrIndex,dimIndex);
+		} else if (_chartType == TIMEREGRESSION ) {
+			createTimeRegressionDialog();
+			if (cancel_clicked)
+				return;
+			int dimIndex = comboT.getSelectedIndex();
+			int rtype = comboAggr.getSelectedIndex();
+			showTimeRegressionPlot(comboLat.getSelectedItem().toString(),comboLon.getSelectedItem().toString(),rtype,dimIndex);
+		}  else if (_chartType == DATAENRICHMENT ) {
+			createRegressionDialog();
+			if (cancel_clicked)
+				return;
+			int dimIndex = comboT.getSelectedIndex();
+			showDataEnrichmentTable(comboLat.getSelectedItem().toString(),comboLon.getSelectedItem().toString(),dimIndex);
 		}
 
 	} // End of create Analytics
@@ -844,6 +919,10 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			cancel_clicked = false;
 			
 		} else if (action.equals("timeforecastok")) {
+			jd.dispose();
+			cancel_clicked = false;
+			
+		} else if (action.equals("timeregressionok")) {
 			jd.dispose();
 			cancel_clicked = false;
 			
@@ -1234,7 +1313,7 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 
 		TSPlotPanel ts = new TSPlotPanel("Time Series",dateCol,numCol);
 		try {
-			ts.addRTMDataSet(_rt.getRTMModel(), dateCol,numCol,dimIndex);
+			RTMUtil.addRTMDataSet(ts.getTimeSeries(),_rt.getRTMModel(), dateCol,numCol,dimIndex);
 			ts.drawTSPlot();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
@@ -1254,8 +1333,9 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 	private void showTSForecastPlot(String dateCol, String  numCol, int aggrIndex, int dimIndex) {
 
 		TSPlotPanel ts = new TSPlotPanel("Time Series Forecast",dateCol,numCol);
+		
 		try {
-			ts.addRTMDataSet(_rt.getRTMModel(), dateCol,numCol,dimIndex);
+			RTMUtil.addRTMDataSet(ts.getTimeSeries(),_rt.getRTMModel(), dateCol,numCol,dimIndex);
 			ts.drawTSForecastPlot();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
@@ -1271,12 +1351,32 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 		jd.setVisible(true);
 		
 	}
+	private void showTimeRegressionPlot(String dateCol, String  numCol, int rtype, int dimIndex) {
+
+		RegressionPlotPanel rs = new RegressionPlotPanel("Time Regression ",dateCol,numCol);
+		try {
+			RTMUtil.addRTMDataSet(rs.getTimeSeries(),_rt.getRTMModel(), dateCol,numCol,dimIndex);
+			rs.drawTimeRegressionPlot(rtype);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
+			return;
+		}
+		
+		jd = new JDialog();
+		jd.setTitle("Time Regression Dialog");
+		jd.setLocation(150, 100);
+		jd.getContentPane().add(rs);
+		jd.setModal(true);
+		jd.pack();
+		jd.setVisible(true);
+		
+	}
 	
 	private void showRegressionPlot(String dateCol, String  numCol,  int dimIndex) {
 
 		RegressionPlotPanel rs = new RegressionPlotPanel("Regression ",dateCol,numCol);
 		try {
-			rs.addRTMDataSet(_rt.getRTMModel(), dateCol,numCol);
+			RTMUtil.addRTMDataSet(rs.getXYSeries(),_rt.getRTMModel(), dateCol,numCol);
 			rs.drawRegressionPlot(dimIndex);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
@@ -1292,6 +1392,29 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 		jd.setVisible(true);
 		
 	}
+	
+	private void showDataEnrichmentTable(String dateCol, String  numCol,  int dimIndex) {
+		
+		XYSeries xyseries = new XYSeries("Data Enrichment");
+		XYSeriesCollection xyseriescollection = new XYSeriesCollection(xyseries);
+		double[] ad = new double[5];
+		try {
+			xyseries = RTMUtil.addRTMDataSet(xyseries,_rt.getRTMModel(), dateCol,numCol);
+			if (dimIndex == 0) { // Add a+bx = a and b to tile
+	        	ad = Regression.getOLSRegression(xyseriescollection, 0);
+	        } else if (dimIndex == 1) { // Polynomial default order 4 --  a +bx+ cx^2+dx^3 +ex^4
+	        	ad = Regression.getPolynomialRegression(xyseriescollection, 0,4);
+	        } else if (dimIndex == 2) { // Power ax^b
+	        	ad = Regression.getPowerRegression(xyseriescollection, 0);
+	        }
+			RTMUtil.addEnrichment(_rt.getRTMModel(), dateCol,numCol,ad,dimIndex);
+			
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
+			return;
+		}
+	}
+	
 	private void showTimelinessPlot(String dateCol) {
 
 		int rowC= _rt.getModel().getRowCount();
