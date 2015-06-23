@@ -26,6 +26,18 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.arrah.framework.rdbms.DataDictionaryPDF;
+import org.arrah.gui.swing.ConsoleFrame;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.Minute;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.Quarter;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.Week;
+import org.jfree.data.time.Year;
+import org.jfree.data.xy.XYSeries;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Element;
@@ -296,6 +308,8 @@ public class RTMUtil {
 				Object[] row2 = r1.getRow();
 				int comparison = 0;
 				
+				
+				// This is for natural order. While for Cross Tab, it should be Rows, then Columns then metric
 				for (int i=0; i < row1.length; i++) {
 					
 					Object o1 = row1[i];
@@ -364,6 +378,111 @@ public class RTMUtil {
 		 newRTM.addFillRow(rows[i].getRow());
 	 
 	 	return newRTM;
+	}
+	
+	
+	
+// For time series data
+// Ignore null value
+	public static TimeSeries addRTMDataSet(TimeSeries dataset, ReportTableModel rtm, String datecol1, String numcol2, int timed) throws Exception {
+		int rowC= rtm.getModel().getRowCount();		
+		int index = rtm.getColumnIndex(datecol1);
+		int comIndex = rtm.getColumnIndex(numcol2);
+		
+		for (int i=0; i < rowC; i++) {
+			try {
+				Object dcell = rtm.getModel().getValueAt(i, index);
+				if (dcell == null) continue;
+				Object ncell = rtm.getModel().getValueAt(i, comIndex);
+				if (ncell == null) continue;
+				switch(timed) {
+					case 0: //year
+						dataset.addOrUpdate(new Year((Date)dcell) , (Double)ncell);
+						break;
+					case 1: //Quarter
+						dataset.addOrUpdate(new Quarter((Date)dcell) , (Double)ncell);
+						break;
+					case 2: //Month
+						dataset.addOrUpdate(new Month((Date)dcell) , (Double)ncell);
+						break;
+					case 3: //Week
+						dataset.addOrUpdate(new Week((Date)dcell) , (Double)ncell);
+						break;
+					case 4: //Day
+						dataset.addOrUpdate(new Day((Date)dcell) , (Double)ncell);
+						break;
+					case 5: //Hour
+						dataset.addOrUpdate(new Hour((Date)dcell) , (Double)ncell);
+						break;
+					case 6: //Minute
+						dataset.addOrUpdate(new Minute((Date)dcell) , (Double)ncell);
+						break;
+					case 7: //Second
+						dataset.addOrUpdate(new Second((Date)dcell) , (Double)ncell);
+						break;
+					case 8: //Millisecond
+						dataset.addOrUpdate(new Millisecond((Date)dcell) , (Double)ncell);
+						break;
+						
+					default:
+				}
+			} catch (Exception e) {
+				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			}
+		}
+		return dataset;
+	}
+	
+// For Number series data
+// Ignore Null values
+	public static XYSeries addRTMDataSet(XYSeries dataset,ReportTableModel rtm, String xcol1, String ycol2) throws Exception {
+		int rowC= rtm.getModel().getRowCount();		
+		int index = rtm.getColumnIndex(xcol1);
+		int comIndex = rtm.getColumnIndex(ycol2);
+		
+		for (int i=0; i < rowC; i++) {
+			try {
+				Object xcell = rtm.getModel().getValueAt(i, index);
+				Object ycell = rtm.getModel().getValueAt(i, comIndex);
+				if (xcell == null || ycell == null) continue;
+				dataset.add(new Double(xcell.toString()) ,new Double(ycell.toString()));
+				
+			} catch (Exception e) {
+				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			}
+		}
+		return dataset;
+	}
+	
+	// Data Enrichment
+	public static ReportTableModel addEnrichment(ReportTableModel rtm, String xcol1, String ycol2, double[] val, int rtype) throws Exception {
+		int rowC= rtm.getModel().getRowCount();		
+		int index = rtm.getColumnIndex(xcol1);
+		int comIndex = rtm.getColumnIndex(ycol2);
+		
+		for (int i=0; i < rowC; i++) {
+			try {
+				Object ycell = rtm.getModel().getValueAt(i, comIndex);
+				if (! (ycell == null  || ycell.toString().equals("") == true)) continue;
+				Object xcell = rtm.getModel().getValueAt(i, index);
+				if (xcell == null ) {
+					System.out.println("Can not create regression data. Domain data is also null");
+				}
+				if (rtype == 0) // Linear  a +bx
+					ycell = new Double(val[0] + val[1]*(Double)xcell);
+				if (rtype == 1 ) // Polynomial default order 4 --  a +bx+ cx^2+dx^3 +ex^4
+					ycell = new Double(val[0] + val[1]*(Double)xcell + val[2]*(Double)xcell*(Double)xcell + 
+						val[3]*(Double)xcell*(Double)xcell*(Double)xcell+val[4]*(Double)xcell*(Double)xcell*(Double)xcell*(Double)xcell);
+				if (rtype == 2 ) // Power ax^b
+					ycell = new Double(val[0]* Math.pow((Double)xcell,val[1]));
+				
+				rtm.setValueAt(ycell, i,comIndex);
+				
+			} catch (Exception e) {
+				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			}
+		}
+		return rtm;
 	}
 	
 	

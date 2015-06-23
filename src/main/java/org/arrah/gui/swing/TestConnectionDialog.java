@@ -59,8 +59,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 			"LD_LIBRARY_PATH (for Solaris) or \nSHLIBPATH (for HP) for UNIX user. \n\n"+
 			"For Windows user PATH variable should be set." +
 			"\n\n $ORACLE_HOME/jdbc/lib/ojdbc*.jar should be in CLASSPATH";
-			
-	
+				
 	private int dbIndex;
 	private int connectionType = 0 ; // default existing connection
 
@@ -96,7 +95,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		int numPairs = labels.length;  
 		
 		String[] dbtype = {"Oracle JDBC Client","Oracle Windows Bridge","Mysql JDBC Client","Mysql Windows Bridge",
-							"SQLServer JDBC Client","SQLServer Windows Bridge",
+							"SQLServer JDBC Client","SQLServer Windows Bridge","Access JDBC Client",
 							"Access Windows Bridge","Postgres JDBC Client","DB2 JDBC Client",
 							"Hive JDBC Client","Informix JDBC Client","Splice Derby Client","Others (JDBC Bridge)","Others (Windows Bridge)"}; 
 		String[] cname = {"New Connection"};
@@ -373,7 +372,22 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		jdbc_cs.setEditable(false);
 	        		disableResInput();
 	        		break;
-	        	case 6 :
+	        		
+	        	case 6 : // Enable Input as it is not tested fully
+	        		_dbparam.put("Database_Type", "MS_ACCESS_JDBC");
+	        		driver.setText("net.ucanaccess.jdbc.UcanaccessDriver");
+	        		protocol.setText("jdbc:ucanaccess");
+	        		_dbparam.put("Database_Driver", "net.ucanaccess.jdbc.UcanaccessDriver");
+	        		_dbparam.put("Database_Protocol", "jdbc:ucanaccess");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//<mdb or accdb file path>");
+	        		disableResInput();
+	        		// enableResInput();
+	        		break;
+	        		
+	        	case 7 :
 	        		_dbparam.put("Database_Type", "MS_ACCESS");
 	        		driver.setText("sun.jdbc.odbc.JdbcOdbcDriver");
 	        		protocol.setText("jdbc:odbc");
@@ -384,7 +398,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		jdbc_cs.setEditable(false);
 	        		disableResInput();
 	        		break;
-	        	case 7 :
+	        	case 8 :
 	        		_dbparam.put("Database_Type", "POSTGRES");
 	        		driver.setText("org.postgresql.Driver");
 	        		protocol.setText("jdbc:postgresql");
@@ -394,7 +408,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		dsn.setText("//hostname/db");
 	        		disableResInput();
 	        		break;
-	        	case 8 :
+	        	case 9 :
 	        		_dbparam.put("Database_Type", "DB2");
 	        		driver.setText("com.ibm.db2.jcc.DB2Driver");
 	        		protocol.setText("jdbc:db2");
@@ -405,7 +419,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		disableResInput();
 	        		break;
 	        		
-	        	case 9 :
+	        	case 10 :
 	        		_dbparam.put("Database_Type", "HIVE");
 	        		driver.setText("org.apache.hadoop.hive.jdbc.HiveDriver");
 	        		protocol.setText("jdbc:hive");
@@ -415,7 +429,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		dsn.setText("//hostname/db");
 	        		disableResInput();
 	        		break;
-	        	case 10 :
+	        	case 11 :
 	        		_dbparam.put("Database_Type", "INFORMIX");
 	        		driver.setText("com.informix.jdbc.IfxDriver");
 	        		protocol.setText("jdbc:informix-sqli");
@@ -426,7 +440,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		disableResInput();
 	        		break;
 	        		
-	        	case 11 :
+	        	case 12 :
 	        		_dbparam.put("Database_Type", "SPLICE");
 	        		driver.setText("org.apache.derby.jdbc.ClientDriver");
 	        		protocol.setText("jdbc:derby");
@@ -437,7 +451,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		disableResInput();
 	        		break;
 
-	        	case 12 :
+	        	case 13 :
 	        		_dbparam.put("Database_Type", "Others");
 	        		driver.setText("jdbc.DbNameDriver");
 	        		protocol.setText("jdbc:dbname");
@@ -623,13 +637,16 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 			case 4:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[[\\instanceName][:port]][;databaseName==value][;property=value]" ;
 				break;
-			case 2:case 7:case 8:case 9:case 11:
+			case 6:
+				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //c:/Database.[mdb][accdb]" ;
+				break;
+			case 2:case 8:case 9:case 10:case 12:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname.";
 				break;
-			case 10:
+			case 11:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname::INFORMIXSERVER=name[;property=value]" ;
 				break;
-			case 1: case 3: case 5: case 6:
+			case 1: case 3: case 5: case 7:
 				infoStatus = "Enter System DSN of your window. \n" +
 						"Start --> Control Panel-->Administrative Tools-->Data Sources-->System DSN.";
 				break;
@@ -648,7 +665,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		}
 		if ("driver".equals(sel_id)) {
 			switch (dbIndex) {
-			case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:case 8:case 9: case 10: case 11:
+			case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:case 8:case 9: case 10: case 11:case 12:
 				infoStatus = "Default Database Driver is shown.";
 				 break;
 			default:
@@ -658,7 +675,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		}
 		if ("protocol".equals(sel_id)) {
 			switch (dbIndex) {
-			case 0: case 1: case 2: case 3: case 4: case 5:case 6: case 7:case 8:case 9: case 10: case 11:
+			case 0: case 1: case 2: case 3: case 4: case 5:case 6: case 7:case 8:case 9: case 10: case 11:case 12:
 				infoStatus = "Default Connection Protocol is shown.";
 				 break;
 			default:

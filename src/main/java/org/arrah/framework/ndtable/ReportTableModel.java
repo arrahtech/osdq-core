@@ -369,7 +369,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		return -1;
 	}
 	
-	// public method
+	// public util methods
 	public  int getColumnIndex(String colName) {
 		int row_c = this.getModel().getColumnCount();
 		for (int i = 0; i < row_c; i++) {

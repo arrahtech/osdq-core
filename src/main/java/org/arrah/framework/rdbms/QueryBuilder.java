@@ -51,6 +51,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("mysql") != 0 
 				&& _dtype.compareToIgnoreCase("hive") != 0 
 				&& _dtype.compareToIgnoreCase("informix") != 0 
+				&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 				&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
 		{
@@ -73,6 +74,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("mysql") != 0 
 			    && _dtype.compareToIgnoreCase("hive") != 0 
 			    && _dtype.compareToIgnoreCase("Informix") != 0 
+				&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 			    && !(_dtype.compareToIgnoreCase("Others") == 0 && 
 						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
 		{
@@ -97,6 +99,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("mysql") != 0 
 				&& _dtype.compareToIgnoreCase("hive") != 0
 				&& _dtype.compareToIgnoreCase("informix") != 0
+				&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 				&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) ) 
 		{
@@ -205,6 +208,7 @@ public class QueryBuilder {
 					+ num;
 		} else if (_dtype.compareToIgnoreCase("mysql") == 0
 				|| _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("ms_access_jdbc") == 0
 				|| _dtype.compareToIgnoreCase("db2") == 0 ) {
 
 			bottom_sel_query = " SELECT " + distinct_str + " " + _column
@@ -282,6 +286,7 @@ public class QueryBuilder {
 					+ " desc ) WHERE rownum <= " + num;
 		} else if (_dtype.compareToIgnoreCase("mysql") == 0
 				 || _dtype.compareToIgnoreCase("postgres") == 0
+				 || _dtype.compareToIgnoreCase("ms_access_jdbc") == 0
 				 || _dtype.compareToIgnoreCase("db2") == 0) {
 			
 			top_sel_query = " SELECT " + distinct_str + " " + _column + " as "
@@ -329,7 +334,6 @@ public class QueryBuilder {
 			top_sel_query += " order by " + _column + " desc ";
 
 		}
-
 		return top_sel_query;
 	}
 
@@ -961,6 +965,7 @@ public class QueryBuilder {
 			else if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(j) + "\" LIKE \'%"
@@ -983,6 +988,7 @@ public class QueryBuilder {
 			else if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
@@ -1021,6 +1027,7 @@ public class QueryBuilder {
 			else if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector.elementAt(j) + "\" LIKE \'%"
@@ -1043,6 +1050,7 @@ public class QueryBuilder {
 			else if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector.elementAt(avector.size() - 1)
@@ -1086,6 +1094,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(j) + "\"" + ",";
@@ -1096,6 +1105,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
@@ -1131,6 +1141,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!table.startsWith("\""))
@@ -1144,6 +1155,7 @@ public class QueryBuilder {
 				if (_dtype.compareToIgnoreCase("mysql") != 0 
 						&& _dtype.compareToIgnoreCase("hive") != 0
 						&& _dtype.compareToIgnoreCase("informix") != 0
+						&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 						&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 								Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 					if (!col.startsWith("\""))
@@ -1172,6 +1184,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!table.startsWith("\""))
@@ -1183,6 +1196,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!col.startsWith("\""))
@@ -1205,6 +1219,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
@@ -1235,6 +1250,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
@@ -1271,6 +1287,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
@@ -1295,6 +1312,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("mysql") != 0 
 					&& _dtype.compareToIgnoreCase("hive") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0
+					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
 							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!colN.startsWith("\""))
@@ -1347,6 +1365,7 @@ public class QueryBuilder {
                   if (_dtype.compareToIgnoreCase("mysql") != 0 
                 		  && _dtype.compareToIgnoreCase("hive") != 0
                 		  && _dtype.compareToIgnoreCase("informix") != 0
+                		  && _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
                 		  && !(_dtype.compareToIgnoreCase("Others") == 0 && 
           						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
                         columns += "\"" + avector[0].elementAt(j) + "\"" + ",";
@@ -1357,6 +1376,7 @@ public class QueryBuilder {
                   if (_dtype.compareToIgnoreCase("mysql") != 0 
                 		  && _dtype.compareToIgnoreCase("hive") != 0
                 		  && _dtype.compareToIgnoreCase("informix") != 0
+                		  && _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
                 		  && !(_dtype.compareToIgnoreCase("Others") == 0 && 
           						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
                         columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
