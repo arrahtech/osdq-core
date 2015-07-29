@@ -16,6 +16,7 @@ package org.arrah.framework.datagen;
  * and cumulative data - aggregate data sum,
  * count, avg, min and max
  * Cumulative data sum, count and avg
+ * Utilitiies functions are also supported here
  */
 
 import java.util.Arrays;
@@ -192,8 +193,8 @@ public class AggrCumRTM {
 		return output = value.split(regex);
 	}
 	
-	/* This is a utility function to Remove Metadata from String */
-	public static String removeMetaDataString(String oldString, String skipString) {
+	/* This is a utility function to Remove MetaChar from String */
+	public static String removeMetaCharString(String oldString, String skipString) {
 		String newString="";
 		for (int curIndex = 0; curIndex < oldString.length(); curIndex++ ) {
 			 char c = oldString.charAt(curIndex);
@@ -201,6 +202,46 @@ public class AggrCumRTM {
 			 if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
 			 newString += ch.toString();
 		 }
+		return newString;
+	}
+	// From Start, end and inBetween
+	public static String removeMetaCharString(String oldString, String skipString, boolean start,  boolean inBtw, boolean end) {
+		String newString="";
+		int len =  oldString.length();
+		
+		{ // Start Block
+			char c = oldString.charAt(0); // First char
+		 	Character ch = new Character(c);
+		 	
+			if (start == true) {
+			 	if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
+					 newString += ch.toString();
+			} else 
+				newString += ch.toString();
+		}
+		
+		if (len > 1) { // inBet Block
+			for (int curIndex = 1; curIndex < len - 1 ; curIndex++ ) {
+				 char c = oldString.charAt(curIndex);
+				 Character ch = new Character(c);
+				 if (inBtw == true ) {	
+					 if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
+					 newString += ch.toString();
+				 } else
+					 newString += ch.toString();	 
+			}
+		}
+		
+		if ((len > 1)) { // end block
+			char c = oldString.charAt(len -1); // last char
+		 	Character ch = new Character(c);
+			if ( end == true) {
+			 	if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
+					 newString += ch.toString();
+			} else
+				 newString += ch.toString();
+		}
+		
 		return newString;
 	}
 	
@@ -213,6 +254,43 @@ public class AggrCumRTM {
 			 if ( skipString.contains(ch.toString()) == false)
 			 newString += ch.toString();
 		 }
+		return newString;
+	}
+	// From Start, end and inBetween
+	public static String removeCharacterString(String oldString, String skipString, boolean start,  boolean inBtw, boolean end) {
+		String newString="";
+		int len =  oldString.length();
+		
+		for (int curIndex = 0 ; curIndex < len ; curIndex++ ) {
+			 char c = oldString.charAt(curIndex);
+			 Character ch = new Character(c);
+			 
+			 if (curIndex == 0) { //Start block
+				 if (start == true ) {
+					 if ( skipString.contains(ch.toString()) == false)
+						 newString += ch.toString();
+				 } else 
+					 newString += ch.toString();
+				 
+				 continue; // will work for single byte character
+			 }
+			 
+			 if (curIndex < len -1 ) {
+				 if (inBtw == true) { // middle block
+					 if ( skipString.contains(ch.toString()) == false)
+						 newString += ch.toString();
+				 } else 
+					 newString += ch.toString();
+			 } else {
+				 if (end == true) { // end block
+					 if ( skipString.contains(ch.toString()) == false)
+						 newString += ch.toString();
+				 } else 
+					 newString += ch.toString();
+			 }
+			 
+		 } // For Loop
+		
 		return newString;
 	}
 	
@@ -232,6 +310,18 @@ public class AggrCumRTM {
 		cal.setTimeInMillis(millisec);
 		return cal.getTime();
 	}
+	
+	/* This is a utility function to Remove Character from String */
+	public static String replaceString(String fullString, String matchString, String replaceString, boolean fromStart) {
+		String newString ="";
+		if ( fromStart == true) 
+			newString = fullString.replaceFirst(matchString, replaceString);
+		 else 
+			newString = fullString.replaceAll(matchString, replaceString);
+		
+		return newString;
+	}
+	
 	
 	
 } // End of AggrCumRTM

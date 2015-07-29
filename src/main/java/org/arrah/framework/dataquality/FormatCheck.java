@@ -169,10 +169,10 @@ public class FormatCheck {
 			
 			else if (c_m == '?' && Character.isLetter(value.charAt(i)))
 				output.append(value.charAt(i));
-			else if (c_m == 'A'
-					&& (Character.isLetter(value.charAt(i)) || Character
-							.isDigit(value.charAt(i))))
+			
+			else if (c_m == 'A' && (Character.isLetter(value.charAt(i)) || Character.isDigit(value.charAt(i))))
 				output.append(value.charAt(i));
+			
 			else if (c_m == '*')
 				output.append(value.charAt(i));
 			else if (c_m == 'H'

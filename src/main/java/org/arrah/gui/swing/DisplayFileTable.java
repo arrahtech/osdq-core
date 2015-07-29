@@ -164,20 +164,24 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		preparation_m.setMnemonic('P');
 		menubar.add(preparation_m);
 		
-		JMenuItem ordinal_m = new JMenuItem("Ordinal");
+		JMenuItem ordinal_m = new JMenuItem("To Ordinal");
 		ordinal_m.addActionListener(this);
 		ordinal_m.setActionCommand("ordinal");
 		preparation_m.add(ordinal_m);
 		
-		JMenuItem enrich_m = new JMenuItem("Seasonality");
-		enrich_m.addActionListener(this);
-		enrich_m.setActionCommand("seasonality");
-		preparation_m.add(enrich_m);
+		JMenuItem season_m = new JMenuItem("Seasonality");
+		season_m.addActionListener(this);
+		season_m.setActionCommand("seasonality");
+		preparation_m.add(season_m);
 		
-		JMenuItem nullrep_m = new JMenuItem("Enrichment");
-		nullrep_m.addActionListener(this);
-		nullrep_m.setActionCommand("nullreplace");
-		preparation_m.add(nullrep_m);
+		JMenu enrich_m = new JMenu("Enrichment");
+		preparation_m.add(enrich_m);
+		JMenu nullrep_m = new JMenu("Null Replace");
+		enrich_m.add(nullrep_m);
+		JMenuItem nullreg_m = new JMenuItem("Regression Based");
+		nullreg_m.addActionListener(this);
+		nullreg_m.setActionCommand("nullreplace");
+		nullrep_m.add(nullreg_m);
 
 
 		// Analytics Menu
@@ -289,6 +293,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		hideC_m.addActionListener(this);
 		hideC_m.setActionCommand("hidecolumn");
 		column_m.add(hideC_m);
+		
+		JMenuItem clearC_m = new JMenuItem("Clear Column");
+		clearC_m.addActionListener(this);
+		clearC_m.setActionCommand("clearcolumn");
+		column_m.add(clearC_m);
+		
 		column_m.addSeparator();
 
 		JMenuItem copyC_m = new JMenuItem("Copy Column");
@@ -625,6 +635,21 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				if (index < 0)
 					return;
 				_rt.hideColumn(index);
+				return;
+			}
+			if (command.equals("clearcolumn")) {
+				int n = JOptionPane.showConfirmDialog(
+								null,"It will clear Column Data.\n Do you wish to Continue ?",
+								"Clear Column Dialog",JOptionPane.YES_NO_OPTION);
+				if (n == JOptionPane.NO_OPTION)
+					return;
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				int row_c = _rt.table.getRowCount();
+				for (int i = 0; i < row_c; i++) {
+					_rt.table.setValueAt(null,i, index); // set to null
+				}
 				return;
 			}
 			if (command.equals("renamecolumn")) {
@@ -1019,15 +1044,9 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				} // end of Date
 				else {
 					try {
-						_rt.table
-								.getColumnModel()
-								.getColumn(index)
-								.setCellEditor(
-										new DefaultCellEditor(
-												new JFormattedTextField(
-														new MaskFormatter(
-																pattern[0]
-																		.toString()))));
+						_rt.table.getColumnModel().getColumn(index).setCellEditor(
+							new DefaultCellEditor( new JFormattedTextField( new MaskFormatter(pattern[0].toString()))));
+						
 						for (int i = 0; i < row_c; i++) {
 							String o = _rt.getTextValueAt(i, index);
 							if (o != null)
