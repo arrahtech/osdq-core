@@ -1,5 +1,7 @@
-profiler V6.0.6
+profiler V6.0.8
 ===========
+
+[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
 
 **Description**
 
@@ -29,11 +31,12 @@ It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Creat
 Getting Started
 ---------------
 
-Building from source
+Building and Running
 
-1. Clone the project url 
-2. mvn package
-3. cd target
-4. unzip the profiler-<version>-SNAPSHOT-distribution.zip
-5. cd profiler-<version>-SNAPSHOT
-6. java -jar profiler-<version>-SNAPSHOT.jar
+1. git clone git@github.com:arrahtec/profiler.git
+2. cd profiler
+3. mvn package
+4. cd target
+5. unzip the profiler-<version>-SNAPSHOT-distribution.zip
+6. cd profiler-<version>-SNAPSHOT
+7. java -jar profiler-<version>-SNAPSHOT.jar

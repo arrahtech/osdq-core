@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Hashtable;
 
 import javax.swing.JButton;
@@ -36,12 +38,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.xml.XmlWriter;
 
-public class TestConnectionDialog extends JDialog implements ActionListener {
+public class TestConnectionDialog extends JDialog implements ActionListener, ItemListener {
 	/**
 	 * 
 	 */
@@ -53,7 +56,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	private JTextField catalog,schemaPattern,tablePattern,colPattern,type;
 	private JTextArea info;
 	private JButton ok_b,add_b;
-	private JCheckBox quoteC;
+	private JCheckBox quoteC, demoDB;
 	
 	private String infoStatus ="INFORMATION: \n$ORACLE_HOME/lib should be in LIBPATH (for AIX), \n" +
 			"LD_LIBRARY_PATH (for Solaris) or \nSHLIBPATH (for HP) for UNIX user. \n\n"+
@@ -215,9 +218,14 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 				6, 6);       //xPad, yPad          
 		
 
+		// Bottom Panel 
 		JPanel bp = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 25));
 		bp.setPreferredSize(new Dimension(500,70));
-
+		
+		demoDB = new JCheckBox("Demo DB");
+		demoDB.addItemListener(this);
+		bp.add(demoDB);
+		
 		JButton tstc = new JButton("Test Connection");
 		tstc.setActionCommand("testconn");
 		tstc.addKeyListener(new KeyBoardListener());
@@ -384,7 +392,6 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	        		jdbc_cs.setEditable(false);
 	        		dsn.setText("//<mdb or accdb file path>");
 	        		disableResInput();
-	        		// enableResInput();
 	        		break;
 	        		
 	        	case 7 :
@@ -603,9 +610,10 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 				System.out.println("Connection Failed");
 				e1.printStackTrace();
 			}
-			if("Connection Successful".equals(status))
+			if("Connection Successful".equals(status)) {
 				ok_b.setEnabled(true);
-                                add_b.setEnabled(true);
+                add_b.setEnabled(true);
+			}
 			
 			return;
 		}
@@ -734,7 +742,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 	
 	// It is a utility function which clean all JTextfield except type and default values
 	private void cleanText() {
-                jccon.setSelectedIndex(0);
+        jccon.setSelectedIndex(0);
 		dsn.setText("");
 		user.setText("");
 		passfield.setText("");
@@ -775,4 +783,66 @@ public class TestConnectionDialog extends JDialog implements ActionListener {
 		quoteC.setEnabled(false);restype.setEnabled(false);resconcur.setEnabled(false);
 	}
 
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		if (e.getStateChange() == ItemEvent.SELECTED ) {
+			
+			
+		SwingUtilities.invokeLater(new Runnable() {
+	        public void run()
+	         {
+				int selop = JOptionPane.showConfirmDialog(null,"Do you want to load Demo database ?","Choose Demo DB", JOptionPane.YES_NO_OPTION);
+				if (selop == JOptionPane.NO_OPTION) {
+					demoDB.setSelected(false);
+					return;
+				} else {
+					fillDemoVal();
+				}
+	         }
+	    });
+			
+		}
+	}
+		
+	final private void fillDemoVal() {
+			 // Now load the database
+			_dbparam = new Hashtable <String,String>();
+			_dbparam.put("Database_Type", "MS_ACCESS_JDBC");
+			_dbparam.put("Database_Driver", "net.ucanaccess.jdbc.UcanaccessDriver");
+			_dbparam.put("Database_Protocol", "jdbc:ucanaccess");
+			_dbparam.put("Database_DSN", "//./ArrahDemo.accdb");
+			_dbparam.put("Database_User", "");
+			_dbparam.put("Database_Passwd", "");
+			_dbparam.put("Database_Catalog", "");
+			_dbparam.put("Database_SchemaPattern", "");
+			_dbparam.put("Database_TablePattern", "");
+			_dbparam.put("Database_ColumnPattern", "");
+			_dbparam.put("Database_TableType", "TABLE"); // Default show tables
+			_dbparam.put("Database_ResultsetType", "");
+			_dbparam.put("Database_ResultsetConcur", "");
+			_dbparam.put("Database_SupportQuote", "");
+			
+			String status ="";
+			try {
+				
+				if (connectionType == 0 ) { // Default connection
+					Rdbms_conn.init(_dbparam);
+					status = Rdbms_conn.testConn();
+					info.setText(status);
+					Rdbms_conn.closeConn();
+				} else { // New Connection
+					Rdbms_NewConn newConn = new Rdbms_NewConn(_dbparam);
+					status = newConn.testConn();
+					info.setText(status);
+					newConn.closeConn();	
+				}
+			} catch (Exception e1) {
+				System.out.println("Connection Failed");
+				e1.printStackTrace();
+			}
+			if("Connection Successful".equals(status)) {
+				this.dispose();
+				return;
+			}		
+		}
 }

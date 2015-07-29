@@ -29,6 +29,7 @@ import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
@@ -49,12 +50,14 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 	private int _colIndex = 0;
 	private JDialog d_f;
 	private JFormattedTextField jrn_low, jrn_high,split_low,split_high;
-	private JRadioButton rd1, rd2, rd3, rd4, leftrd, rightrd, rd5, rd6, rd7;
+	private JRadioButton rd1, rd2, rd3, rd4, leftrd, rightrd, rd5, rd6, rd7, rd8;
 	private JComboBox<String> colSel;
 	private Border line_b;
 	private int beginIndex, endIndex;
 	private JLabel colType;
-	private JTextField splitString,splitString_sub,splitString_meta,splitString_char;
+	private JTextField splitString,splitString_sub,splitString_meta,splitString_char,searchString,replaceString;
+	private JCheckBox startM, endM, inBetweenM, startC, endC, inBetweenC;
+	private JRadioButton firstrd, allrd;
 
 	
 	public UtilFunctionPanel(ReportTable rt, int colIndex) {
@@ -70,24 +73,26 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 
 		rd1 = new JRadioButton("Split String");
-		rd5 = new JRadioButton("Split SubString");
+		rd5 = new JRadioButton("Split Into SubString");
 		rd4 = new JRadioButton("Reversse String");
-		rd6 = new JRadioButton("Remove MetaData");
+		rd6 = new JRadioButton("Remove Special Character");
 		rd7 = new JRadioButton("Remove Charater(s)");
+		rd8 = new JRadioButton("Replace String");
 		rd2 = new JRadioButton("Epoch MilliSecond to Date ");
 		rd3 = new JRadioButton("Date to Epoch MilliSecond");
 		ButtonGroup bg = new ButtonGroup();
-		bg.add(rd1);bg.add(rd2);bg.add(rd3);bg.add(rd4);bg.add(rd5);bg.add(rd6);bg.add(rd7);
+		bg.add(rd1);bg.add(rd2);bg.add(rd3);bg.add(rd4);bg.add(rd5);bg.add(rd6);bg.add(rd7);bg.add(rd8);
 		rd1.setSelected(true);
 
 		jp.add(createSelectionPanel(),BorderLayout.NORTH);
 		
-		JPanel header = new JPanel(new GridLayout(7,1));
+		JPanel header = new JPanel(new GridLayout(8,1));
 		header.add(createSplitPanel());
 		header.add(createSubSplitPanel());
 		header.add(createReversePanel());
 		header.add(createMetadataPanel());
 		header.add(createCharacterPanel());
+		header.add(createStringPanel());
 		header.add(createDateToSecondPanel() );
 		header.add(createSecondToDatePanel());
 		jp.add(header,BorderLayout.CENTER);
@@ -113,7 +118,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		d_f.setModal(true);
 		d_f.setTitle("Utility Function Dialog");
 		d_f.setLocation(300, 250);
-		d_f.setPreferredSize(new Dimension(625,415));
+		d_f.setPreferredSize(new Dimension(700,450));
 		d_f.getContentPane().add(jp);
 		d_f.pack();
 		d_f.setVisible(true);
@@ -128,7 +133,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		
 		splitjp.setBorder(line_b);
 		splitString = new JTextField();
-		splitString.setText("");
+		splitString.setText("separator");
 		splitString.setColumns(10);
 		splitjp.add(splitString);
 		
@@ -149,15 +154,17 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		
 		splitjp.setBorder(line_b);
 		splitString_sub = new JTextField();
-		splitString_sub.setText("");
+		splitString_sub.setText("separator");
 		splitString_sub.setColumns(10);
 		splitjp.add(splitString_sub);
 		split_low = new JFormattedTextField();
 		split_low.setValue(new Long(1));
 		split_low.setColumns(8);
+		split_low.setToolTipText("From Split Column ID:");
 		split_high = new JFormattedTextField();
 		split_high.setValue(new Long(2));
 		split_high.setColumns(8);
+		split_high.setToolTipText("To Split Column ID:");
 		
 		splitjp.add(split_low) ;splitjp.add(split_high) ;
 		return splitjp;
@@ -170,9 +177,15 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		JLabel jl = new JLabel(" Except:");
 		splitjp.add(jl);
 		splitString_meta = new JTextField();
-		splitString_meta.setText("");
+		splitString_meta.setText("_");
 		splitString_meta.setColumns(10);
 		splitjp.add(splitString_meta);
+		
+		startM = new JCheckBox("From Start");
+		startM.setSelected(true);
+		endM = new JCheckBox("From End");
+		inBetweenM = new JCheckBox("In Between");
+		splitjp.add(startM);splitjp.add(endM);splitjp.add(inBetweenM);
 		
 		return splitjp;
 	}
@@ -185,9 +198,45 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		JLabel jl = new JLabel(" Character(s):");
 		splitjp.add(jl);
 		splitString_char = new JTextField();
-		splitString_char.setText("");
+		splitString_char.setText("#$");
 		splitString_char.setColumns(10);
 		splitjp.add(splitString_char);
+		
+		startC = new JCheckBox("From Start");
+		startC.setSelected(true);
+		endC = new JCheckBox("From End");
+		inBetweenC = new JCheckBox("In Between");
+		splitjp.add(startC);splitjp.add(endC);splitjp.add(inBetweenC);
+		
+		return splitjp;
+	}
+	
+	private JPanel createStringPanel() {
+		
+		JPanel splitjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		splitjp.add(rd8);
+		splitjp.setBorder(line_b);
+		JLabel jl = new JLabel("Search");
+		splitjp.add(jl);
+		searchString = new JTextField();
+		searchString.setText("search");
+		searchString.setColumns(10);
+		splitjp.add(searchString);
+		
+		JLabel j2 = new JLabel("Replace");
+		splitjp.add(j2);
+		replaceString = new JTextField();
+		replaceString.setText("replace");
+		replaceString.setColumns(10);
+		splitjp.add(replaceString);
+		
+		firstrd = new JRadioButton("Only First");
+		firstrd.setSelected(true);
+		allrd = new JRadioButton("All");
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(firstrd);bg.add(allrd);
+		
+		splitjp.add(firstrd);splitjp.add(allrd);
 		
 		return splitjp;
 	}
@@ -394,36 +443,79 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 			} // end of date to Epoch
 			if (rd6.isSelected() == true) {
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
+				boolean start = startM.isSelected();
+				boolean end = endM.isSelected();
+				boolean inBet = inBetweenM.isSelected();
 				
+				if ( start == false &&  end == false && inBet == false) {
+					JOptionPane.showMessageDialog(null, "Select atleast one chechBox option");
+					return;
+				}
+				 String skipString = splitString_meta.getText();
+				 if (skipString == null) skipString = ""; // To avoid null pointer exception
+				 
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 					Object colObject = _rt.getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 String oldString = colObject.toString();
 					 String newString="";
-					 String skipString = splitString_meta.getText();
-					 if (skipString == null) skipString = ""; // To avoid null pointer exception
-					 newString = AggrCumRTM.removeMetaDataString(oldString,skipString);
+					 newString = AggrCumRTM.removeMetaCharString(oldString,skipString,start,inBet,end);
 					 _rt.setTableValueAt(newString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;
-			} // end of Metadata
+			} // end of Meta Character
 			if (rd7.isSelected() == true) {
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
+				boolean start = startC.isSelected();
+				boolean end = endC.isSelected();
+				boolean inBet = inBetweenC.isSelected();
 				
+				if ( start == false &&  end == false && inBet == false) {
+					JOptionPane.showMessageDialog(null, "Select atleat one chechBox option");
+					return;
+				}
+				 String skipString = splitString_char.getText();
+				 if (skipString == null || "".equals(skipString)) { 
+					 JOptionPane.showMessageDialog(null, "Select Character to remove");
+					 return; // To avoid null pointer exception
+				 }
+				 
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 					Object colObject = _rt.getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 String oldString = colObject.toString();
 					 String newString="";
-					 String skipString = splitString_char.getText();
-					 if (skipString == null || "".equals(skipString)) return; // To avoid null pointer exception
-					 newString = AggrCumRTM.removeCharacterString(oldString,skipString);
+					 newString = AggrCumRTM.removeCharacterString(oldString,skipString,start,inBet,end);
 					 _rt.setTableValueAt(newString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;
 			} // end of Character removal
+			
+			if (rd8.isSelected() == true) {
+				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
+				boolean start = firstrd.isSelected();
+				
+				 String serString = searchString.getText();
+				 String repString = replaceString.getText();
+				 
+				 if (serString == null || "".equals(serString)) { 
+					 JOptionPane.showMessageDialog(null, "Select String to be Matched");
+					 return; // To avoid null pointer exception
+				 }
+				 
+				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
+					Object colObject = _rt.getValueAt(i, selColIndex);
+					 if (colObject == null) continue;
+					 String oldString = colObject.toString();
+					 String newString="";
+					 newString = AggrCumRTM.replaceString(oldString, serString, repString,start);
+					 _rt.setTableValueAt(newString, i, _colIndex);
+				}
+				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
+				return;
+			} // end of String removal
 			
 			return;
 			} finally {
