@@ -643,7 +643,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 				infoStatus = "Enter Oracle SID value. \nFormat should be //hostname[:port]/SID \nCheck tnsnames.ora file for Details.";
 				break;
 			case 4:
-				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[[\\instanceName][:port]][;databaseName==value][;property=value]" ;
+				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[[\\instanceName][:port]][;databaseName=value][;property=value]" ;
 				break;
 			case 6:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //c:/Database.[mdb][accdb]" ;

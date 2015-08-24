@@ -25,10 +25,11 @@ import java.awt.Graphics;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -57,8 +58,10 @@ public class TimeProfilerPanel extends JPanel  {
 		if ( getDataforAnalysis() == true) 
 				createAndShowGUI();
 	};
+	
 	public TimeProfilerPanel(Long[] timearray) {
 		sa = new TimeStatisticalAnalysis(timearray);
+		_colObj = sa.getColObjectArray();
 			createAndShowGUI();
 	};
 	
@@ -84,6 +87,69 @@ public class TimeProfilerPanel extends JPanel  {
 
 		perc_t =  new ReportTable(sa.getPercTable());
 		_ta_p.addTab("Percentile Analysis", null, perc_t,"Percentile Analysis");
+		
+		if (_colObj == null) return;
+		
+		Long[] temparray = new Long[_colObj.size()];
+		temparray = _colObj.toArray(temparray);
+		Arrays.sort(temparray);
+		final Long[] newarray = temparray;
+		
+		ScatterPlotterPanel sc = new ScatterPlotterPanel(true) {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+			
+			public Vector<Double> fillValues() {
+				
+				final int gc = getGC();
+				if (gc == 0)
+					return null;
+
+				int counter = 0;
+				double d = 0;
+				double sum = 0;
+				Vector<Double> vc = new Vector<Double>(20, 5);
+				int i = 0;
+				
+				int colC = newarray.length;
+				try {
+					for (int c = 0; c < colC; c++) {
+						
+						d = newarray[c].doubleValue();
+						counter++;
+						if (counter <= gc) {
+							sum += d;
+							if (counter != gc)
+								continue;
+						}
+						double avg = sum / counter;
+						sum = 0;
+						counter = 0;
+						vc.add(i++, new Double(avg));
+					}
+				} catch (NumberFormatException e) {
+					counter = 0;
+					ConsoleFrame
+							.addText("\n ERROR: Could not fill data into Cluster Chart");
+					JOptionPane.showMessageDialog(null, e.getMessage(),
+							"Error Message", JOptionPane.ERROR_MESSAGE);
+					return null;
+				}
+				// After loop breaks
+				// Rounding off the values
+				if (counter != 0 && Math.round((float) counter / gc) > 0) {
+					double avg = sum / counter;
+					vc.add(i, new Double(avg));
+				}
+
+				return vc;
+			}
+			
+		};
+		_ta_p.addTab("Cluster Analysis", null, sc,"Cluster Analysis");
 		
 		BorderLayout layout = new BorderLayout();
 		this.setLayout(layout);
@@ -150,7 +216,7 @@ public class TimeProfilerPanel extends JPanel  {
 			// do something
 			
 		}
-		Long[] temparray = new Long[_colObj.size()]; 
+		Long[] temparray = new Long[_colObj.size()];
 		temparray = _colObj.toArray(temparray);
 		sa = new TimeStatisticalAnalysis(temparray);
 		return true;

@@ -22,6 +22,7 @@ package org.arrah.gui.swing;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.GridLayout;
 import java.awt.MediaTracker;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,23 +62,20 @@ public class RightView implements ItemListener,ActionListener {
 
 	public RightView() {
 
-		// Create the HTML viewing pane.
-		htmlView = new JScrollPane();
-
+		
 		parent = new JPanel();
 		parent.setLayout(new BorderLayout());
 
 		// Create top Panel
 		parent.add(createTopPane(), BorderLayout.PAGE_START);
-		
-		
 
 		// Create the body Panel
-		body = new JPanel();
-		parent.add(body, BorderLayout.LINE_START);
-
+		body = new JPanel(new GridLayout(0,1));
+		parent.add(body, "Center");
+		
+		// Create the HTML viewing pane.
+		htmlView = new JScrollPane();
 		htmlView.getViewport().add(parent);
-
 	}
 
 	// Public interface for Profiler
@@ -101,6 +99,7 @@ public class RightView implements ItemListener,ActionListener {
 		body_p = null;
 		parent.revalidate();
 		parent.repaint();
+		
 	}
 
 	private JPanel createTopPane() {
@@ -244,7 +243,7 @@ public class RightView implements ItemListener,ActionListener {
 		body.removeAll();
 		body.add(body_p);
 		parent.revalidate();
-		parent.repaint();
+		parent.repaint();		
 		return;
 	}
 

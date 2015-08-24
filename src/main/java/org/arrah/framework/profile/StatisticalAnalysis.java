@@ -193,22 +193,32 @@ public class StatisticalAnalysis {
 					String.valueOf((((Number) _colObj[_colObj.length - 1])
 							.doubleValue() + ((Number) _colObj[0])
 							.doubleValue()) / 2) });
+			
+			if (perc_a[0] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(1%-99%)",
 					Double.toString((perv_a[0] + perv_a[20]) / 2) });
+			if (perc_a[1] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(5%-95%)",
 					Double.toString((perv_a[1] + perv_a[19]) / 2) });
+			if (perc_a[2] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(10%-90%)",
 					Double.toString((perv_a[2] + perv_a[18]) / 2) });
+			if (perc_a[3] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(15%-85%)",
 					Double.toString((perv_a[3] + perv_a[17]) / 2) });
+			if (perc_a[4] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(20%-80%)",
 					Double.toString((perv_a[4] + perv_a[16]) / 2) });
+			if (perc_a[5] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(25%-75%)",
 					Double.toString((perv_a[5] + perv_a[15]) / 2) });
+			if (perc_a[6] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(30%-70%)",
 					Double.toString((perv_a[6] + perv_a[14]) / 2) });
+			if (perc_a[7] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(35%-65%)",
 					Double.toString((perv_a[7] + perv_a[13]) / 2) });
+			if (perc_a[8] > 0)
 			range_t.addFillRow(new String[] { "Mid Range(40%-60%)",
 					Double.toString((perv_a[8] + perv_a[12]) / 2) });
 
@@ -221,6 +231,6 @@ public class StatisticalAnalysis {
 			perc_t.addFillRow(new String[] { "99", Double.toString(perv_a[20]),
 					Long.toString(perc_a[20]) });
 		}
-	} // End of fillValues
+	} // End of fillDataIntoTable
 
 } // End of class

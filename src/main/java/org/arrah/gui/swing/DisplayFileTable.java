@@ -72,6 +72,7 @@ import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.MaskFormatter;
 
+import org.arrah.framework.datagen.AggrCumRTM;
 import org.arrah.framework.dataquality.FillCheck;
 import org.arrah.framework.dataquality.FormatCheck;
 import org.arrah.framework.hadooputil.HiveQueryBuilder;
@@ -178,11 +179,21 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		preparation_m.add(enrich_m);
 		JMenu nullrep_m = new JMenu("Null Replace");
 		enrich_m.add(nullrep_m);
+		
 		JMenuItem nullreg_m = new JMenuItem("Regression Based");
 		nullreg_m.addActionListener(this);
 		nullreg_m.setActionCommand("nullreplace");
 		nullrep_m.add(nullreg_m);
+		
+		JMenuItem avgreg_m = new JMenuItem("Average Value");
+		avgreg_m.addActionListener(this);
+		avgreg_m.setActionCommand("avgreplace");
+		nullrep_m.add(avgreg_m);
 
+		JMenuItem prereg_m = new JMenuItem("Previous Value");
+		prereg_m.addActionListener(this);
+		prereg_m.setActionCommand("prereplace");
+		nullrep_m.add(prereg_m);
 
 		// Analytics Menu
 		JMenu analytics_m = new JMenu("Analytics");
@@ -389,10 +400,33 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		option_m.add(transR_m);
 		option_m.addSeparator();
 
-		JMenuItem join_m = new JMenuItem("Load Joinable File");
+		JMenuItem lookup_m = new JMenuItem("Join Lookup File");
+		lookup_m.addActionListener(this);
+		lookup_m.setActionCommand("lookup");
+		option_m.add(lookup_m);
+		option_m.addSeparator();
+		
+		JMenuItem diff_m = new JMenuItem("Diff Join");
+		diff_m.addActionListener(this);
+		diff_m.setActionCommand("diffjoin");
+		option_m.add(diff_m);
+		
+		JMenuItem join_m = new JMenuItem("Left Outer Join");
 		join_m.addActionListener(this);
 		join_m.setActionCommand("joinfile");
 		option_m.add(join_m);
+		
+		JMenuItem inner_m = new JMenuItem("Inner Join");
+		inner_m.addActionListener(this);
+		inner_m.setActionCommand("innerjoin");
+		option_m.add(inner_m);
+		
+		JMenuItem cart_m = new JMenuItem("Cartesian Join");
+		cart_m.addActionListener(this);
+		cart_m.setActionCommand("cartjoin");
+		option_m.add(cart_m);
+		
+		option_m.addSeparator();
 
 		JMenuItem loadR_m = new JMenuItem("Load File into Rows");
 		loadR_m.addActionListener(this);
@@ -1237,19 +1271,62 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				}
 				return;
 			}
-			if (command.equals("joinfile")) {
+			if (command.equals("joinfile") || command.equals("innerjoin") || command.equals("diffjoin")
+					|| command.equals("cartjoin")) {
+				int lindex = selectedColIndex(_rt,"Select column to Join To:");
+				if (lindex < 0)
+					return;
+				
+				JOptionPane.showMessageDialog (null, "Choose the joining file");
+				
 				ImportFilePanel impF = new ImportFilePanel(false);
 				ReportTable rtable = impF.getTable();
 				if (rtable == null)
 					return;
 
-				int lindex = selectedColIndex(_rt);
-				if (lindex < 0)
-					return;
-				int rindex = selectedColIndex(rtable);
+				int rindex = selectedColIndex(rtable,"Select column to Join From:");
 				if (rindex < 0)
 					return;
-				_rt = joinTables(_rt, lindex, rtable, rindex, 0);
+				if( command.equals("joinfile") )
+					_rt = joinTables(_rt, lindex, rtable, rindex, 0); // Left Outer Join
+				else if( command.equals("innerjoin") )
+					_rt = joinTables(_rt, lindex, rtable, rindex, 1); // Inner Join
+				else if( command.equals("diffjoin") )
+					_rt = joinTables(_rt, lindex, rtable, rindex, 2); // Diff join
+				else 
+					_rt = joinTables(_rt, lindex, rtable, rindex, 3); // Cartesian join
+				return;
+			}
+			if (command.equals("lookup")) {
+				int lindex = selectedColIndex(_rt,"Select column for Lookup:");
+				if (lindex < 0)
+					return;
+				
+				JOptionPane.showMessageDialog (null, "Choose the Lookup file:");
+				
+				ImportFilePanel impF = new ImportFilePanel(false);
+				ReportTable rtable = impF.getTable();
+				if (rtable == null)
+					return;
+
+				int rindex = selectedColIndex(rtable,"Select column for Lookup Join:");
+				if (rindex < 0)
+					return;
+				
+				int rinfo = selectedColIndex(rtable,"Select column for Lookup Description:");
+				if (rinfo < 0)
+					return;
+				
+				int rowc = _rt.getModel().getRowCount();
+				_rt.cancelSorting(); // Make sure it is not in sorting order
+				Hashtable<Object, Object> hlookup = RTMUtil.lookupInfo(rtable.getRTMModel(), rindex, rinfo);
+				for (int i=0; i < rowc; i++ ) {
+					Object key = _rt.getModel().getValueAt(i, lindex);
+					Object value = hlookup.get(key);
+					if (value == null) continue;
+					_rt.getModel().setValueAt(value,i,lindex);
+				}
+				
 				return;
 			}
 			if (command.equals("transrow")) {
@@ -1327,6 +1404,64 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				new FileAnalyticsListener(_rt, 19);
 				revalidate();
 				repaint();
+				return;
+			}
+			if (command.equals("avgreplace")) {
+				_rt.cancelSorting(); // No sorting 
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				Vector<Double> colD = _rt.getRTMModel().getColDataVD(index);
+				Double avg = AggrCumRTM.getAverage(colD);
+				int rowc = _rt.getModel().getRowCount();
+				
+				for (int i=0; i < rowc; i++) {
+					Object o = _rt.getValueAt(i, index);
+					if (o == null || "".equals(o.toString())) {
+						try {
+							_rt.setTableValueAt(avg,i, index);
+						} catch(Exception e1) {	
+							_rt.setTableValueAt(avg.toString(),i, index);
+						}
+					}
+				}
+				
+				return;
+			}
+			if (command.equals("prereplace")) {
+				_rt.cancelSorting(); // No sorting 
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				
+				int rowc = _rt.getModel().getRowCount();
+				for (int i=0; i < rowc; i++) {
+					Object o = _rt.getValueAt(i, index);
+					if (o == null || "".equals(o.toString())) {
+						Object prev = null; int pindex=i-1;
+						
+						while (pindex >=0 && ( prev == null || "".equals(prev.toString()))) { // see if previous values are null
+							prev = _rt.getValueAt(pindex, index);
+							pindex--;
+						}
+						
+						//If all the previous values are null
+						if (prev == null || "".equals(prev.toString())) {
+							 pindex=i+1;
+							 while (pindex < rowc && prev == null || "".equals(prev.toString())) { // see if previous values are null
+									prev = _rt.getValueAt(pindex, index);
+									pindex++;
+								}
+						}
+						
+						try {
+							_rt.setTableValueAt(prev,i, index);
+						} catch(Exception e1) {	
+							_rt.setTableValueAt(prev.toString(),i, index);
+						}
+					}
+				}
+				
 				return;
 			}
 			
@@ -1673,6 +1808,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		}
 	} // End of MyCellRenderer
 
+	// Default column selected
 	private int selectedColIndex(ReportTable rt) {
 		int colC = rt.table.getColumnCount();
 		Object[] colN = new Object[colC];
@@ -1680,6 +1816,25 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		 colN[i] = (i + 1) + "," + rt.table.getColumnName(i);	
 		String input = (String) JOptionPane.showInputDialog(null,
 				"Select the Column ", "Column Selection Dialog",
+				JOptionPane.PLAIN_MESSAGE, null, colN, colN[0]);
+		if (input == null || input.equals(""))
+			return -1;
+
+		String col[] = input.split(",", 2);
+		int index = Integer.valueOf(col[0]).intValue();
+		return index - 1;
+	}
+	
+	private int selectedColIndex(ReportTable rt, String msg) {
+		if (msg == null || "".equals(msg))
+			return selectedColIndex(rt);
+		
+		int colC = rt.table.getColumnCount();
+		Object[] colN = new Object[colC];
+		for (int i = 0; i < colC; i++)
+		 colN[i] = (i + 1) + "," + rt.table.getColumnName(i);	
+		String input = (String) JOptionPane.showInputDialog(null,
+				msg, "Column Selection Dialog",
 				JOptionPane.PLAIN_MESSAGE, null, colN, colN[0]);
 		if (input == null || input.equals(""))
 			return -1;

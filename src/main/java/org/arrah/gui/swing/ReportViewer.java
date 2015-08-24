@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2015      *
  *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -151,7 +151,7 @@ public class ReportViewer extends JPanel implements ActionListener {
 	}
 
 	private JPanel getDGPane() {
-		spp = new ScatterPlotterPanel();
+		spp = new ScatterPlotterPanel(false);
 		spp.init(_map);
 		return spp;
 	}

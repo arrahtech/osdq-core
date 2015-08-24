@@ -95,12 +95,13 @@ public class StringProfilerPanel extends JPanel implements ActionListener,
 		// Create Top & Bottom Pane
 		createTopPane();
 		createBotPane();
+		
 		// Create and set up the content pane.
-		_t_pane.setPreferredSize(new Dimension(580, 160));
+		 _t_pane.setPreferredSize(new Dimension(600, 160));
 		JScrollPane t_view = new JScrollPane(_t_pane);
 
 		// Table has ScrollPane
-		_b_pane.setPreferredSize(new Dimension(620, 420));
+		_b_pane.setPreferredSize(new Dimension(640, 420));
 		JScrollPane b_view = new JScrollPane(_b_pane);
 
 		// Add the scroll panes to a split pane.
@@ -114,7 +115,7 @@ public class StringProfilerPanel extends JPanel implements ActionListener,
 		splitPane.setDividerLocation(175); // XXX: ignored in some releases
 											// of Swing. bug 4101306
 
-		splitPane.setPreferredSize(new Dimension(640, 675));
+		splitPane.setPreferredSize(new Dimension(700, 675));
 
 		splitPane.setOpaque(true); // content panes must be opaque
 		this.add(splitPane);

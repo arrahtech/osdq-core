@@ -28,6 +28,8 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.swing.JOptionPane;
 
+import com.opencsv.CSVReader;
+
 public class CSVtoReportTableModel {
 	private int previewRowNumber = 15; // will show 15 lines in preview
 	private int displayRowNumber = 100; // will show 15 lines in preview
@@ -112,7 +114,7 @@ public class CSVtoReportTableModel {
 						break;
 				}
 
-				line = line.replaceAll("\\s+", " ");
+				// line = line.replaceAll("\\s+", " "); // Keep original format
 				/*
 				 * Now all the needed rows has been skipped let parse the right
 				 * one and populate table
@@ -345,5 +347,31 @@ public class CSVtoReportTableModel {
 
 	public boolean isfixedWidthSelection() {
 		return fixedWidthSelection;
+	}
+	
+	// Open CSV format to create ReportTableModel
+	public ReportTableModel loadOpenCSVIntoTable() {
+		ReportTableModel showT = null;
+		try {
+			CSVReader reader = new CSVReader(new FileReader(f));
+			String [] nextLine = null;
+			boolean headerset = false;
+			while ((nextLine = reader.readNext()) != null) {
+				if (headerset == false) { // 1st line is header
+					showT = new ReportTableModel(nextLine, true, true);
+					headerset = true;
+					continue;
+				}
+				showT.addFillRow(nextLine);
+			}
+			reader.close();
+		} catch (IOException ie) {
+			System.out.println("\n IO Error:" + ie.getMessage());
+			return null;
+
+		}
+			
+		return showT;
+		
 	}
 }

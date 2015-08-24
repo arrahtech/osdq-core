@@ -26,6 +26,10 @@ import javax.swing.JPanel;
 public class ButtonPanel extends JPanel implements ActionListener
 
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel buttonPanel;
 	private PlotterPanel plotterPanel;
 	private PlotterDataPanel plotterDataPanel;
@@ -55,7 +59,7 @@ public class ButtonPanel extends JPanel implements ActionListener
 		buttonPanel.add(zoomInButton);
 		buttonPanel.add(zoomOutButton);
 		buttonPanel.add(resetButton);
-		// buttonPanel.add(exitButton); No Exit for timebeing
+		// buttonPanel.add(exitButton); No Exit for time being
 	}
 
 	public JPanel getPanel() {

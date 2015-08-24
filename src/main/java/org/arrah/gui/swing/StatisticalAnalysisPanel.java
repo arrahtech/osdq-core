@@ -48,7 +48,8 @@ public class StatisticalAnalysisPanel {
 		 */
 		private static final long serialVersionUID = 1L;
 
-		public FileScatter() {
+		public FileScatter(boolean isDate) {
+			super(isDate);
 		};
 
 		public Vector<Double> fillValues() {
@@ -117,7 +118,7 @@ public class StatisticalAnalysisPanel {
 	
 	public void createAndShowGUI() {
 
-		final FileScatter spp = new FileScatter();
+		final FileScatter spp = new FileScatter(false);
 		final JTabbedPane _ta_p = new JTabbedPane() {
 			/**
 			 * 
