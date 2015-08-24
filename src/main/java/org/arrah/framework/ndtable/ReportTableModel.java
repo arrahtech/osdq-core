@@ -18,6 +18,7 @@ package org.arrah.framework.ndtable;
  */
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
@@ -229,6 +230,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 	public void addColumn(final String name) {
 		tabModel.addColumn(name);
 		tabModel.fireTableStructureChanged();
+		col_size = tabModel.getColumnCount();// Increase the col size
 	}
 
 	public void addRows(int startRow, int noOfRows) {
@@ -243,6 +245,17 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int i = 0; i < noOfRows; i++)
 			tabModel.removeRow(startRow);
 		tabModel.fireTableRowsDeleted(startRow, noOfRows);
+	}
+	
+	public void removeMarkedRows(Vector<Integer> marked) {
+		Integer[] a = new Integer[marked.size()];
+		a = marked.toArray(a);
+		Arrays.sort(a);
+		int len = a.length;
+		for (int i = 0; i < len; i++) {
+			tabModel.removeRow(a[len - 1 - i]);
+			tabModel.fireTableRowsDeleted(a[len - 1 - i], 1);
+		}
 	}
 
 	public Object[] copyRow(int startRow) {
@@ -295,6 +308,9 @@ public class ReportTableModel implements Serializable, Cloneable {
 
 	public boolean isRTEditable() {
 		return _isEditable;
+	}
+	public boolean isRTShowClass() {
+		return showClass;
 	}
 
 	public static ReportTableModel copyTable(ReportTableModel rpt,
@@ -387,6 +403,14 @@ public class ReportTableModel implements Serializable, Cloneable {
 		return colN;
 	}
 	
+	public  String[] getAllColNameStr() {
+		int colC = this.getModel().getColumnCount();
+		String[] colN = new String[colC];
+		for (int i = 0; i < colC; i++)
+		 colN[i] = this.getModel().getColumnName(i);	
+		return colN;
+	}
+	
 	public  Object[] getColData(int index) {
 		int row_c = this.getModel().getRowCount();
 		Object[] colN = new Object[row_c];
@@ -403,10 +427,34 @@ public class ReportTableModel implements Serializable, Cloneable {
 		return vc;
 	}
 	
+	public  Vector<Double> getColDataVD(int index) {
+		int row_c = this.getModel().getRowCount();
+		Vector<Double> vc = new Vector<Double>();
+		for (int i = 0; i < row_c; i++) {
+			Object colv = this.getModel().getValueAt(i, index);
+			if (colv == null) continue; // Null skipped
+			if (colv instanceof Number)
+				vc.add(((Double) colv).doubleValue());
+			else if (colv instanceof String) {
+				try {
+					double newv = Double.parseDouble(colv.toString());
+					vc.add(newv);
+				} catch (Exception e) {
+					// Do nothing
+				}
+			}
+		}
+		return vc;
+	}
+	
 	public  Object[] getColData(String colName) {
 		int colI = getColumnIndex( colName);
 		if ( colI  < 0 ) return null;
 		return getColData(colI);
+	}
+	
+	public int[] getClassType() {
+		return classType;
 	}
 	
 } // End of ReportTableModel class

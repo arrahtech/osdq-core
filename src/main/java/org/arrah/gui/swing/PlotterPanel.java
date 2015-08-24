@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2015      *
  *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -32,6 +32,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
@@ -39,10 +40,41 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 
+import org.arrah.framework.rdbms.Rdbms_conn;
+
 public class PlotterPanel extends JPanel implements MouseListener,
 		ActionListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public double xValues[];
+	public int scaledXValues[];
+	public String XLabel[];
+	public double values[];
+	public double zoomFactor;
+	public double scale;
+	public boolean init;
+	public boolean bubble_init;
+	public boolean slide_init;
+	public Vector<java.awt.geom.Ellipse2D.Float> v_shape;
+	public int color_index;
+	public int gc;
+	public double s_min;
+	public double s_max;
+	public int lo_i;
+	public int hi_i;
+	public String title;
+	private transient java.awt.geom.Ellipse2D.Float s;
+	public Vector<Double> vc;
+	private boolean isDateType = false;
 	private class MyEllipse extends java.awt.geom.Ellipse2D.Float implements
 			Serializable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 
 		public MyEllipse(float f, float f1, float f2, float f3) {
 			super(f, f1, f2, f3);
@@ -57,7 +89,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		return init;
 	}
 
-	public void setBInit(Vector vector) {
+	public void setBInit(Vector<Double> vector) {
 		vc = vector;
 		bubble_init = true;
 	}
@@ -328,7 +360,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		scale = d2;
 	}
 
-	public void scaleBubble(Vector vector) {
+	public void scaleBubble(Vector<Double> vector) {
 		double d = ((Double) vector.elementAt(0)).doubleValue();
 		double d1 = ((Double) vector.elementAt(vector.size() - 1))
 				.doubleValue();
@@ -390,7 +422,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 
 	}
 
-	private void drawBubble(Vector vector, Graphics g) {
+	private void drawBubble(Vector<Double> vector, Graphics g) {
 		double d = ((Double) vector.elementAt(0)).doubleValue();
 		int i = getWidth();
 		int j = getHeight();
@@ -404,7 +436,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		double d2 = 0.0D;
 		float f2 = (float) ((double) ((j - byte0) / 25) / zoomFactor);
 		g.setColor(getColor(color_index));
-		v_shape = new Vector(20, 5);
+		v_shape = new Vector<java.awt.geom.Ellipse2D.Float>(20, 5);
 		for (int i1 = 0; i1 < l; i1++) {
 			double d3 = (double) (byte0 + 10)
 					+ (((Double) vector.elementAt(i1)).doubleValue() - d)
@@ -524,6 +556,8 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		showBubbleChart(g);
 	}
 
+	
+	// This is first chart that uses same slider information
 	public void showBubbleChart(Graphics g) {
 		if (!bubble_init) {
 			return;
@@ -536,6 +570,7 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		}
 	}
 
+	// Once the slider state is changed this function is used
 	public void showSlideBubbleChart() {
 		if (!bubble_init)
 			return;
@@ -640,8 +675,19 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		g.setFont(font);
 		FontMetrics fontmetrics = getFontMetrics(font);
 		String s1 = "Group ID: " + Integer.toString(l + 1);
-		String s2 = "Group Avg: "
-				+ Double.toString(((Double) vc.elementAt(l)).doubleValue());
+		String s2 = "Group Avg: ";
+		if (isDateType == true) {
+
+		     String format = Rdbms_conn.getHValue("DateFormat");
+		     if (format == null || "".equals(format))
+	        		format =  "dd-MMM-YYYY";
+		     SimpleDateFormat df = new SimpleDateFormat(format);
+			 java.util.Date value = new java.util.Date(vc.elementAt(l).longValue());
+			  s2 = s2 + df.format(value);
+		}
+		else
+			s2 = s2	+ Double.toString(((Double) vc.elementAt(l)).doubleValue());
+		
 		String s3 = "Groups Abv: " + Integer.toString(i - (l + 1));
 		int j2 = fontmetrics.stringWidth(s1);
 		int k2 = fontmetrics.stringWidth(s2);
@@ -706,23 +752,11 @@ public class PlotterPanel extends JPanel implements MouseListener,
 		return;
 	}
 
-	public double xValues[];
-	public int scaledXValues[];
-	public String XLabel[];
-	public double values[];
-	public double zoomFactor;
-	public double scale;
-	public boolean init;
-	public boolean bubble_init;
-	public boolean slide_init;
-	public Vector v_shape;
-	public int color_index;
-	public int gc;
-	public double s_min;
-	public double s_max;
-	public int lo_i;
-	public int hi_i;
-	public String title;
-	private transient java.awt.geom.Ellipse2D.Float s;
-	public Vector vc;
+	public boolean isDateType() {
+		return isDateType;
+	}
+
+	public void setDateType(boolean isDateType) {
+		this.isDateType = isDateType;
+	}
 }

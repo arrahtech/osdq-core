@@ -106,6 +106,29 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		}
 
 	};
+	
+	public ImportFilePanel(boolean isGUI, int fileType) {
+		_showGUI = isGUI;
+
+		try {
+			f = FileSelectionUtil.chooseFile("ATD Open File");
+			if (f == null)
+				return;
+			
+			if (f.getName().toLowerCase().endsWith(".csv")) {
+				CSVtoReportTableModel csvReader = new CSVtoReportTableModel(f);
+				showT = new ReportTable(csvReader.loadOpenCSVIntoTable());
+				if (_showGUI == true) {
+					DisplayFileTable dft = new DisplayFileTable(showT,
+							f.toString());
+					dft.showGUI();
+				}
+			}
+			
+		} catch (Exception file_e) {
+
+		} 
+	}
 
 	private void takeOptions(File f) throws IOException {
 		if (f == null)

@@ -69,10 +69,15 @@ public class ToolListener implements ActionListener {
 					new CreateTableDialog();
 					return;
 				}
-				if (source.equals("CSV Format") || source.equals("XML Format") || source.equals("XLS Format")) {
+				if (source.equals("Text Format") || source.equals("XML Format") || source.equals("XLS Format")) {
 					new ImportFilePanel(true);
 					return;
 				}
+				if (source.equals("OpenCSV Format")) {
+					new ImportFilePanel(true,1 ); // 1 for OpenCSV
+					return;
+				}
+				
 				if (source.equals("Single File Match") || source.equals("Multiple File Match") ||
 					source.equals("1:1 Record Linkage") ||	source.equals("1:N Record Linkage") ||
 					source.equals("Single File Merge") || source.equals("Multiple File Merge") ||

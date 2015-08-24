@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -39,6 +40,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -73,16 +75,18 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 	private JSlider minS = null, maxS = null;
 	private DefaultBoundedRangeModel sm_min, sm_max;
 	private boolean s_a = false;
+	private boolean isDateType = false;
+	private static final long DATEFACTOR = 10000; // 10 power 4 as factor
 
-	public ScatterPlotterPanel() {
-
+	public ScatterPlotterPanel(boolean isDate) {
+		isDateType = isDate;
 		setLayout(new BorderLayout());
 		setOpaque(true);
 		add(createTopPane(), BorderLayout.PAGE_START);
 		add(createBotPane(), BorderLayout.CENTER);
 		add(createSpane(), BorderLayout.LINE_START);
 	}
-
+	
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		setSlideBar();
@@ -140,6 +144,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 	private JPanel createBotPane() {
 
 		g_p = new PlotterPanel();
+		g_p.setDateType(isDateType);
 		return g_p;
 
 	}
@@ -221,8 +226,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		if (click_val.equalsIgnoreCase("Chart")) {
 			try { // for resetting cursor
 				int size = 0;
-				this.getTopLevelAncestor()
-						.setCursor(
+				this.getTopLevelAncestor().setCursor(
 								java.awt.Cursor
 										.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 				Vector<Double> vc = fillValues();
@@ -230,32 +234,43 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 					JOptionPane.showMessageDialog(null, "No Data fetched",
 							"Error Message", JOptionPane.ERROR_MESSAGE);
 					return;
+				};
+				
+				// Double to Interger conversion without loosing much data
+				// sm_min sm_max only supports integer so we have to factor it accordingly
+				// Date can be long but JSlider is int
+				
+				Double min = vc.elementAt(0);
+				Double max = vc.elementAt(size - 1);
+				
+				if (isDateType == true) {
+					min = min/DATEFACTOR;
+					max = max/DATEFACTOR;
 				}
-				;
+				
+				int smmin = min.intValue();
+				int smmax = max.intValue();
 
 				s_a = false;
 				g_p.setBInit(vc);
 				g_p.setZoomFactor(1);
 				g_p.setColorIndex(getColorIndex());
+				
+				sm_min.setMinimum(smmin - 1);
+				sm_min.setMaximum(smmax + 1);
+				sm_min.setValue(smmin - 1);
 
-				// Set the Sliderbar
-				sm_min.setMinimum(((Double) vc.elementAt(0)).intValue() - 1);
-				sm_min.setMaximum(((Double) vc.elementAt(size - 1)).intValue() + 1);
-				sm_min.setValue(((Double) vc.elementAt(0)).intValue() - 1);
-
-				sm_max.setMinimum(((Double) vc.elementAt(0)).intValue() - 1);
-				sm_max.setMaximum(((Double) vc.elementAt(size - 1)).intValue() + 1);
-				sm_max.setValue(((Double) vc.elementAt(size - 1)).intValue() + 1);
-
-				// Turn on labels at major tick marks.
+				sm_max.setMinimum(smmin - 1);
+				sm_max.setMaximum(smmax + 1);
+				sm_max.setValue(smmax + 1);
 
 				if ((minS.getMaximum() - minS.getMinimum()) <= 10) {
-					Hashtable l_t = minS.createStandardLabels(1);
+					Hashtable<?,?> l_t = minS.createStandardLabels(1);
 					minS.setLabelTable(l_t);
 					maxS.setLabelTable(l_t);
 
 				} else {
-					Hashtable l_t = minS.createStandardLabels((sm_min
+					Hashtable<?,?> l_t = minS.createStandardLabels((sm_min
 							.getMaximum() - sm_min.getMinimum()) / 10);
 					minS.setLabelTable(l_t);
 					maxS.setLabelTable(l_t);
@@ -267,10 +282,8 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 				s_a = true;
 
 			} finally {
-				this.getTopLevelAncestor()
-						.setCursor(
-								java.awt.Cursor
-										.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				this.getTopLevelAncestor().setCursor(
+								java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 
 			}
 		} else if (click_val.equalsIgnoreCase("Zoom In")) {
@@ -348,8 +361,13 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		sm_max = new DefaultBoundedRangeModel();
 		sm_min.addChangeListener(this);
 		sm_max.addChangeListener(this);
-		minS = new JSlider(sm_min);
-		maxS = new JSlider(sm_max);
+		if (isDateType == false) {
+			minS = new JSlider(sm_min);
+			maxS =  new JSlider(sm_max);
+		} else {
+			minS = new DateSlider(sm_min);
+			maxS = new DateSlider(sm_max);
+		}
 		minS.setOrientation(JSlider.VERTICAL);
 		maxS.setOrientation(JSlider.VERTICAL);
 		botP.add(minS);
@@ -389,9 +407,8 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 			if (sm_min.getValue() > (sm_max.getValue() - 1))
 				sm_min.setValue(sm_max.getValue() - 1);
 		}
-
-		g_p.setSInit(new Integer(sm_min.getValue()).doubleValue(), new Integer(
-				sm_max.getValue()).doubleValue());
+		
+		g_p.setSInit(sm_min.getValue()*DATEFACTOR, sm_max.getValue()*DATEFACTOR);
 		g_p.showSlideBubbleChart();
 	}
 
@@ -400,4 +417,57 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		sm_min.setValue(sm_min.getMinimum());
 		sm_max.setValue(sm_max.getMaximum());
 	}
+	
+	public boolean isDateType() {
+		return isDateType;
+	}
+
+
+	public void setDateType(boolean isDateType) {
+		this.isDateType = isDateType;
+	}
+
+	public class DateSlider extends JSlider {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		public DateSlider(DefaultBoundedRangeModel sm) {
+			super(sm);
+		}
+
+		public Hashtable createStandardLabels(int increment, int start)
+	   {
+		      if (increment <= 0) 
+		    	  throw new IllegalArgumentException("Requires 'increment' > 0.");
+		     if (start < getMinimum() || start > getMaximum())
+		        throw new IllegalArgumentException("The 'start' value is out of range.");
+		     Hashtable table = new Hashtable<Integer,JComponent>();
+		     int max = getMaximum();
+		     
+		     String format = Rdbms_conn.getHValue("DateFormat");
+	        	if (format == null || "".equals(format))
+	        		format =  "dd-MMM-YYYY";
+	        	int i = 0;
+	        	try {
+	        	 SimpleDateFormat df = new SimpleDateFormat(format);
+			     for (i = start; i <= max; i += increment)
+			       {
+			    	 java.util.Date value = new java.util.Date((long) (i*DATEFACTOR));
+			    	 String label	= df.format(value);
+			         table.put(new Integer(i), new JLabel(label));
+			       }
+	        	} catch (Exception e) {
+	        		table.put(new Integer(i), new JLabel("Format Error"));
+	        	}
+		    return table;
+	   }
+		public Hashtable createStandardLabels(int increment)
+		{
+		     return createStandardLabels(increment, sliderModel.getMinimum());
+		}
+		
+	} // End of DateSlide
 }

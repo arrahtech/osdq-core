@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import org.arrah.framework.rdbms.DataDictionaryPDF;
@@ -65,19 +66,23 @@ public class RTMUtil {
 		}
 		int rcolc = rightT.getModel().getColumnCount();
 		int lcolc = leftT.getModel().getColumnCount();
-		for (int i = 0; (i < rcolc); i++) {
+		
+		for (int i = 0; (i < rcolc); i++) { // For left outer joint first create it
 			if (i == indexR)
 				continue;
 			leftT.addColumn(rightT.getModel().getColumnName(i));
 		}
+		
+		
 		switch (joinType) {
 		case 0: // Left Outer Join with Cardinality 1:1 is default
+
 			for (int i = 0; i < lrow_c; i++) {
 				int i_find = rvc.indexOf(lvc.get(i));
 				if (i_find != -1) {
 					int curC = lcolc;
 					for (int j = 0; (j < rcolc); j++) {
-						if (j == indexR)
+						if (j == indexR) // Skip matching index
 							continue;
 						leftT.getModel().setValueAt(
 								rightT.getModel().getValueAt(i_find, j), i,
@@ -85,9 +90,108 @@ public class RTMUtil {
 					}
 				}
 			}
-			break;
+			return leftT;
+			
+		case 1: // Inner Join with Cardinality 1:1 is default
+			Vector<Integer> markdel = new Vector<Integer>();
+			
+			for (int i = 0; i < lrow_c; i++) {
+				int i_find = rvc.indexOf(lvc.get(i));
+				
+				if (i_find != -1) {
+					int curC = lcolc;
+					for (int j = 0; (j < rcolc); j++) {
+						if (j == indexR) // Skip matching index
+							continue;
+						leftT.getModel().setValueAt(
+								rightT.getModel().getValueAt(i_find, j), i,
+								curC++);
+					}
+				} else {
+					markdel.add(i); // should be deleted for inner join
+				}
+			} // left outer join completed
+				
+			// Now delete what is mark for deleted
+			leftT.removeMarkedRows(markdel);
+			return leftT;
+			
+		case 2: // Diff Join 
+			Vector<Integer> markdel_d = new Vector<Integer>();
+			
+			for (int i = 0; i < lrow_c; i++) {
+				int i_find = rvc.indexOf(lvc.get(i));
+				
+				if (i_find != -1) {
+					markdel_d.add(i); // should be deleted for diff join
+				} 
+			} // left outer join completed
+				
+			// Now delete what is mark for deleted
+			leftT.removeMarkedRows(markdel_d);
+			return leftT;
+			
+		case 3: // Cartesian  Join 
+			for (int i = 0; i < lrow_c; i++) {
+				int i_find = 0; // Start from index 0
+				Vector<Integer> foundR = new Vector<Integer>();
+				boolean firstrec = false;
+				
+				Object o_l = leftT.getModel().getValueAt(i, indexL);
+				while ( (i_find = (rvc.indexOf(o_l,i_find))) != -1) {
+					foundR.add(i_find); i_find++;
+				}
+				
+				for (int fIndex : foundR) {
+					int curC = lcolc;
+					if (firstrec == false) {
+						for (int j = 0; (j < rcolc); j++) {
+							if (j == indexR) // Skip matching index
+								continue;
+							leftT.getModel().setValueAt(
+									rightT.getModel().getValueAt(fIndex, j), i,
+									curC++);
+						}
+					firstrec = true;
+					} else { // now Cartesian so add rows
+						Object[] cartRow = leftT.getRow(i);
+						i++; // increase the index and row count
+						leftT.getModel().insertRow(i, cartRow);
+						lrow_c++;
+						for (int j = 0; (j < rcolc); j++) {
+							if (j == indexR) // Skip matching index
+								continue;
+							leftT.getModel().setValueAt(
+									rightT.getModel().getValueAt(fIndex, j), i,
+									curC++);
+						}
+						
+					}
+				} // Cartesian row loop
+			} // Inner loop for Cartesian
+		
+			return leftT;
+			
+			default :
+				break;
 		}
 		return leftT;
+	}
+
+	// This function will return Hashtable with Lookup information
+	public static Hashtable<Object,Object> lookupInfo( ReportTableModel rightT, int indexR, int indexInfo) {
+		
+		Hashtable<Object,Object> lookup = new Hashtable<Object,Object>();
+
+		int rrow_c = rightT.getModel().getRowCount();
+		for (int i = 0; i < rrow_c; i++) {
+			Object key = rightT.getModel().getValueAt(i, indexR);
+			Object value = rightT.getModel().getValueAt(i, indexInfo);
+			if (key != null && value != null)
+				lookup.put(key, value);
+		}
+
+		return lookup;
 	}
 
 	/*

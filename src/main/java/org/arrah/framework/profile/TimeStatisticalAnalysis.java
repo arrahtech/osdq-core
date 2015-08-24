@@ -22,6 +22,7 @@ package org.arrah.framework.profile;
  */
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -41,7 +42,7 @@ public class TimeStatisticalAnalysis {
 	private double variance = 0, aad = 0;
 	
 	private double[] perv_a = new double[21]; // To store value
-	private long[] perc_a = new long[21];
+	private long[] perc_a = new long[21]; // To store count
 
 	public TimeStatisticalAnalysis(Long[] colValue) {
 		if ( colValue.length <= 0) return;
@@ -59,7 +60,7 @@ public class TimeStatisticalAnalysis {
 		int freq_c = 1, c = 0;
 		Object prev_obj = null, curr_obj = null;
 
-		// For Number Analysis
+		// For Date Analysis
 		int arr_i = 0;
 		int dataset_c = 1;
 
@@ -96,9 +97,8 @@ public class TimeStatisticalAnalysis {
 				freq_c = 1;
 				prev_obj = curr_obj;
 			}
-			// Advance Analysis goes here if is a Number
-
-
+			
+			// Advance Analysis goes here if is a Date
 				double d = ((Number) curr_obj).doubleValue();
 				if ((arr_i < 21) == true && dataset_c == perc_a[arr_i]) {
 					while (arr_i < 20 && perc_a[arr_i + 1] == perc_a[arr_i]) {
@@ -111,7 +111,6 @@ public class TimeStatisticalAnalysis {
 
 				aad += Math.abs(getDayVal((long)(d - avg))) / count;
 				variance += Math.pow(getDayVal((long)(d - avg)), 2) / (count - 1); 
-
 
 				dataset_c++;
 			// end of Advance analysis
@@ -137,6 +136,14 @@ public class TimeStatisticalAnalysis {
 	}
 	public Object[] getColObject() {
 		return _colObj;
+	}
+	public ArrayList<Long> getColObjectArray() {
+		ArrayList<Long> colO = new ArrayList<Long>();
+		if (_colObj == null )
+			return colO;
+		for (Long a:_colObj )
+			colO.add(a);
+		return colO;
 	}
 
 
@@ -173,26 +180,46 @@ public class TimeStatisticalAnalysis {
 			range_t.addFillRow(new String[] {
 					"Mid Range Date Value",localdate.toString()});
 			
-			localdate.setTime((long)(perv_a[0] + perv_a[20]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(1%-99%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[1] + perv_a[19]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(5%-95%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[2] + perv_a[18]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(10%-90%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[3] + perv_a[17]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(15%-85%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[4] + perv_a[16]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(20%-80%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[5] + perv_a[15]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(25%-75%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[6] + perv_a[14]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(30%-70%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[7] + perv_a[13]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(35%-65%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[8] + perv_a[12]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(40%-60%)",localdate.toString()});
-			localdate.setTime((long)(perv_a[9] + perv_a[11]) / 2);
-			range_t.addFillRow(new String[] { "Mid Range(45%-55%)",localdate.toString()});
+			if (perc_a[0] > 0 ) {
+				localdate.setTime((long)(perv_a[0] + perv_a[20]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(1%-99%)",localdate.toString()});
+			}
+			if (perc_a[1] > 0 ) {
+				localdate.setTime((long)(perv_a[1] + perv_a[19]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(5%-95%)",localdate.toString()});
+			}
+			if (perc_a[2] > 0 ) {
+				localdate.setTime((long)(perv_a[2] + perv_a[18]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(10%-90%)",localdate.toString()});
+			}
+			if (perc_a[3] > 0 ) {
+				localdate.setTime((long)(perv_a[3] + perv_a[17]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(15%-85%)",localdate.toString()});
+			}
+			if (perc_a[4] > 0 ) {
+				localdate.setTime((long)(perv_a[4] + perv_a[16]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(20%-80%)",localdate.toString()});
+			}
+			if (perc_a[5] > 0 ) {
+				localdate.setTime((long)(perv_a[5] + perv_a[15]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(25%-75%)",localdate.toString()});
+			}
+			if (perc_a[6] > 0 ) {
+				localdate.setTime((long)(perv_a[6] + perv_a[14]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(30%-70%)",localdate.toString()});
+			}
+			if (perc_a[7] > 0 ) {
+				localdate.setTime((long)(perv_a[7] + perv_a[13]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(35%-65%)",localdate.toString()});
+			}
+			if (perc_a[8] > 0 ) {
+				localdate.setTime((long)(perv_a[8] + perv_a[12]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(40%-60%)",localdate.toString()});
+			}
+			if (perc_a[9] > 0 ) {
+				localdate.setTime((long)(perv_a[9] + perv_a[11]) / 2);
+				range_t.addFillRow(new String[] { "Mid Range(45%-55%)",localdate.toString()});
+			}
 					
 			// Add Percentile Analysis
 			localdate.setTime((long)perv_a[0]);
@@ -207,7 +234,7 @@ public class TimeStatisticalAnalysis {
 			localdate.setTime((long)perv_a[20]);
 			perc_t.addFillRow(new String[] { "99", localdate.toString(),
 					Long.toString(perc_a[20]) });
-	} // End of fillValues
+	} // End of fillDataIntoTable
 	
 	public static double getDayVal ( long milliSec) {
 		return milliSec/(1000*60*60*24); // day count

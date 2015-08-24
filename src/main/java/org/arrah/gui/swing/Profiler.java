@@ -478,10 +478,14 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		// will become menu item
 		JMenu impFile = new JMenu("Open File");
 		
-		JMenuItem jmenuitem21 = new JMenuItem("CSV Format");
+		JMenuItem jmenuitem21 = new JMenuItem("Text Format");
 		impFile.add(jmenuitem21);
 		jmenuitem21.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, 10));
 		jmenuitem21.addActionListener(new ToolListener(jmenubar));
+		
+		JMenuItem impCsv = new JMenuItem("OpenCSV Format");
+		impFile.add(impCsv);
+		impCsv.addActionListener(new ToolListener(jmenubar));
 		
 		JMenuItem impXML = new JMenuItem("XML Format");
 		impFile.add(impXML);

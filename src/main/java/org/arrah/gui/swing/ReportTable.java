@@ -92,6 +92,7 @@ import org.arrah.framework.xml.DTDGenerator;
 import org.arrah.framework.xml.XmlWriter;
 
 import com.itextpdf.text.DocumentException;
+import com.opencsv.CSVWriter;
 
 public class ReportTable extends JPanel implements ItemListener, Serializable,
 		Printable, ActionListener, ListSelectionListener, Cloneable {
@@ -187,9 +188,15 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 			/* Change the alternate color */
 			public Component prepareRenderer(TableCellRenderer renderer,
 					int row, int col) {
-				Component c = super.prepareRenderer(renderer, row, col);
+				Component c = null;
+				try {
+					c = super.prepareRenderer(renderer, row, col);
+				} catch (Exception e) {
+					c = new JLabel();
+				}
 				if (c == null)
 					c = new JLabel();
+				
 				if (row % 2 == 0) {
 					if (_isEditable == true || this.isCellEditable(row, col))
 						c.setBackground(new Color(0, 100, 100, 100));
@@ -227,6 +234,14 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 		        		
 		        		DecimalFormat df = new DecimalFormat(format);
 		        		value = df.format(value);
+		        		((JLabel)c).setText(value.toString());
+		        	} catch (Exception e){
+		        		return c;
+		        	}
+		        }
+			     // Default String Format
+		        if( value instanceof java.lang.String) {
+		        	try {
 		        		((JLabel)c).setText(value.toString());
 		        	} catch (Exception e){
 		        		return c;
@@ -646,7 +661,7 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 						+ PrintException.getMessage());
 			}
 		} else if (but_c.compareTo("Save as..") == 0) {
-			Object[] saveTypes = { "XML", "XLS", "CSV", "PDF","Screen Render as CSV"};
+			Object[] saveTypes = { "XML", "XLS", "CSV", "PDF","Screen Render as TextFile","Screen Render as OpenCSV"};
 			String saveFormat = (String) JOptionPane
 					.showInputDialog(null, "Save as XML,XLS, CSV or PDF",
 							"Save Format", JOptionPane.QUESTION_MESSAGE, null,
@@ -659,10 +674,12 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 				saveAsXls();
 			} else if (saveFormat.equals("PDF")) {
 				saveAsPdf();
-			} else if (saveFormat.equals("Screen Render as CSV")) {
+			} else if (saveFormat.equals("Screen Render as TextFile")) {
 				saveAsCsv(1);
-			} else {
+			} else if (saveFormat.equals("CSV")){
 				saveAsCsv(0);
+			} else { // openCSV
+				saveAsOpenCsv();
 			}
 		}
 	} // End of ActionPerformed
@@ -1062,6 +1079,48 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 
 		}
 	}
+	
+	/**
+	 * save the table as comma separated values (Open CSV format)
+	 */
+	private void saveAsOpenCsv() {
+		
+		File file = FileSelectionUtil.promptForFilename("");
+		if (file == null) {
+			return;
+		}
+		if (file.getName().toLowerCase().endsWith(".csv") == false) {
+			File renameF = new File(file.getAbsolutePath() + ".csv");
+			file = renameF;
+		}
+		// Get Row and Column count
+		int rowCount = table.getRowCount();
+		int columnCount = table.getColumnCount();
+		String[] colD = new String[columnCount];
+
+		try {
+			CSVWriter writer = new CSVWriter(new FileWriter(file));
+			
+			// Get Column header
+			
+			for (int j = 0; j < columnCount; j++) 
+				colD[j] = table.getColumnName(j);
+			writer.writeNext(colD);
+			
+			// Get Column data
+			for (int i = 0; i < rowCount; i++) {
+				for (int j = 0; j < columnCount; j++) {
+					colD[j] = getTextValueAt(i, j);
+				}
+				writer.writeNext(colD);
+			}
+			writer.close();
+		} catch (IOException exp) {
+			ConsoleFrame.addText("\n SAVE FILE ERROR:" + exp.getMessage());
+
+		}
+	}
+	
 
 	private class EventKeyHandler extends KeyAdapter {
 		public void keyPressed(KeyEvent e) {
