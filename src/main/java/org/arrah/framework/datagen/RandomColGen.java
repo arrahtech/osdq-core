@@ -64,6 +64,15 @@ public class RandomColGen {
 		}
 		return _vc;
 	}
+	
+	// random number between min and max
+	public static Double randomDouble(double max, double min) {
+		Random rd = new Random();
+		double rdGen = rd.nextDouble();
+		double res = min + ((max - min) * ((1 - rdGen) / 1));
+		
+		return res;
+	}
 
 	public Vector<Date> updateColumnRandomDate(long max, long min) {
 		Random rd = new Random();

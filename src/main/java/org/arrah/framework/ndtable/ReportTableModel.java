@@ -432,7 +432,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		Vector<Double> vc = new Vector<Double>();
 		for (int i = 0; i < row_c; i++) {
 			Object colv = this.getModel().getValueAt(i, index);
-			if (colv == null) continue; // Null skipped
+			if (colv == null || "".equals(colv.toString())) continue; // Null, empty skipped
 			if (colv instanceof Number)
 				vc.add(((Double) colv).doubleValue());
 			else if (colv instanceof String) {

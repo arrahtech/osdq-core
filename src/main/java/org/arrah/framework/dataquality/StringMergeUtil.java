@@ -163,7 +163,7 @@ public class StringMergeUtil {
 	}
 	
 	// change row based store to columns based Transpose
-	public static ArrayList<ArrayList<String>> trasposeValue(ArrayList<String[]> list) {
+	public static ArrayList<ArrayList<String>> transposeValue(ArrayList<String[]> list) {
 		int row = list.size();
 		String[] firstVal = list.get(0);
 		int column = firstVal.length;
@@ -195,7 +195,7 @@ public class StringMergeUtil {
 	// "Ignore","Take Any","Most Common","Sum","Count","Min","Max","Average"
 	
 	public static String[] getGoldenValue(ArrayList<String[]> list, Integer[] actionType) {
-		ArrayList<ArrayList<String>> trasVal = trasposeValue(list);
+		ArrayList<ArrayList<String>> trasVal = transposeValue(list);
 		String[] result = new String[trasVal.size()];
 		
 		for (int i=0 ; i < trasVal.size(); i++  ) {
@@ -218,7 +218,7 @@ public class StringMergeUtil {
 					List<String> freqVal = topValueList(freqCountHash);
 					for (String a : freqVal) {
 						goldVal = a; // first data if not empty or null
-						if (goldVal != null && "".equals(goldVal) == false)
+						if (goldVal != null && "".equals(goldVal) == false) 
 							break;
 					}
 					break;
@@ -239,7 +239,6 @@ public class StringMergeUtil {
 			}
 			result[i] = goldVal;
 		}
-		
 		return result;
 			
 	}

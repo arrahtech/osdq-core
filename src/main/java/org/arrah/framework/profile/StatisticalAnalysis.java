@@ -152,6 +152,15 @@ public class StatisticalAnalysis {
 	public boolean isObjNumber() {
 		return isNumber;
 	}
+	public double getMean() {
+		return avg;
+	}
+	public double getVariance() {
+		return variance;
+	}
+	public double getSDev() {
+		return Math.sqrt(variance);
+	}
 
 	private void fillDataIntoTable() {
 

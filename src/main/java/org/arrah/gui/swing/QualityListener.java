@@ -134,7 +134,7 @@ public class QualityListener implements ActionListener {
 				new CompareTablePanel();
 				return;
 			}
-			if (source.equals("Fuzzy")) {
+			if (source.equals("Fuzzy-Delete")) {
 				menuSel = 8;
 				createDialog();
 				return;
@@ -217,6 +217,11 @@ public class QualityListener implements ActionListener {
 			}
 			if (source.equals("K Mean Cluster")) { // K Mean Cluster
 				menuSel = 22;
+				createDialog();
+				return;
+			}
+			if (source.equals("Fuzzy-Replace")) {
+				menuSel = 23;
 				createDialog();
 				return;
 			}
@@ -337,9 +342,9 @@ public class QualityListener implements ActionListener {
 					}
 					d_f.dispose();
 					break;
-				case 8:
+				case 8: // Delete
 					try {
-						similarAction(selTP.getTable(), vc);
+						similarAction(selTP.getTable(), vc,true);
 					} catch (SQLException sqle) {
 						JOptionPane.showMessageDialog(null, sqle.getMessage(),
 								"SQL Exception Dialog",
@@ -448,6 +453,17 @@ public class QualityListener implements ActionListener {
 					kMeanAction(selTP.getTable(), vc, true);
 					d_f.dispose();
 					break;
+					
+				case 23:
+					try {
+						similarAction(selTP.getTable(), vc,false);
+					} catch (SQLException sqle) {
+						JOptionPane.showMessageDialog(null, sqle.getMessage(),
+								"SQL Exception Dialog",
+								JOptionPane.ERROR_MESSAGE);
+					}
+					break;
+					
 				default:
 					d_f.dispose();
 				}
@@ -780,7 +796,7 @@ public class QualityListener implements ActionListener {
 	}
 
 	/* Fuzzy Search */
-	private void similarAction(String table, Vector<?> col) throws SQLException {
+	private void similarAction(String table, Vector<?> col, boolean isDelete) throws SQLException {
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), table,
 				Rdbms_conn.getDBType());
@@ -788,7 +804,7 @@ public class QualityListener implements ActionListener {
 				selTP.getQueryString());
 		rows = new JDBCRowset(query, -1, false);
 		d_f.dispose(); // now dispose the dialog
-		 new SimilarityCheckPanel(rows,query);
+		 new SimilarityCheckPanel(rows,query,isDelete);
 	}
 	
 	/* Cross Column Search */

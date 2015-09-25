@@ -787,6 +787,10 @@ public class CompareRecordDialog implements ActionListener {
 			mapA.setForeground(Color.BLUE);
 			jp.add(mapA);
 			_dataActionC[index] = new JComboBox<String>(dataAction);
+			if (_singleFile == false)
+				_dataActionC[index].setSelectedItem("Take Any");
+			else
+				_dataActionC[index].setSelectedItem("Most Common");
 			jp.add(_dataActionC[index]);
 			index++;
 		}
@@ -801,6 +805,7 @@ public class CompareRecordDialog implements ActionListener {
 				mapA.setForeground(Color.BLUE);
 				jp.add(mapA);
 				_dataActionC[index] = new JComboBox<String>(dataAction);
+				_dataActionC[index].setSelectedItem("Most Common");
 				jp.add(_dataActionC[index]);
 				index++;
 			}
