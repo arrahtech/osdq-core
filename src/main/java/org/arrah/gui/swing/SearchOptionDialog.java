@@ -173,7 +173,7 @@ public class SearchOptionDialog implements ActionListener {
 		layout.putConstraint(SpringLayout.NORTH, fileLabel, 5, SpringLayout.SOUTH,fileSelection);
 		
 		layout.putConstraint(SpringLayout.WEST, ok, 35, SpringLayout.WEST, topPanel);
-		layout.putConstraint(SpringLayout.NORTH, ok, 55, SpringLayout.SOUTH,fileSB);
+		layout.putConstraint(SpringLayout.NORTH, ok, 35, SpringLayout.SOUTH,fileSB);
 		layout.putConstraint(SpringLayout.WEST, cancel, 10, SpringLayout.EAST, ok);
 		layout.putConstraint(SpringLayout.SOUTH, cancel, 0, SpringLayout.SOUTH,ok);
 		

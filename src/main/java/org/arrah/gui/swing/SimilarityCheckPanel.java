@@ -70,7 +70,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 	private JComboBox<String>[] sType;
 	private JFormattedTextField[] sImp,sFuzzy,sCharLen;
 	private JTextField[] skiptf;
-	private boolean isChanged = false;
+	private boolean isChanged = false, isDelete = true;
 	private Hashtable<Integer, Integer> parentMap; // it will hold original position
 	boolean isRowSet = false;
 	private JDBCRowset _rows;
@@ -78,7 +78,8 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 	private String queryForRowset="";
 
 	// For ReportTable Input
-	public SimilarityCheckPanel(ReportTable rt) {
+	public SimilarityCheckPanel(ReportTable rt, boolean isdelete) {
+		isDelete = isdelete; // check if delete or replace
 		_rt = rt;
 		_simcheck = new SimilarityCheckLucene(_rt.getRTMModel());
 		colName = getColName();
@@ -86,8 +87,9 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 		_rt.getModel().addTableModelListener(this);
 		mapDialog();
 	}
-
-	// For Rowset Table Input for rdbms
+	
+	/*** For Rowset Table Input for rdbms
+	// Not in use for now
 	public SimilarityCheckPanel(JDBCRowset rowSet) {
 		isRowSet = true;
 		_rows = rowSet;
@@ -96,20 +98,21 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 		colType = _rows.getColType();
 		rowC = _rows.getRowCount();
 		mapDialog();
-	}
+	} ****/
 	
 	// For Rowset Table Input for Hive
 	// Hive rowset does not move forward and backward so create new rowset
-		public SimilarityCheckPanel(JDBCRowset rowSet, String query) {
-			queryForRowset = query;
-			isRowSet = true;
-			_rows = rowSet;
-			_simcheck = new SimilarityCheckLucene(_rows);
-			colName = _rows.getColName();
-			colType = _rows.getColType();
-			rowC = _rows.getRowCount();
-			mapDialog();
-		}
+	public SimilarityCheckPanel(JDBCRowset rowSet, String query, boolean isdelete) {
+		isDelete = isdelete; // check if delete or replace
+		queryForRowset = query;
+		isRowSet = true;
+		_rows = rowSet;
+		_simcheck = new SimilarityCheckLucene(_rows);
+		colName = _rows.getColName();
+		colType = _rows.getColType();
+		rowC = _rows.getRowCount();
+		mapDialog();
+	}
 	
 	// For independent table and selected Columns
 	public SimilarityCheckPanel(String searchString, String tabName, Vector<String> colV) {
@@ -164,25 +167,33 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 		if (_simcheck.openIndex() == false)
 			return;
 		// Add a boolean column for delete
-		String[] newColN = new String[colName.length + 2];
+		String[] newColN = new String[colName.length + 3];
 		newColN[0] = "Delete Editable"; // CheckBox selection
-		newColN[1] = "Group ID"; // Group ID and Row number
+		newColN[1] = "Group ID"; // Group ID 
+		newColN[2] = "Row Number"; // Row number
+		
 		for (int i = 0; i < colName.length; i++)
-			newColN[i + 2] = colName[i];
+			newColN[i + 3] = colName[i];
 
-		outputRT = new ReportTable(newColN, false, true);
+		if (isDelete == true)
+			outputRT = new ReportTable(newColN, false, true);
+		else
+			outputRT = new ReportTable(newColN, true, false); // Editable for replace with class awareness
+		
 		skipVC = new Vector<Integer>();
 		parentMap = new Hashtable<Integer, Integer>();
 		
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
-		 // for Hive
-				if (_rows != null) _rows.close();
-				try {
-					createNewRowset(queryForRowset);
-				} catch (SQLException e) {
-					System.out.println("New Rowset Exception:"+e.getLocalizedMessage());
-					return;
-				}
+		if (isRowSet == true) { // Only if this is rowset
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			 // for Hive
+					if (_rows != null) _rows.close();
+					try {
+						createNewRowset(queryForRowset);
+					} catch (SQLException e) {
+						System.out.println("New Rowset Exception:"+e.getLocalizedMessage());
+						return;
+					}
+			}
 		}
 
 		// Iterate over row
@@ -225,16 +236,18 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 						}
 					}
 					
-					Object[] newRow = new Object[row.length + 2];
+					Object[] newRow = new Object[row.length + 3];
 					boolean del = false;
 					newRow[0] = del;
+					newRow[1] = "Group: "+grpid;
+							
 					if (isRowSet == false)
-						newRow[1] = "Group: "+grpid+ " Index:"+rowid;
+						newRow[2] = "Index: "+rowid;
 					else
-						newRow[1] = "Group: "+grpid+ " Row:"+rowid;
+						newRow[2] = "Row: "+rowid;
 					
 					for (int k = 0; k < row.length; k++)
-						newRow[k + 2] = row[k];
+						newRow[k + 3] = row[k];
 					outputRT.addFillRow(newRow);
 					skipVC.add(Integer.parseInt(rowid));
 				} catch (Exception e) {
@@ -246,10 +259,18 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 			grpid++;
 		}
 		_simcheck.closeSeachIndex();
-
+		
+		// hide boolean column if replace
+		if (isDelete == false)
+		outputRT.hideColumn(0);
+		
 		JPanel jp_p = new JPanel(new BorderLayout());
 		jp_p.add(outputRT, BorderLayout.CENTER);
-		jp_p.add(deletePanel(), BorderLayout.PAGE_END);
+		if (isDelete == true)
+			jp_p.add(deletePanel(), BorderLayout.PAGE_END); // delete menu
+		else
+			jp_p.add(replacePanel(), BorderLayout.PAGE_END); // replacing menu
+
 		// Show the table now
 		dg = new JFrame("Similar Records Frame");
 		dg.setLocation(250, 100);
@@ -400,6 +421,21 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 					" Open Similarity_check.[doc][pdf] to get more Infomation");
 			return;
 		}
+		if (command.equals("replaces")) {
+			String replace = JOptionPane.showInputDialog("Highlighted Values to replace with:");
+			if (replace == null || "".equals(replace))
+				return;
+			
+			int colI = outputRT.table.getSelectedColumn();
+			int [] rowI = outputRT.table.getSelectedRows();
+			if ( colI < 0 || rowI.length == 0)
+				return;
+			for (int i=0; i  < rowI.length; i++)
+				outputRT.table.setValueAt(replace, rowI[i], colI);
+			
+			return;
+		}
+		
 		if (command.equals("delete")) {
 			if (outputRT.isSorting()) {
 				JOptionPane.showMessageDialog(null,
@@ -626,6 +662,7 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 		return queryString;
 	}
 
+	// Panel of delete is chosen
 	private JComponent deletePanel() {
 		JPanel delP = new JPanel();
 		if (isRowSet == false)
@@ -644,6 +681,24 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 		canB.addKeyListener(new KeyBoardListener());
 
 		delP.add(chk);
+		delP.add(delB);
+		delP.add(canB);
+		return delP;
+	}
+	// Panel of replace option is chosen
+	private JComponent replacePanel() {
+		JPanel delP = new JPanel();
+
+		JButton delB = new JButton("Replace Selected");
+		delB.setActionCommand("replaces");
+		delB.addActionListener(this);
+		delB.addKeyListener(new KeyBoardListener());
+
+		JButton canB = new JButton("Cancel");
+		canB.setActionCommand("cancel");
+		canB.addActionListener(this);
+		canB.addKeyListener(new KeyBoardListener());
+
 		delP.add(delB);
 		delP.add(canB);
 		return delP;
@@ -856,4 +911,4 @@ public class SimilarityCheckPanel implements ActionListener, TableModelListener,
 		}
 		return true;
 	}
-} // End of Similarity Check
+} // End of Similarity Check panel

@@ -391,6 +391,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 			if (rd2.isSelected() == true) { //Epoch Millisecond to Date
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
 				
+				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
 					Object colObject = _rt.getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
@@ -404,8 +405,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 								continue;
 							}
 						}
-					 
-					Date colVal = AggrCumRTM.secondIntoDate((Long)colObject);
+					Date colVal =  AggrCumRTM.secondIntoDate((Long)colObject);
 					_rt.setTableValueAt(colVal, i, _colIndex);
 					
 				}

@@ -586,9 +586,13 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenuitem24.addActionListener(new QualityListener());
 		jmenu7.add(jmenuitem24);
 		jmenu7.addSeparator();
-		JMenuItem jmenuitem31 = new JMenuItem("Fuzzy");
+		JMenuItem jmenuitem31 = new JMenuItem("Fuzzy-Delete");
 		jmenuitem31.addActionListener(new QualityListener());
 		jmenu7.add(jmenuitem31);
+		jmenu7.addSeparator();
+		JMenuItem freplace = new JMenuItem("Fuzzy-Replace");
+		freplace.addActionListener(new QualityListener());
+		jmenu7.add(freplace);
 		jmenu7.addSeparator();
 		JMenuItem jmenuitem25 = new JMenuItem("Standardisation");
 		jmenuitem25.addActionListener(new QualityListener());
@@ -806,6 +810,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 					success = true;
 				} else {
 					System.out.println(" Can not open connection. Check configuration File:"+args[0]);
+					System.out.println(" Status:"+status);
 				}
 			} catch (Exception e) {
 				System.out.println(" Exception:"+e.getMessage());

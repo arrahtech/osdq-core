@@ -646,7 +646,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[[\\instanceName][:port]][;databaseName=value][;property=value]" ;
 				break;
 			case 6:
-				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //c:/Database.[mdb][accdb]" ;
+				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //c:\\Database.[mdb][accdb]" ;
 				break;
 			case 2:case 8:case 9:case 10:case 12:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname.";

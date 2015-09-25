@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2014      *
+ *     Copyright to Arrah Technology 2015      *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,7 +73,9 @@ import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.text.MaskFormatter;
 
+import org.arrah.framework.analytics.NormalizeCol;
 import org.arrah.framework.datagen.AggrCumRTM;
+import org.arrah.framework.datagen.RandomColGen;
 import org.arrah.framework.dataquality.FillCheck;
 import org.arrah.framework.dataquality.FormatCheck;
 import org.arrah.framework.hadooputil.HiveQueryBuilder;
@@ -165,7 +168,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		preparation_m.setMnemonic('P');
 		menubar.add(preparation_m);
 		
-		JMenuItem ordinal_m = new JMenuItem("To Ordinal");
+		JMenuItem ordinal_m = new JMenuItem("Ordinal Variables");
 		ordinal_m.addActionListener(this);
 		ordinal_m.setActionCommand("ordinal");
 		preparation_m.add(ordinal_m);
@@ -195,6 +198,38 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		prereg_m.setActionCommand("prereplace");
 		nullrep_m.add(prereg_m);
 
+		JMenuItem rand_m = new JMenuItem("Random Value");
+		rand_m.addActionListener(this);
+		rand_m.setActionCommand("randreplace");
+		nullrep_m.add(rand_m);
+		
+		JMenu normal_m = new JMenu("Normalization");
+		preparation_m.add(normal_m);
+		JMenuItem zeroNormal_m = new JMenuItem("between 0-1");
+		zeroNormal_m.addActionListener(this);
+		zeroNormal_m.setActionCommand("zeronormal");
+		normal_m.add(zeroNormal_m);
+		JMenuItem zscore_m = new JMenuItem("Z-Score");
+		zscore_m.addActionListener(this);
+		zscore_m.setActionCommand("zscore");
+		normal_m.add(zscore_m);
+		normal_m.addSeparator();
+		
+		JMenuItem meanNormal_m = new JMenuItem("Mean Ratio");
+		meanNormal_m.addActionListener(this);
+		meanNormal_m.setActionCommand("meanratio");
+		normal_m.add(meanNormal_m);
+		JMenuItem stdNormal_m = new JMenuItem("Standard Deviation Ratio");
+		stdNormal_m.addActionListener(this);
+		stdNormal_m.setActionCommand("stdratio");
+		normal_m.add(stdNormal_m);
+		normal_m.addSeparator();
+		
+		JMenuItem meanSubs_m = new JMenuItem("Mean Substraction");
+		meanSubs_m.addActionListener(this);
+		meanSubs_m.setActionCommand("meansubstract");
+		normal_m.add(meanSubs_m);
+		
 		// Analytics Menu
 		JMenu analytics_m = new JMenu("Analytics");
 		analytics_m.setMnemonic('A');
@@ -483,10 +518,15 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		option_m.add(undoC_m);
 		option_m.addSeparator();
 
-		JMenuItem similarC_m = new JMenuItem("Fuzzy Check");
+		JMenuItem similarC_m = new JMenuItem("Fuzzy-Delete");
 		similarC_m.addActionListener(this);
 		similarC_m.setActionCommand("simcheck");
 		option_m.add(similarC_m);
+		
+		JMenuItem replaceSimC_m = new JMenuItem("Fuzzy-Replace");
+		replaceSimC_m.addActionListener(this);
+		replaceSimC_m.setActionCommand("simreplace");
+		option_m.add(replaceSimC_m);
 		option_m.addSeparator();
 		
 		JMenuItem crossCol_m = new JMenuItem("Cross Column Search");
@@ -1047,11 +1087,24 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				Object[] pattern = fp.inputPatterns();
 				if (pattern.length == 0)
 					return; // Nothing to parse
-				_rt.table
-						.getColumnModel()
-						.getColumn(index)
-						.setCellRenderer(
-								new MyCellRenderer(pattern[0].toString()));
+				
+				String tid = "";
+				if (type.equals("Date")) { // get Time Zone Info
+					String[] allid = TimeZone.getAvailableIDs();
+					String deftz = TimeZone.getDefault().getID();
+					
+					String[] newV = new String[allid.length +1];
+					newV[0] = deftz;
+					for (int i=1; i < newV.length; i++)
+						newV[i] = allid[i-1];
+					
+					 tid = JOptionPane.showInputDialog(null, "Choose Time Zone", "Time Zone Selection", 
+							JOptionPane.INFORMATION_MESSAGE, null, newV, newV[0]).toString();
+				}
+				// Set Display on first pattern
+				_rt.table.getColumnModel().getColumn(index).setCellRenderer(
+								new MyCellRenderer(pattern[0].toString(),tid));
+				_rt.setPrerenderCol(index);
 
 				Object v = null;
 				if (type.equals("Number")) {
@@ -1181,7 +1234,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("simcheck")) {
 				_rt.cancelSorting();
-				new SimilarityCheckPanel(_rt);
+				new SimilarityCheckPanel(_rt,true);
+				return;
+			}
+			if (command.equals("simreplace")) {
+				_rt.cancelSorting();
+				new SimilarityCheckPanel(_rt,false);
 				return;
 			}
 			if (command.equals("crosscol")) {
@@ -1422,6 +1480,70 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 							_rt.setTableValueAt(avg,i, index);
 						} catch(Exception e1) {	
 							_rt.setTableValueAt(avg.toString(),i, index);
+						}
+					}
+				}
+				
+				return;
+			}
+			if (command.equals("zeronormal")) {
+				_rt.cancelSorting(); // No sorting 
+				int popindex = selectedColIndex(_rt, "Select Column to Populate:");
+				if (popindex < 0)
+					return;
+				int outputindex = selectedColIndex(_rt, "Select Column to get Normalized values");
+				if (outputindex < 0)
+					return;
+				
+				NormalizeCol.zeroNormal(_rt.getRTMModel(), outputindex, popindex);
+				return;
+			}
+			if (command.equals("zscore")) {
+				_rt.cancelSorting(); // No sorting 
+				int popindex = selectedColIndex(_rt, "Select Column to Populate:");
+				if (popindex < 0)
+					return;
+				int outputindex = selectedColIndex(_rt, "Select Column to get Normalized values");
+				if (outputindex < 0)
+					return;
+				
+				NormalizeCol.zscoreNormal(_rt.getRTMModel(), outputindex, popindex);
+				return;
+			}
+			if (command.equals("meanratio") || command.equals("stdratio") || command.equals("meansubstract")  ) {
+				_rt.cancelSorting(); // No sorting 
+				int popindex = selectedColIndex(_rt, "Select Column to Populate:");
+				if (popindex < 0)
+					return;
+				int outputindex = selectedColIndex(_rt, "Select Column to get Normalized values");
+				if (outputindex < 0)
+					return;
+				if (command.equals("stdratio"))
+					NormalizeCol.meanStdNormal(_rt.getRTMModel(), outputindex, popindex,0);
+				else if (command.equals("meanratio"))
+					NormalizeCol.meanStdNormal(_rt.getRTMModel(), outputindex, popindex,1);
+				else
+					NormalizeCol.meanStdNormal(_rt.getRTMModel(), outputindex, popindex,2);
+				return;
+			}
+			
+			if (command.equals("randreplace")) {
+				_rt.cancelSorting(); // No sorting 
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				Vector<Double> colD = _rt.getRTMModel().getColDataVD(index);
+				double[] minMax = AggrCumRTM.getMinMax(colD);
+				int rowc = _rt.getModel().getRowCount();
+				
+				for (int i=0; i < rowc; i++) {
+					Object o = _rt.getValueAt(i, index);
+					Double randval = RandomColGen.randomDouble(minMax[1], minMax[0]);
+					if (o == null || "".equals(o.toString())) {
+						try {
+							_rt.setTableValueAt(randval,i, index);
+						} catch(Exception e1) {	
+							_rt.setTableValueAt(randval.toString(),i, index);
 						}
 					}
 				}
@@ -1773,9 +1895,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		 */
 		private static final long serialVersionUID = 1L;
 		private String _format;
+		private String _tid;
 
-		public MyCellRenderer(String format) {
+		public MyCellRenderer(String format, String tid) {
 			_format = format;
+			_tid = tid;
 		}
 
 		public Component getTableCellRendererComponent(JTable table,
@@ -1793,6 +1917,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (value instanceof Date) {
 				SimpleDateFormat f = new SimpleDateFormat(_format);
+				f.setTimeZone(TimeZone.getTimeZone(_tid));
 				text = f.format(value, new StringBuffer(), new FieldPosition(0));
 				((JLabel) c).setHorizontalAlignment(JLabel.LEADING);
 				c.setForeground(Color.MAGENTA.darker());

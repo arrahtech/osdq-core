@@ -21,6 +21,7 @@ package org.arrah.framework.datagen;
 
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -304,8 +305,17 @@ public class AggrCumRTM {
 	}
 	
 	/* This is a utility function which will take millisecond  and give output as current date */
+	// Default TimeZone
 	public static java.util.Date secondIntoDate(long millisec) {
 		Calendar cal = Calendar.getInstance();
+		cal.setLenient(true);
+		cal.setTimeInMillis(millisec);
+		return cal.getTime();
+	}
+	
+	/* This is a utility function which will take millisecond  and give output as current date */
+	public static java.util.Date secondIntoDate(long millisec, TimeZone tz) {
+		Calendar cal = Calendar.getInstance(tz);
 		cal.setLenient(true);
 		cal.setTimeInMillis(millisec);
 		return cal.getTime();

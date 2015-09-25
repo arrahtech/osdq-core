@@ -106,6 +106,8 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 	private ReportTableSorter sorter = null;
 	private boolean _isEditable = false;
 	private JScrollPane scrollPane;
+	private Vector<Integer> prerender = new Vector<Integer>();
+
 
 	public ReportTable(ReportTableModel reportTableModel) {
 		rpt_tabModel = reportTableModel;
@@ -212,6 +214,9 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 				if (this.isRowSelected(row) && this.isColumnSelected(col))
 					c.setBackground(Color.YELLOW);
 				
+				if (prerender.indexOf(col) != -1)
+					return c; // Allready renderded
+				
 				// Default Date Format
 		        if( value instanceof java.util.Date) {
 		        	String format = Rdbms_conn.getHValue("DateFormat");
@@ -221,6 +226,7 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 		        		SimpleDateFormat df = new SimpleDateFormat(format);
 		        		value = df.format(value);
 		        		((JLabel)c).setText(value.toString());
+		        		
 		        	} catch (Exception e){
 		        		return c;
 		        	}
@@ -1244,5 +1250,10 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 		}
 		removeRows(cols, rows - cols);
 
+	}
+	
+	// This function will allow to setTime for a particular column
+	public void setPrerenderCol(int index) {
+		prerender.add(index);
 	}
 } // End of ReportTable class

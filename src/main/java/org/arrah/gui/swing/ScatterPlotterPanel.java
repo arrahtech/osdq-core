@@ -408,7 +408,10 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 				sm_min.setValue(sm_max.getValue() - 1);
 		}
 		
-		g_p.setSInit(sm_min.getValue()*DATEFACTOR, sm_max.getValue()*DATEFACTOR);
+		if (isDateType == true)
+			g_p.setSInit(sm_min.getValue()*DATEFACTOR, sm_max.getValue()*DATEFACTOR);
+		else
+			g_p.setSInit(sm_min.getValue(), sm_max.getValue());
 		g_p.showSlideBubbleChart();
 	}
 
@@ -438,13 +441,13 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 			super(sm);
 		}
 
-		public Hashtable createStandardLabels(int increment, int start)
+		public Hashtable<Integer,JComponent> createStandardLabels(int increment, int start)
 	   {
 		      if (increment <= 0) 
 		    	  throw new IllegalArgumentException("Requires 'increment' > 0.");
 		     if (start < getMinimum() || start > getMaximum())
 		        throw new IllegalArgumentException("The 'start' value is out of range.");
-		     Hashtable table = new Hashtable<Integer,JComponent>();
+		     Hashtable<Integer,JComponent> table = new Hashtable<Integer,JComponent>();
 		     int max = getMaximum();
 		     
 		     String format = Rdbms_conn.getHValue("DateFormat");
@@ -464,7 +467,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 	        	}
 		    return table;
 	   }
-		public Hashtable createStandardLabels(int increment)
+		public Hashtable<Integer,JComponent> createStandardLabels(int increment)
 		{
 		     return createStandardLabels(increment, sliderModel.getMinimum());
 		}

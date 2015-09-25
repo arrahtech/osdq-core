@@ -67,17 +67,30 @@ public class ResultsetToRTM {
 				case java.sql.Types.INTEGER:
 				case java.sql.Types.TINYINT:
 				case java.sql.Types.SMALLINT:
-					row_v.add(i - 1, new Integer(rs.getInt(i)));
+					int val = rs.getInt(i);
+					if (rs.wasNull() == true)
+						row_v.add(i - 1,null);
+					else
+						row_v.add(i - 1,val);
 					break;
+					
 				case java.sql.Types.DOUBLE:
 				case java.sql.Types.REAL:
 				case java.sql.Types.DECIMAL:
 				case java.sql.Types.NUMERIC:
 				case java.sql.Types.BIGINT:
-					row_v.add(i - 1, new Double(rs.getDouble(i)));
+					double valD = rs.getDouble(i);
+					if (rs.wasNull() == true)
+						row_v.add(i - 1,null);
+					else
+						row_v.add(i - 1,valD);
 					break;
 				case java.sql.Types.FLOAT:
-					row_v.add(i - 1, new Float(rs.getFloat(i)));
+					double valF = rs.getFloat(i);
+					if (rs.wasNull() == true)
+						row_v.add(i - 1,null);
+					else
+						row_v.add(i - 1,valF);
 					break;
 				case java.sql.Types.CLOB:
 					row_v.add(i - 1, rs.getClob(i));
