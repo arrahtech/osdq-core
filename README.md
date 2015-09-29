@@ -1,4 +1,4 @@
-profiler V6.0.9
+profiler V6.1.0
 ===========
 
 [![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
