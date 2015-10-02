@@ -1,6 +1,7 @@
-profiler V6.1.0
+Profiler V6.1.0
 ===========
 
+[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dm/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dw/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
 
 **Description**
 
@@ -9,9 +10,7 @@ This product is developing high performance integrated data management platform 
 
 It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Create, Load and Profile Hive Tables. This project is also known as "Aggregate Profiler"
 
-V6.1.0
-------
-Changes
+**Changes**
 
 a) Fuzzy replacement added
 b) Data Normalization added
@@ -38,11 +37,11 @@ c) Date Format Standarization added
 Getting Started
 ---------------
 
->Using pre-compiled distribution - you can directly download the pre-compiled binaries from sourceforge 
+>Using pre-compiled distribution - you can directly download the pre-compiled binaries from sourceforge
 
-[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
+[![Download Open Source Data Quality and Profiling](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/dataquality/files/latest/download)
 
-1. Unzip the download
+1. Unzip the download release file
 2. Go to bin directory
 3. run `runprofiler.[sh][bat]`
 
@@ -53,6 +52,11 @@ Getting Started
 2. cd profiler
 3. mvn package
 4. cd target
-5. unzip the profiler-<version>-SNAPSHOT-distribution.zip
-6. cd profiler-<version>-SNAPSHOT
+5. unzip the ProfilerV<version>.zip
+6. cd ProfilerV<version>
 7. java -jar profiler-<version>-SNAPSHOT.jar
+
+
+
+
+
