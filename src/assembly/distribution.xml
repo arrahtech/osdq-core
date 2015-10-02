@@ -38,12 +38,20 @@
 			<directory>src/main/resources</directory>
 			<includes>
 				<include>*.xml</include>
+				<include>*.txt</include>
 			</includes>
 			<outputDirectory>conf</outputDirectory>
 		</fileSet>
+    <fileSet>
+      <directory>docs</directory>
+      <includes>
+        <include>*</include>
+      </includes>
+      <outputDirectory>docs</outputDirectory>
+    </fileSet>
 		<fileSet>
 			<directory>${project.basedir}</directory>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory></outputDirectory>
 			<includes>
 				<include>README*</include>
 				<include>LICENSE*</include>

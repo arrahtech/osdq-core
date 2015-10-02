@@ -1,7 +1,6 @@
 profiler V6.1.0
 ===========
 
-[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
 
 **Description**
 
@@ -9,6 +8,14 @@ This project is dedicated to open source data quality and data preparation solut
 This product is developing high performance integrated data management platform which will seamlessly do Data Integration, Data Profiling, Data Quality, Data Preparation, Dummy Data Creation, Meta Data Discovery, Anomaly Discovery, Reporting and Analytic.
 
 It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Create, Load and Profile Hive Tables. This project is also known as "Aggregate Profiler"
+
+V6.1.0
+------
+Changes
+
+a) Fuzzy replacement added
+b) Data Normalization added
+c) Date Format Standarization added
 
 **Features**
 
@@ -31,7 +38,16 @@ It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Creat
 Getting Started
 ---------------
 
-Building and Running
+>Using pre-compiled distribution - you can directly download the pre-compiled binaries from sourceforge 
+
+[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
+
+1. Unzip the download
+2. Go to bin directory
+3. run `runprofiler.[sh][bat]`
+
+
+>Building and Running
 
 1. git clone git@github.com:arrahtec/profiler.git
 2. cd profiler
