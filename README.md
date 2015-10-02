@@ -1,6 +1,7 @@
-profiler V6.1.0
+Profiler V6.1.0
 ===========
 
+[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
 
 **Description**
 
@@ -36,9 +37,9 @@ c) Date Format Standarization added
 Getting Started
 ---------------
 
->Using pre-compiled distribution - you can directly download the pre-compiled binaries from sourceforge 
+>Using pre-compiled distribution - you can directly download the pre-compiled binaries from sourceforge
 
-[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
+[![Download Open Source Data Quality and Profiling](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/dataquality/files/latest/download)
 
 1. Unzip the download release file
 2. Go to bin directory
@@ -54,3 +55,14 @@ Getting Started
 5. unzip the ProfilerV<version>.zip
 6. cd ProfilerV<version>
 7. java -jar profiler-<version>-SNAPSHOT.jar
+ 
+
+**Download Statistics**
+
+[![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dm/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
+
+[![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dw/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
+
+
+
+
