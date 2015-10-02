@@ -9,9 +9,7 @@ This product is developing high performance integrated data management platform 
 
 It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Create, Load and Profile Hive Tables. This project is also known as "Aggregate Profiler"
 
-V6.1.0
-------
-Changes
+**Changes**
 
 a) Fuzzy replacement added
 b) Data Normalization added
@@ -42,7 +40,7 @@ Getting Started
 
 [![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
 
-1. Unzip the download
+1. Unzip the download release file
 2. Go to bin directory
 3. run `runprofiler.[sh][bat]`
 
@@ -53,6 +51,6 @@ Getting Started
 2. cd profiler
 3. mvn package
 4. cd target
-5. unzip the profiler-<version>-SNAPSHOT-distribution.zip
-6. cd profiler-<version>-SNAPSHOT
+5. unzip the ProfilerV<version>.zip
+6. cd ProfilerV<version>
 7. java -jar profiler-<version>-SNAPSHOT.jar
