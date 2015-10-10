@@ -1,7 +1,7 @@
-profiler V6.1.0
+Profiler V6.1.1
 ===========
 
-[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)
+[![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dm/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dw/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
 
 [![Download sub-keenes](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/dataquality/files/latest/download)
 
@@ -11,6 +11,12 @@ This project is dedicated to open source data quality and data preparation solut
 This product is developing high performance integrated data management platform which will seamlessly do Data Integration, Data Profiling, Data Quality, Data Preparation, Dummy Data Creation, Meta Data Discovery, Anomaly Discovery, Reporting and Analytic.
 
 It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Create, Load and Profile Hive Tables. This project is also known as "Aggregate Profiler"
+
+**Changes**
+
+a) Fuzzy replacement added
+b) Data Normalization added
+c) Date Format Standarization added
 
 **Features**
 
@@ -33,12 +39,26 @@ It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Creat
 Getting Started
 ---------------
 
-Building and Running
+>Using pre-compiled distribution - you can directly download the pre-compiled binaries from sourceforge
+
+[![Download Open Source Data Quality and Profiling](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/dataquality/files/latest/download)
+
+1. Unzip the download release file
+2. Go to bin directory
+3. run `runprofiler.[sh][bat]`
+
+
+>Building and Running
 
 1. git clone git@github.com:arrahtec/profiler.git
 2. cd profiler
 3. mvn package
 4. cd target
-5. unzip the profiler-<version>-SNAPSHOT-distribution.zip
-6. cd profiler-<version>-SNAPSHOT
+5. unzip the ProfilerV<version>.zip
+6. cd ProfilerV<version>
 7. java -jar profiler-<version>-SNAPSHOT.jar
+
+
+
+
+

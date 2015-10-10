@@ -169,8 +169,42 @@ public class NormalizeCol {
 			 return rtm;
 		}
 		
-	
-
+	// This function will return distance from mean in terms of std deviation
+	// value - mean / std
+	public static ReportTableModel distStdNormal(ReportTableModel rtm, int inputIndex, int outPutIndex) {
+		
+		Vector<Double> inputData = rtm.getColDataVD(inputIndex); // Null Skipped value
+		StatisticalAnalysis sa = new StatisticalAnalysis(inputData.toArray());
+		
+		Double mean = sa.getMean(); // Mean value of Data
+		Double sdev = sa.getSDev(); // Standard deviation
+		
+		int rowC = rtm.getModel().getRowCount();
+		
+		for (int i=0; i < rowC; i++) {
+			Object d = rtm.getModel().getValueAt(i, inputIndex);
+			
+			if (d == null ) {
+				rtm.getModel().setValueAt(d,i, outPutIndex);
+				continue;
+			}
+			Double factor = 0.0d;
+			if (d instanceof Number) {
+					factor = (((Double)d) - mean )/ sdev;
+			}
+			else if (d instanceof String) {
+				try {
+						factor = Double.parseDouble(d.toString());
+							factor = (factor - mean) /sdev;
+					} catch (Exception e) {
+						factor = null;
+					}
+				}
+			rtm.getModel().setValueAt(factor,i, outPutIndex);
+			}
+		 
+		 return rtm;
+	}
 	
 	
 	

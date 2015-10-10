@@ -100,7 +100,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 		String[] dbtype = {"Oracle JDBC Client","Oracle Windows Bridge","Mysql JDBC Client","Mysql Windows Bridge",
 							"SQLServer JDBC Client","SQLServer Windows Bridge","Access JDBC Client",
 							"Access Windows Bridge","Postgres JDBC Client","DB2 JDBC Client",
-							"Hive JDBC Client","Informix JDBC Client","Splice Derby Client","Others (JDBC Bridge)","Others (Windows Bridge)"}; 
+							"Hive JDBC Client","Hive2 JDBC Client","Informix JDBC Client","Splice Derby Client","Others (JDBC Bridge)","Others (Windows Bridge)"}; 
 		String[] cname = {"New Connection"};
 		jc = new JComboBox<String>(dbtype);
 		jc.addActionListener(this);
@@ -436,7 +436,17 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 	        		dsn.setText("//hostname/db");
 	        		disableResInput();
 	        		break;
-	        	case 11 :
+	        	case 11:
+	        		_dbparam.put("Database_Type", "HIVE");
+	        		driver.setText("org.apache.hive.jdbc.HiveDriver");
+	        		protocol.setText("jdbc:hive2");
+	        		driver.setEditable(false);
+	        		protocol.setEditable(false);
+	        		jdbc_cs.setEditable(false);
+	        		dsn.setText("//hostname/db");
+	        		disableResInput();
+	        		break;
+	        	case 12 :
 	        		_dbparam.put("Database_Type", "INFORMIX");
 	        		driver.setText("com.informix.jdbc.IfxDriver");
 	        		protocol.setText("jdbc:informix-sqli");
@@ -447,7 +457,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 	        		disableResInput();
 	        		break;
 	        		
-	        	case 12 :
+	        	case 13 :
 	        		_dbparam.put("Database_Type", "SPLICE");
 	        		driver.setText("org.apache.derby.jdbc.ClientDriver");
 	        		protocol.setText("jdbc:derby");
@@ -458,7 +468,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 	        		disableResInput();
 	        		break;
 
-	        	case 13 :
+	        	case 14 :
 	        		_dbparam.put("Database_Type", "Others");
 	        		driver.setText("jdbc.DbNameDriver");
 	        		protocol.setText("jdbc:dbname");
@@ -648,10 +658,10 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 			case 6:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //c:\\Database.[mdb][accdb]" ;
 				break;
-			case 2:case 8:case 9:case 10:case 12:
+			case 2:case 8:case 9:case 10:case 11:case 13:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname.";
 				break;
-			case 11:
+			case 12:
 				infoStatus = "Enter Hostname and DataBase Name. \nFormat should be //hostname[:port]/dbname::INFORMIXSERVER=name[;property=value]" ;
 				break;
 			case 1: case 3: case 5: case 7:
@@ -673,7 +683,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 		}
 		if ("driver".equals(sel_id)) {
 			switch (dbIndex) {
-			case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:case 8:case 9: case 10: case 11:case 12:
+			case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:case 8:case 9: case 10: case 11:case 12:case 13:
 				infoStatus = "Default Database Driver is shown.";
 				 break;
 			default:
@@ -683,7 +693,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 		}
 		if ("protocol".equals(sel_id)) {
 			switch (dbIndex) {
-			case 0: case 1: case 2: case 3: case 4: case 5:case 6: case 7:case 8:case 9: case 10: case 11:case 12:
+			case 0: case 1: case 2: case 3: case 4: case 5:case 6: case 7:case 8:case 9: case 10: case 11:case 12:case 13:
 				infoStatus = "Default Connection Protocol is shown.";
 				 break;
 			default:

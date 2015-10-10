@@ -229,6 +229,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		meanSubs_m.addActionListener(this);
 		meanSubs_m.setActionCommand("meansubstract");
 		normal_m.add(meanSubs_m);
+		JMenuItem meandistSubs_m = new JMenuItem("Mean Distance by Std. Deviation");
+		meandistSubs_m.addActionListener(this);
+		meandistSubs_m.setActionCommand("meandist");
+		normal_m.add(meandistSubs_m);
 		
 		// Analytics Menu
 		JMenu analytics_m = new JMenu("Analytics");
@@ -1508,6 +1512,18 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 					return;
 				
 				NormalizeCol.zscoreNormal(_rt.getRTMModel(), outputindex, popindex);
+				return;
+			}
+			if (command.equals("meandist")) {
+				_rt.cancelSorting(); // No sorting 
+				int popindex = selectedColIndex(_rt, "Select Column to Populate:");
+				if (popindex < 0)
+					return;
+				int outputindex = selectedColIndex(_rt, "Select Column to get Normalized values");
+				if (outputindex < 0)
+					return;
+				
+				NormalizeCol.distStdNormal(_rt.getRTMModel(), outputindex, popindex);
 				return;
 			}
 			if (command.equals("meanratio") || command.equals("stdratio") || command.equals("meansubstract")  ) {
