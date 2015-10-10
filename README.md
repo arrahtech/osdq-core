@@ -3,6 +3,8 @@ Profiler V6.1.0
 
 [![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dm/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dw/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
 
+[![Download sub-keenes](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/dataquality/files/latest/download)
+
 **Description**
 
 This project is dedicated to open source data quality and data preparation solutions. Data Quality includes profiling, filtering, governance, similarity check, data enrichment/alteration, real time alerting, basket analysis, bubble chart Warehouse validation, single customer view etc.
