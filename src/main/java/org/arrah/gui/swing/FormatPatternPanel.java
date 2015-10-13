@@ -276,44 +276,44 @@ public class FormatPatternPanel implements ActionListener {
 	}
 
 	public Hashtable<String, StringBuffer> getNumberTable() {
-		loadFormatFile("formatFile.atc");
+		loadFormatFile("./resource/formatFile.atc");
 		return _nf;
 	}
 
 	public void setNumberTable(Hashtable<String, StringBuffer> nt) {
 		_nf = nt;
-		saveFormatFile("formatFile.atc");
+		saveFormatFile("./resource/formatFile.atc");
 
 	}
 
 	public Hashtable<String, StringBuffer> getDateTable() {
-		loadFormatFile("formatFile.atc");
+		loadFormatFile("./resource/formatFile.atc");
 		return _df;
 	}
 
 	public void setDateTable(Hashtable<String, StringBuffer> dt) {
 		_df = dt;
-		saveFormatFile("formatFile.atc");
+		saveFormatFile("./resource/formatFile.atc");
 	}
 
 	public Hashtable<String, Object> getStringTable() {
-		loadFormatFile("formatFile.atc");
+		loadFormatFile("./resource/formatFile.atc");
 		return _sf;
 	}
 
 	public void setStringTable(Hashtable<String, Object> st) {
 		_sf = st;
-		saveFormatFile("formatFile.atc");
+		saveFormatFile("./resource/formatFile.atc");
 	}
 
 	public Hashtable<String, Object> getPhoneTable() {
-		loadFormatFile("formatFile.atc");
+		loadFormatFile("./resource/formatFile.atc");
 		return _pf;
 	}
 
 	public void setPhoneTable(Hashtable<String, Object> pt) {
 		_pf = pt;
-		saveFormatFile("formatFile.atc");
+		saveFormatFile("./resource/formatFile.atc");
 	}
 
 	public void actionPerformed(ActionEvent e) {

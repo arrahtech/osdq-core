@@ -1753,7 +1753,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		SpringLayout layout = new SpringLayout();
 		jp.setLayout(layout);
 
-		ImageIcon imageicon = new ImageIcon("./Filter.gif", "Query");
+		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
 		int imageLS = imageicon.getImageLoadStatus();
 
 		for (int i = 0; i < colC; i++) {

@@ -660,7 +660,7 @@ public class RelationPanel extends JPanel implements MouseMotionListener,
 			JPopupMenu popup = new JPopupMenu();
 			JMenuItem sel_a;
 
-			ImageIcon imageicon = new ImageIcon("./Found.jpg", "Here");
+			ImageIcon imageicon = new ImageIcon("./image/Found.jpg", "Here");
 			int imageLS = imageicon.getImageLoadStatus();
 			if (imageLS == MediaTracker.ABORTED
 					|| imageLS == MediaTracker.ERRORED)
