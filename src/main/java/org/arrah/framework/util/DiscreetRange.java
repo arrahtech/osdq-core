@@ -66,17 +66,6 @@ public class DiscreetRange {
 		}
 		return subSet;
 	}
-
-	public static Vector<String> tokenizeText(String text, String token) {
-		if (token == null || text == null || "".equals(text) || "".equals(token))
-			return (Vector<String>)null;
-		String[] tokenA = text.trim().split(token);
-		int i = 0;
-		Vector<String> vec = new Vector<String>();
-		while (i < tokenA.length)
-			vec.add(tokenA[i++]);
-		return vec;
-	}
 	
 	public static Vector<Integer> mergeSet(Vector<Integer> leftSet,
 			Vector<Integer> rightSet, String mergeType) {

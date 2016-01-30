@@ -56,6 +56,7 @@ public class KeyValueParser {
 
 				case StreamTokenizer.TT_NUMBER:
 					// A number was found; the value is in nval
+					@SuppressWarnings("unused")
 					double num = st.nval;
 					break;
 
@@ -81,6 +82,7 @@ public class KeyValueParser {
 				case '\'':
 					// A single-quoted string was found; sval contains the
 					// contents
+					@SuppressWarnings("unused")
 					String squoteVal = st.sval;
 					break;
 				case StreamTokenizer.TT_EOL:
@@ -138,7 +140,6 @@ public class KeyValueParser {
 			System.out.println(e.getMessage());
 
 		}
-		
 		
 		return true;
 	}

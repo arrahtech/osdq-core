@@ -82,7 +82,7 @@ public class SimilarityCheckLucene {
 			return doc;
 		try {
 			doc.add(new Field("at__rowid__", Integer.toString(rowId),
-					Field.Store.YES, Field.Index.TOKENIZED)); // for cross column search
+					Field.Store.YES, Field.Index.UN_TOKENIZED)); // for cross column search
 			for (int i = 0; i < row.length; i++) {
 				if (row[i] != null && colName[i] != null)
 					doc.add(new Field(colName[i], row[i].toString(),
@@ -138,8 +138,7 @@ public class SimilarityCheckLucene {
 					if (isRowSet == false)
 						writer.addDocument(createDocument(i, _rt.getRow(i)));
 					else 
-						writer.addDocument(createDocument(i + 1,
-								_rows.getRow(i + 1)));
+						writer.addDocument(createDocument(i + 1,_rows.getRow(i + 1)));
 			} else {
 				final int THREADCOUNT = 10;
 				Thread[] tid = new Thread[THREADCOUNT];
@@ -152,16 +151,14 @@ public class SimilarityCheckLucene {
 								for (int j = tindex * rowthread; j < tindex
 										* rowthread + rowthread; j++)
 									try {
-										writer.addDocument(createDocument(j,
-												_rt.getRow(j)));
+										writer.addDocument(createDocument(j,_rt.getRow(j)));
 									} catch (Exception e) {
 										System.out.println(" Lucene Exeception:"+e.getMessage());
 									}
 							else
 								for (int j = tindex * rowthread; j < rowC; j++)
 									try {
-										writer.addDocument(createDocument(j,
-												_rt.getRow(j)));
+										writer.addDocument(createDocument(j,_rt.getRow(j)));
 									} catch (Exception e) {
 										System.out.println("Lucene Exeception:"+e.getMessage());
 									}

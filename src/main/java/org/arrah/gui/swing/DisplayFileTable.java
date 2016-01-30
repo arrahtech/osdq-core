@@ -48,6 +48,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
@@ -58,6 +59,7 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -71,8 +73,10 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
+import org.arrah.framework.analytics.MetadataMatcher;
 import org.arrah.framework.analytics.NormalizeCol;
 import org.arrah.framework.datagen.AggrCumRTM;
 import org.arrah.framework.datagen.RandomColGen;
@@ -180,8 +184,19 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		
 		JMenu enrich_m = new JMenu("Enrichment");
 		preparation_m.add(enrich_m);
+		
+		JMenuItem geoencode_m = new JMenuItem("Geo Encoding");
+		geoencode_m.addActionListener(this);
+		geoencode_m.setActionCommand("geocoding");
+		enrich_m.add(geoencode_m);
+		
 		JMenu nullrep_m = new JMenu("Null Replace");
 		enrich_m.add(nullrep_m);
+		
+		JMenuItem attrreg_m = new JMenuItem("Attributes Based");
+		attrreg_m.addActionListener(this);
+		attrreg_m.setActionCommand("attreplace");
+		nullrep_m.add(attrreg_m);
 		
 		JMenuItem nullreg_m = new JMenuItem("Regression Based");
 		nullreg_m.addActionListener(this);
@@ -290,7 +305,6 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		
 		analytics_m.addSeparator();
 		
-
 		/*** Outlier Analysis ***/
 		JMenu outlier = new JMenu("Outlier");
 		// Box Plot for now. Other algo will be added later
@@ -321,13 +335,25 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		loc_m.addActionListener(this);
 		loc_m.setActionCommand("location");
 		analytics_m.add(loc_m);
-		
 		analytics_m.addSeparator();
 		
 		JMenuItem strlength = new JMenuItem("String Length Analysis");
 		strlength.addActionListener(this);
 		strlength.setActionCommand("stringlen");
 		analytics_m.add(strlength);
+		analytics_m.addSeparator();
+		
+		JMenuItem mfsearch = new JMenuItem("Multi Facet Search");
+		mfsearch.addActionListener(this);
+		mfsearch.setActionCommand("mfsearch");
+		analytics_m.add(mfsearch);
+		analytics_m.addSeparator();
+		
+		// Pearson Correlation
+		JMenuItem correlation = new JMenuItem("Correlation");
+		correlation.addActionListener(this);
+		correlation.setActionCommand("pcorrelation");
+		analytics_m.add(correlation);
 
 		// Column Menu
 		JMenuItem addC_m = new JMenuItem("Add Column");
@@ -375,6 +401,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		maskC_m.addActionListener(this);
 		maskC_m.setActionCommand("maskcolumn");
 		column_m.add(maskC_m);
+		
+		JMenuItem splitC_m = new JMenuItem("Split Column into Rows");
+		splitC_m.addActionListener(this);
+		splitC_m.setActionCommand("splitcolumn");
+		column_m.add(splitC_m);
 		column_m.addSeparator();
 
 		JMenuItem searC_m = new JMenuItem("Standardisation");
@@ -416,6 +447,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		patternC_m.addActionListener(this);
 		patternC_m.setActionCommand("patterninfo");
 		column_m.add(patternC_m);
+		column_m.addSeparator();
+		
+		JMenuItem piiC_m = new JMenuItem("Personally Identifiable Info");
+		piiC_m.addActionListener(this);
+		piiC_m.setActionCommand("piinfo");
+		column_m.add(piiC_m);
 
 		//Options menu
 		JMenuItem addR_m = new JMenuItem("Insert Rows");
@@ -433,15 +470,43 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		option_m.add(removeR_m);
 		option_m.addSeparator();
 
+		JMenuItem subset_m = new JMenuItem("Subset Table");
+		subset_m.addActionListener(this);
+		subset_m.setActionCommand("subsettable");
+		option_m.add(subset_m);
+		option_m.addSeparator();
+		
+		JMenuItem splitt_m = new JMenuItem("Split Table");
+		splitt_m.addActionListener(this);
+		splitt_m.setActionCommand("splittable");
+		option_m.add(splitt_m);
+		option_m.addSeparator();
+		
+		JMenuItem sampleset_m = new JMenuItem("Random Sample Table");
+		sampleset_m.addActionListener(this);
+		sampleset_m.setActionCommand("randomtable");
+		option_m.add(sampleset_m);
+		option_m.addSeparator();
+		
+
 		JMenuItem transR_m = new JMenuItem("Transpose Rows");
 		transR_m.addActionListener(this);
 		transR_m.setActionCommand("transrow");
 		option_m.add(transR_m);
 		option_m.addSeparator();
 
-		JMenuItem lookup_m = new JMenuItem("Join Lookup File");
-		lookup_m.addActionListener(this);
-		lookup_m.setActionCommand("lookup");
+		JMenu lookup_m = new JMenu("Join Lookup File");
+		
+		JMenuItem lookupr_m = new JMenuItem("Replace Value");
+		lookupr_m.addActionListener(this);
+		lookupr_m.setActionCommand("lookup");
+		lookup_m.add(lookupr_m);
+		
+		JMenuItem lookupa_m = new JMenuItem("Add Column");
+		lookupa_m.addActionListener(this);
+		lookupa_m.setActionCommand("lookupadd");
+		lookup_m.add(lookupa_m);
+		
 		option_m.add(lookup_m);
 		option_m.addSeparator();
 		
@@ -522,15 +587,17 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		option_m.add(undoC_m);
 		option_m.addSeparator();
 
-		JMenuItem similarC_m = new JMenuItem("Fuzzy-Delete");
+		JMenu dedup = new JMenu("Fuzzy DeDup");
+		JMenuItem similarC_m = new JMenuItem("Delete");
 		similarC_m.addActionListener(this);
 		similarC_m.setActionCommand("simcheck");
-		option_m.add(similarC_m);
+		dedup.add(similarC_m);
 		
-		JMenuItem replaceSimC_m = new JMenuItem("Fuzzy-Replace");
+		JMenuItem replaceSimC_m = new JMenuItem("Replace");
 		replaceSimC_m.addActionListener(this);
 		replaceSimC_m.setActionCommand("simreplace");
-		option_m.add(replaceSimC_m);
+		dedup.add(replaceSimC_m);
+		option_m.add(dedup);
 		option_m.addSeparator();
 		
 		JMenuItem crossCol_m = new JMenuItem("Cross Column Search");
@@ -573,6 +640,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
+		if (_rt.isSorting() || _rt.table.isEditing()) {
+			JOptionPane.showMessageDialog(null, "Table is in Sorting or Editing State");
+			return;
+		}
 		try {
 			frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			if (command.equals("barchart")) {
@@ -647,6 +718,28 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("timeregression")) {
 				 new FileAnalyticsListener(_rt, 18);
+				return;
+			}
+			if (command.equals("mfsearch")){
+				new MultifacetPanel(_rt);
+				return;
+			}
+			if (command.equals("pcorrelation")) {
+				_rt.cancelSorting();
+				int index_a = selectedColIndex(_rt,"Select First Column");
+				if (index_a < 0)
+					return;
+				int index_b = selectedColIndex(_rt,"Select Second Column");
+				if (index_b < 0)
+					return;
+				Vector<Double> inputData_a = _rt.getRTMModel().getColDataVD(index_a);
+				Vector<Double> inputData_b = _rt.getRTMModel().getColDataVD(index_b);
+				double corr = AggrCumRTM.getPCorrelation(inputData_a, inputData_b);
+				if (Double.isNaN(corr) == true)
+					JOptionPane.showMessageDialog(null, "Could not get Correlation for dataset");
+				else
+					JOptionPane.showMessageDialog(null, "Corrleation is:" + corr);
+				
 				return;
 			}
 			if (command.equals("undocond")) {
@@ -787,6 +880,17 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				
 				return;
 			}
+			if (command.equals("splitcolumn")) {
+				_rt.cancelSorting();
+				_rt.table.clearSelection();
+				
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				
+				new SplitColumnPanel(_rt,index);
+				return;
+			}
 			if (command.equals("populatecolumn")) {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
@@ -838,6 +942,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				return;
 			}
 			if (command.equals("replace")) {
+				if (_rt.isSorting() || _rt.table.isEditing()) {
+					JOptionPane.showMessageDialog(null, "Table is in Sorting or Editing State");
+					return;
+				}
 				int index = selectedColIndex(_rt);
 				if (index < 0)
 					return;
@@ -868,10 +976,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				_rt.table.setColumnSelectionInterval(index, index);
 
 				for (int i = 0; i < row_c; i++) {
-					Object obj = _rt.table.getValueAt(i, index);
+					Object obj = _rt.getModel().getValueAt(i, index);
 					if (obj == null || "".equals(obj.toString())
 							|| obj.toString().compareToIgnoreCase("null") == 0) {
-						_rt.table.setValueAt(replace, i, index);
+						_rt.getModel().setValueAt(replace, i, index);
 						_rt.table.addRowSelectionInterval(i, i);
 					}
 				}
@@ -1019,6 +1127,57 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				caseFormat(4);
 				return;
 			}
+			if (command.equals("piinfo")) {
+				// Create the Column name into hashtable
+				Hashtable<String,String>__h = KeyValueParser.parseFile("./resource/piiSearch.txt");
+				if ( __h == null) {
+					JOptionPane.showMessageDialog(null, " No Table found");
+					return;
+				}
+				// Create MetaData Matcher
+				MetadataMatcher mm = new MetadataMatcher(__h);
+				String[] colName = new String[] {"Column","PIIGroup","Confidence",
+						"field1","field2","field3","field4","field5","field6","field7","field8","field9","field10"};
+				ReportTableModel rtm__ = new ReportTableModel(colName,true,true);
+				
+					
+				String[] colNames = _rt.getAllColNameAsString();
+				if (colNames == null ) {
+					JOptionPane.showMessageDialog(null,  "No Column found" );
+					return;
+				}
+				Hashtable<String, Vector<String>> ht = mm.matchedKeys(colNames,0.8f);
+				
+				for (Enumeration<String> e1 = ht.keys(); e1.hasMoreElements();) {
+					String key = e1.nextElement();
+					Vector<String>piiv= ht.get(key);
+					int size = piiv.size();
+					// System.out.println("---  Column:" + key + " Value:" + ht.get(key) + "Size:" + size);
+					for (int j = 0; j < size; j++) {
+						Object[] row = new Object[10+3];
+						Object[] colD = new Object[10];
+						colD = mm.getPIIColData(_rt.getRTMModel(), key, piiv.get(j), colD);
+						String confidence = mm.getConfidenceLevel();
+						row[0]= key;row[1]= piiv.get(j);row[2]= confidence;
+						for (int z=0; z < colD.length; z++) 
+							row[z+3] = colD[z];
+						rtm__.addFillRow(row);
+					}
+					
+				} // end of column 
+				
+				ReportTable rt__ = new ReportTable(rtm__);
+				JDialog jd = new JDialog();
+				jd.setTitle("Personally Identifiable Info");
+				jd.setLocation(150, 150);
+				jd.getContentPane().add(rt__);
+				jd.setModal(true);
+				jd.pack();
+				jd.setVisible(true);
+				
+				return;
+			}
+			
 			if (command.equals("patterninfo")) {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
@@ -1112,24 +1271,27 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 
 				Object v = null;
 				if (type.equals("Number")) {
+					DefaultTableModel model = _rt.getRTMModel().getModel();
 					for (int i = 0; i < row_c; i++) {
-						Object o = _rt.getValueAt(i, index);
+						Object o = model.getValueAt(i, index);
 						if (o != null)
 							v = FormatCheck.parseNumber(o, pattern);
 						else
 							v = (Double) null;
-						_rt.setTableValueAt(v, i, index);
+						//_rt.setTableValueAt(v, i, index);
+						model.setValueAt(v, i, index);
 					}
 					return;
 				} // end of Number
 				else if (type.equals("Date")) {
+					DefaultTableModel model = _rt.getRTMModel().getModel();
 					for (int i = 0; i < row_c; i++) {
-						Object o = _rt.getValueAt(i, index);
+						Object o = model.getValueAt(i, index);
 						if (o != null)
 							v = FormatCheck.parseDate(o, pattern);
 						else
 							v = (Date) null;
-						_rt.setTableValueAt(v, i, index);
+						model.setValueAt(v, i, index);
 					}
 					return;
 				} // end of Date
@@ -1145,7 +1307,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 							else
 								v = (String) null;
 							if (v == null)
-								_rt.setTableValueAt(v, i, index);
+								_rt.getModel().setValueAt(v, i, index);
 							else {
 								StringBuffer t;
 								if (type.equals("Phone"))
@@ -1155,7 +1317,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 									t = FormatCheck.toFormat(v.toString(),
 											pattern[0].toString());
 
-								_rt.setTableValueAt(t.toString(), i, index);
+								_rt.getModel().setValueAt(t.toString(), i, index);
 							}
 						}
 					} catch (Exception e_parse) {
@@ -1359,7 +1521,9 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 					_rt = joinTables(_rt, lindex, rtable, rindex, 3); // Cartesian join
 				return;
 			}
-			if (command.equals("lookup")) {
+			if (command.equals("lookup") || command.equals("lookupadd")) {
+				_rt.cancelSorting(); // Make sure it is not in sorting order
+				
 				int lindex = selectedColIndex(_rt,"Select column for Lookup:");
 				if (lindex < 0)
 					return;
@@ -1380,16 +1544,136 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 					return;
 				
 				int rowc = _rt.getModel().getRowCount();
-				_rt.cancelSorting(); // Make sure it is not in sorting order
+				int colc = _rt.getModel().getColumnCount();
+				
+				if ( command.equals("lookupadd") ) {
+					_rt.getRTMModel().addColumn("LookupValue");
+				}
+				
 				Hashtable<Object, Object> hlookup = RTMUtil.lookupInfo(rtable.getRTMModel(), rindex, rinfo);
+				
 				for (int i=0; i < rowc; i++ ) {
 					Object key = _rt.getModel().getValueAt(i, lindex);
 					Object value = hlookup.get(key);
 					if (value == null) continue;
-					_rt.getModel().setValueAt(value,i,lindex);
+					if ( command.equals("lookupadd") )
+						_rt.getModel().setValueAt(value,i,colc);
+					else
+						_rt.getModel().setValueAt(value,i,lindex);
 				}
 				
 				return;
+			}
+			if (command.equals("geocoding")) {
+				_rt.cancelSorting(); // Make sure it is not in sorting order
+				
+				int lindex = selectedColIndex(_rt,"Please Select Zip/Pincode column:");
+				if (lindex < 0)
+					return;
+				
+				JOptionPane.showMessageDialog (null, "Choose the Latitude/Longitude and Zip/Pin Mapping file \n"
+						+ "You can look at http://download.geonames.org/ if you don't have \n"
+						+ "mapping file:");
+				
+				ImportFilePanel impF = new ImportFilePanel(false);
+				ReportTable rtable = impF.getTable();
+				if (rtable == null)
+					return;
+
+				int rindex = selectedColIndex(rtable,"Select Zip/Pin column in mapping file:");
+				if (rindex < 0)
+					return;
+				
+				int rlat = selectedColIndex(rtable,"Select Latitude Column in mapping file:");
+				if (rlat < 0)
+					return;
+				
+				int rlon = selectedColIndex(rtable,"Select Longitude Column in mapping file:");
+				if (rlon < 0)
+					return;
+				
+				int rowc = _rt.getModel().getRowCount();
+				int colc = _rt.getModel().getColumnCount();
+				_rt.getRTMModel().addColumn("MappedLatitude");
+				_rt.getRTMModel().addColumn("MappedLongitude");
+				
+				Hashtable<Object, Object> hlookup = RTMUtil.lookupIndex(rtable.getRTMModel(),rindex);
+				for (int i=0; i < rowc; i++ ) {
+					Object key = _rt.getModel().getValueAt(i, lindex);
+					Object value = hlookup.get(key);
+					if (value == null) continue;
+					Object lat = rtable.getModel().getValueAt((Integer)value, rlat);
+					Object lon = rtable.getModel().getValueAt((Integer)value, rlon);
+					_rt.getModel().setValueAt(lat,i,colc);
+					_rt.getModel().setValueAt(lon,i,colc+1);
+				}
+				
+				return;
+			}
+			if (command.equals("subsettable")) {
+				NewTableDialog ntd=  new NewTableDialog(_rt.getRTMModel());
+				ntd.displayGUI();
+				 return;
+			}
+			if (command.equals("splittable")) {
+				String splitC = JOptionPane.showInputDialog("How may Split Tables?", new Integer(10));
+				try {
+					int count = Integer.parseInt(splitC);
+					ReportTableModel[] rtm = RTMUtil.splitRTM(_rt.getRTMModel(),count);
+					
+					JPanel splitPanel = new JPanel();
+					//splitPanel.setPreferredSize(new Dimension(600, 400*count));
+					BoxLayout boxl = new BoxLayout(splitPanel,BoxLayout.Y_AXIS);
+					splitPanel.setLayout(boxl);
+					
+					for (int i=0; i <rtm.length; i++ ) {
+						JLabel l = new JLabel("Split Table:" + (i+1));
+						ReportTable newRT = new ReportTable(rtm[i]);
+						splitPanel.add(l);
+						splitPanel.add(newRT);
+					}
+					
+					JScrollPane splitP = new JScrollPane(splitPanel);
+					splitPanel.setPreferredSize(new Dimension(800,600*count));
+					
+					JDialog jd1 = new JDialog ();
+					jd1.setTitle("Table Split Dialog");
+					jd1.setModal(true);
+					jd1.setLocation(250,100);
+					jd1.setPreferredSize(new Dimension(950,900));
+					jd1.getContentPane().add(splitP);
+					jd1.pack();
+					jd1.setVisible(true);
+					
+				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(null, "Not Valid Input");
+					return;
+				} finally {
+					_rt.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				}
+				 return;
+			}
+			if (command.equals("randomtable")) {
+				String randomC = JOptionPane.showInputDialog("How may random Rows??", new Integer(100));
+				try {
+					int count = Integer.parseInt(randomC);
+					ReportTableModel rtm = RTMUtil.sampleRTM(_rt.getRTMModel(),count);
+					ReportTable newRT = new ReportTable(rtm);
+					JDialog jd1 = new JDialog ();
+					jd1.setTitle("Table Sample Dialog");
+					jd1.setModal(true);
+					jd1.setLocation(250,250);
+					jd1.getContentPane().add(newRT);
+					jd1.pack();
+					jd1.setVisible(true);
+				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(null, "Not Valid Input");
+					return;
+				} finally {
+					_rt.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				}
+				
+				 return;
 			}
 			if (command.equals("transrow")) {
 				_rt.transposeTable();
@@ -1402,7 +1686,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 					return;
 				DiscreetInputGUI dig = new DiscreetInputGUI();
 				dig.createDialog();
-				Vector<String> token = DiscreetRange.tokenizeText(
+				Vector<String> token = StringCaseFormatUtil.tokenizeText(
 						dig.getRawText(), dig.getDelimiter());
 				if (token == null || token.size() == 0) {
 					ConsoleFrame.addText("\n No Token Processed");
@@ -1462,6 +1746,30 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				new GroupingPanel(_rt,index);
 				return;
 			}
+			if (command.equals("attreplace")) {
+				int index = selectedColIndex(_rt,"Select Column to Replace Null Value:");
+				if (index < 0)
+					return;
+				
+				JList<String> colL = new JList<String>(_rt.getRTMModel().getAllColNameStr());
+				int option = JOptionPane.showConfirmDialog(null,colL,"Choose Attribue Columns",JOptionPane.OK_CANCEL_OPTION);
+				if (option == JOptionPane.CANCEL_OPTION )
+					return;
+				
+				_rt.table.clearSelection(); // clear selection for new selection
+				_rt.table.setColumnSelectionInterval(index, index);
+				
+				String[] otherC = new String[colL.getSelectedValuesList().size()];
+				otherC = colL.getSelectedValuesList().toArray(otherC);
+				Hashtable<String, Vector<Integer>> hashT = RTMUtil.getLuceneQueryForNull(_rt.getRTMModel(), index, otherC);
+				Vector<Integer> matchedI = RTMUtil.replaceNullbyAttr(_rt.getRTMModel(), index, hashT);
+				
+				// now highlight the selected value
+				for (int i=0; i <matchedI.size(); i++)
+				_rt.table.addRowSelectionInterval(matchedI.get(i), matchedI.get(i));
+				
+				return;
+			}
 			if (command.equals("nullreplace")) {
 				new FileAnalyticsListener(_rt, 19);
 				revalidate();
@@ -1478,12 +1786,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				int rowc = _rt.getModel().getRowCount();
 				
 				for (int i=0; i < rowc; i++) {
-					Object o = _rt.getValueAt(i, index);
+					Object o = _rt.getModel().getValueAt(i, index);
 					if (o == null || "".equals(o.toString())) {
 						try {
-							_rt.setTableValueAt(avg,i, index);
+							_rt.getModel().setValueAt(avg,i, index);
 						} catch(Exception e1) {	
-							_rt.setTableValueAt(avg.toString(),i, index);
+							_rt.getModel().setValueAt(avg.toString(),i, index);
 						}
 					}
 				}
@@ -1553,13 +1861,13 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				int rowc = _rt.getModel().getRowCount();
 				
 				for (int i=0; i < rowc; i++) {
-					Object o = _rt.getValueAt(i, index);
+					Object o = _rt.getModel().getValueAt(i, index);
 					Double randval = RandomColGen.randomDouble(minMax[1], minMax[0]);
 					if (o == null || "".equals(o.toString())) {
 						try {
-							_rt.setTableValueAt(randval,i, index);
+							_rt.getModel().setValueAt(randval,i, index);
 						} catch(Exception e1) {	
-							_rt.setTableValueAt(randval.toString(),i, index);
+							_rt.getModel().setValueAt(randval.toString(),i, index);
 						}
 					}
 				}
@@ -1574,12 +1882,12 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				
 				int rowc = _rt.getModel().getRowCount();
 				for (int i=0; i < rowc; i++) {
-					Object o = _rt.getValueAt(i, index);
+					Object o = _rt.getModel().getValueAt(i, index);
 					if (o == null || "".equals(o.toString())) {
 						Object prev = null; int pindex=i-1;
 						
 						while (pindex >=0 && ( prev == null || "".equals(prev.toString()))) { // see if previous values are null
-							prev = _rt.getValueAt(pindex, index);
+							prev = _rt.getModel().getValueAt(pindex, index);
 							pindex--;
 						}
 						
@@ -1587,15 +1895,15 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 						if (prev == null || "".equals(prev.toString())) {
 							 pindex=i+1;
 							 while (pindex < rowc && prev == null || "".equals(prev.toString())) { // see if previous values are null
-									prev = _rt.getValueAt(pindex, index);
+									prev = _rt.getModel().getValueAt(pindex, index);
 									pindex++;
 								}
 						}
 						
 						try {
-							_rt.setTableValueAt(prev,i, index);
+							_rt.getModel().setValueAt(prev,i, index);
 						} catch(Exception e1) {	
-							_rt.setTableValueAt(prev.toString(),i, index);
+							_rt.getModel().setValueAt(prev.toString(),i, index);
 						}
 					}
 				}
@@ -1662,7 +1970,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		int row_c = _rt.table.getRowCount();
 		Object[] colObj = new Object[row_c];
 		for (int i = 0; i < row_c; i++)
-			colObj[i] = _rt.getValueAt(i, colIndex);
+			colObj[i] = _rt.getModel().getValueAt(i, colIndex);
 		return colObj;
 	}
 
@@ -1677,7 +1985,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		Object[] colObj = new Object[r_c];
 		int[] rowS = _rt.table.getSelectedRows();
 		for (int i = 0; i < rowS.length; i++)
-			colObj[i] = _rt.getValueAt(rowS[i], c_s);
+			colObj[i] = _rt.getModel().getValueAt(rowS[i], c_s);
 		return colObj;
 	}
 
@@ -1753,7 +2061,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		SpringLayout layout = new SpringLayout();
 		jp.setLayout(layout);
 
-		ImageIcon imageicon = new ImageIcon("./Filter.gif", "Query");
+		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
 		int imageLS = imageicon.getImageLoadStatus();
 
 		for (int i = 0; i < colC; i++) {

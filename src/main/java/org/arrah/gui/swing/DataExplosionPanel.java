@@ -35,6 +35,7 @@ import javax.swing.SpringLayout;
 
 import org.arrah.framework.datagen.RandomColGen;
 import org.arrah.framework.util.DiscreetRange;
+import org.arrah.framework.util.StringCaseFormatUtil;
 
 
 public class DataExplosionPanel implements ActionListener {
@@ -144,7 +145,7 @@ public class DataExplosionPanel implements ActionListener {
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			Vector<String> value = DiscreetRange.tokenizeText(exp,delim);
+			Vector<String> value = StringCaseFormatUtil.tokenizeText(exp,delim);
 			if (value == null || value.size() == 0 ){
 				JOptionPane.showMessageDialog(null,
 						"Invalid Input Data", "Invalid  Input Error",

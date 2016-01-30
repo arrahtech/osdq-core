@@ -41,7 +41,8 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
-import org.arrah.framework.datagen.AggrCumRTM;
+import org.arrah.framework.datagen.TimeUtil;
+import org.arrah.framework.util.StringCaseFormatUtil;
 
 
 public class UtilFunctionPanel implements ActionListener, ItemListener {
@@ -49,8 +50,8 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 	private int _rowC = 0;
 	private int _colIndex = 0;
 	private JDialog d_f;
-	private JFormattedTextField jrn_low, jrn_high,split_low,split_high;
-	private JRadioButton rd1, rd2, rd3, rd4, leftrd, rightrd, rd5, rd6, rd7, rd8;
+	private JFormattedTextField jrn_low, jrn_high,split_low,split_high,splitStringw;
+	private JRadioButton rd1, rd2, rd3, rd4, leftrd, rightrd, rd5, rd6, rd7, rd8, rd9, leftrdw,rightrdw;
 	private JComboBox<String> colSel;
 	private Border line_b;
 	private int beginIndex, endIndex;
@@ -80,13 +81,16 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		rd8 = new JRadioButton("Replace String");
 		rd2 = new JRadioButton("Epoch MilliSecond to Date ");
 		rd3 = new JRadioButton("Date to Epoch MilliSecond");
+		rd9 = new JRadioButton("Split String by Length");
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(rd1);bg.add(rd2);bg.add(rd3);bg.add(rd4);bg.add(rd5);bg.add(rd6);bg.add(rd7);bg.add(rd8);
-		rd1.setSelected(true);
+		bg.add(rd9);
+		rd9.setSelected(true);
 
 		jp.add(createSelectionPanel(),BorderLayout.NORTH);
 		
-		JPanel header = new JPanel(new GridLayout(8,1));
+		JPanel header = new JPanel(new GridLayout(9,1));
+		header.add(createSplitPanelWidth());
 		header.add(createSplitPanel());
 		header.add(createSubSplitPanel());
 		header.add(createReversePanel());
@@ -118,14 +122,15 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		d_f.setModal(true);
 		d_f.setTitle("Utility Function Dialog");
 		d_f.setLocation(300, 250);
-		d_f.setPreferredSize(new Dimension(700,450));
+		d_f.setPreferredSize(new Dimension(720,450));
 		d_f.getContentPane().add(jp);
 		d_f.pack();
 		d_f.setVisible(true);
 
 	}
 
-	/* User can choose multiple options to group */
+	/* User can choose multiple options / utilities to split and t
+	 * transform the string  */
 	private JPanel createSplitPanel() {
 		
 		JPanel splitjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
@@ -297,6 +302,27 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		selectionjp.add(colType);
 		return selectionjp;
 	}
+	
+	private JPanel createSplitPanelWidth() {
+		
+		JPanel splitjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
+		splitjp.add(rd9);
+		
+		splitjp.setBorder(line_b);
+		splitStringw = new JFormattedTextField();
+		splitStringw.setValue(new Integer(5));
+		splitStringw.setColumns(10);
+		splitjp.add(splitStringw);
+		
+		leftrdw = new JRadioButton("Left Value");
+		rightrdw = new JRadioButton("Right Value");
+		leftrdw.setSelected(true);
+		
+		ButtonGroup bg = new ButtonGroup();
+		bg.add(leftrdw); bg.add(rightrdw);
+		splitjp.add(leftrdw) ;splitjp.add(rightrdw) ;
+		return splitjp;
+	}
 
 	public void actionPerformed(ActionEvent e) {
 		String action = e.getActionCommand();
@@ -306,6 +332,10 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		}
 		if (action.equals("ok")) {
 			// d_f.dispose(); do not dispose now
+			if (_rt.isSorting() || _rt.table.isEditing()) {
+				JOptionPane.showMessageDialog(null, "Table is in Sorting or Editing State");
+				return;
+			}
 			beginIndex = ((Long) jrn_low.getValue()).intValue();
 			endIndex = ((Long) jrn_high.getValue()).intValue();
 			if (beginIndex <= 0 || beginIndex > _rowC)
@@ -326,12 +356,12 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 String revString="";
 					 for (int curIndex = colObject.toString().length()-1; curIndex >= 0; curIndex-- ) 
 						 revString += colObject.toString().charAt(curIndex);
-					 _rt.setTableValueAt(revString, i, _colIndex);
+					 _rt.getModel().setValueAt(revString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;
@@ -346,17 +376,38 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				}
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
-					 String[] colVal = AggrCumRTM.splitColString (colObject.toString(),regexStr) ;
+					 String[] colVal = StringCaseFormatUtil.splitColString (colObject.toString(),regexStr) ;
 					 if (leftrd.isSelected() == true)
-						 _rt.setTableValueAt(colVal[0], i, _colIndex);
-					 else if (colVal.length > 1 && colVal[1] != null )
-						 _rt.setTableValueAt(colVal[1], i, _colIndex);
+						 _rt.getModel().setValueAt(colVal[0], i, _colIndex);
+					 else if ( colVal[1] != null && colVal.length > 1)
+						 _rt.getModel().setValueAt(colVal[1], i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;
 			} // end of Split
+			if (rd9.isSelected() == true) {
+				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
+				Integer strlen = (Integer)splitStringw.getValue();
+				if (strlen == null || strlen < 0) {
+					JOptionPane.showMessageDialog(null, "Split Width value is not valid ", 
+						"Split Type Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
+					 if (colObject == null) continue;
+					 String[] colVal = StringCaseFormatUtil.splitColStringWidth (colObject.toString(),strlen) ;
+					 if (leftrdw.isSelected() == true)
+						 _rt.getModel().setValueAt(colVal[0], i, _colIndex);
+					 else if ( colVal[1] != null && colVal.length > 1 )
+						 _rt.getModel().setValueAt(colVal[1], i, _colIndex);
+				}
+				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
+				return;
+			} // end of Width Split
 			if (rd5.isSelected() == true) {
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
 				String regexStr = splitString_sub.getText();
@@ -370,18 +421,18 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				int endI = ((Long) split_high.getValue()).intValue();
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
-					 String[] colVal = AggrCumRTM.splitColSubString (colObject.toString(),regexStr) ;
+					 String[] colVal = StringCaseFormatUtil.splitColSubString (colObject.toString(),regexStr) ;
 					 if ( (startI > endI )  || ( startI > colVal.length) ) // need more than string
-						 _rt.setTableValueAt(colVal.toString(), i, _colIndex);
+						 _rt.getModel().setValueAt(colVal.toString(), i, _colIndex);
 					 else {
 						 if (endI > colVal.length )
 							 endI = colVal.length; // -1 for index
 						 String newString="";
 						 for (int newI=startI; newI < endI; newI++)
 							 newString += colVal[newI]+splitString.getText();
-						_rt.setTableValueAt(newString, i, _colIndex);
+						 _rt.getModel().setValueAt(newString, i, _colIndex);
 					 }
 						 
 				}
@@ -393,7 +444,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 						 if (colObject instanceof Long) {
 								d_f.dispose(); // now dispose
@@ -405,8 +456,8 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 								continue;
 							}
 						}
-					Date colVal =  AggrCumRTM.secondIntoDate((Long)colObject);
-					_rt.setTableValueAt(colVal, i, _colIndex);
+					Date colVal =  TimeUtil.secondIntoDate((Long)colObject);
+					_rt.getModel().setValueAt(colVal, i, _colIndex);
 					
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
@@ -420,7 +471,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				boolean dateValidated = false;
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 if (dateValidated == false) {
 						 if (colObject instanceof java.util.Date) {
@@ -434,8 +485,8 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 						}
 					 }
 					 
-					long colVal = AggrCumRTM.dateIntoSecond((Date)colObject); 
-					_rt.setTableValueAt(colVal, i, _colIndex);
+					long colVal = TimeUtil.dateIntoSecond((Date)colObject); 
+					_rt.getModel().setValueAt(colVal, i, _colIndex);
 					
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
@@ -455,12 +506,12 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				 if (skipString == null) skipString = ""; // To avoid null pointer exception
 				 
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 String oldString = colObject.toString();
 					 String newString="";
-					 newString = AggrCumRTM.removeMetaCharString(oldString,skipString,start,inBet,end);
-					 _rt.setTableValueAt(newString, i, _colIndex);
+					 newString = StringCaseFormatUtil.removeMetaCharString(oldString,skipString,start,inBet,end);
+					 _rt.getModel().setValueAt(newString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;
@@ -482,12 +533,12 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				 }
 				 
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 String oldString = colObject.toString();
 					 String newString="";
-					 newString = AggrCumRTM.removeCharacterString(oldString,skipString,start,inBet,end);
-					 _rt.setTableValueAt(newString, i, _colIndex);
+					 newString = StringCaseFormatUtil.removeCharacterString(oldString,skipString,start,inBet,end);
+					 _rt.getModel().setValueAt(newString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;
@@ -506,12 +557,12 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 				 }
 				 
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 String oldString = colObject.toString();
 					 String newString="";
-					 newString = AggrCumRTM.replaceString(oldString, serString, repString,start);
-					 _rt.setTableValueAt(newString, i, _colIndex);
+					 newString = StringCaseFormatUtil.replaceString(oldString, serString, repString,start);
+					 _rt.getModel().setValueAt(newString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;

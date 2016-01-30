@@ -123,7 +123,7 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
         delimetersBox = new JComboBox<String>();
         AsciiParser ascobj = new AsciiParser();
         try {
-			ascobj.init("./ascii.txt");
+			ascobj.init("./resource/ascii.txt");
 			for(int i=0; i<AsciiParser.delims.size(); i++){
 				delimetersBox.addItem(AsciiParser.delims.get(i).toString());
 			}

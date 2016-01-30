@@ -19,6 +19,7 @@ package org.arrah.framework.ndtable;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
@@ -193,6 +194,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 
 	}
 
+	/* Add row from one object sequence*/
 	public void addFillRow(Object[] rowset) {
 		Vector<Object> newRow = new Vector<Object>();
 		for (int j = 0; j < rowset.length; j++)
@@ -202,9 +204,22 @@ public class ReportTableModel implements Serializable, Cloneable {
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
+	public void addFillRow(Object[] rowset, Object[] rowset1) {
+		Vector<Object> newRow = new Vector<Object>();
+		for (int j = 0; j < rowset.length; j++)
+			newRow.addElement(rowset[j]);
+		for (int j = 0; j < rowset1.length; j++) // append in the last
+			newRow.addElement(rowset1[j]);
+
+		row_v.addElement(newRow);
+		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
+
+	}
 
 	public void addFillRow(Vector<?> rowset) {
 		row_v.addElement(rowset);
+		
+		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
 
@@ -214,6 +229,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 			newRow.addElement((String) "");
 
 		row_v.addElement(newRow);
+		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
 
@@ -222,6 +238,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int j = 0; j < col_size; j++)
 			newRow.addElement(null);
 		row_v.addElement(newRow);
+		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
 
@@ -345,6 +362,23 @@ public class ReportTableModel implements Serializable, Cloneable {
 		}
 		return obj;
 	}
+	
+	// To get only indexed or selected cols
+	public Object[] getSelectedColRow(int rowIndex,int[] colI) {
+		int colC = colI.length;
+		Object[] obj = new Object[colC];
+		if (rowIndex < 0 || rowIndex >= tabModel.getRowCount())
+			return obj;
+		for (int i = 0; i < colC; i++) {
+			try {
+				obj[i] = tabModel.getValueAt(rowIndex, colI[i]);
+			} catch (Exception e) { // in case array out of bound
+				obj[i] = null;
+				continue;
+			}
+		}
+		return obj;
+	}
 
 	public void cleanallRow() {
 		int i = tabModel.getRowCount();
@@ -418,6 +452,29 @@ public class ReportTableModel implements Serializable, Cloneable {
 		 colN[i] = this.getModel().getValueAt(i, index);
 		return colN;
 	}
+	
+	public  Object[] getColDataRandom(int index,int count) {
+		Object[] colN = new Object[count];
+		Vector<Object> vc = new Vector<Object>();
+		int row_c = this.getModel().getRowCount();
+		int rowcount=0;
+		while(rowcount < count) {
+			int newc = new Random().nextInt(row_c);
+		 	Object o = this.getModel().getValueAt(newc, index);
+		 	// if (vc.indexOf(o) != -1) continue; // it may create loop
+		 	vc.add(o);
+		 	rowcount++;
+		}
+		return vc.toArray(colN);
+	}
+	
+	public  Object[] getColDataRandom(String colName,int count) {
+		int index = getColumnIndex( colName);
+		if ( index  < 0 ) return null;
+		return getColDataRandom( index,count);
+
+	}
+	
 	
 	public  Vector<Object> getColDataV(int index) {
 		int row_c = this.getModel().getRowCount();

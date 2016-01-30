@@ -253,7 +253,7 @@ public class XmlReader {
 	
 	
 
-	private static final String DTD_ERRORS = "DTD_Errors.txt";
+	private static final String DTD_ERRORS = "./resource/DTD_Errors.txt";
 
 	private String[] headings = null;
     private String[] nodeList = null;

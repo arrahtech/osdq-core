@@ -187,7 +187,9 @@ public class TabularReport  {
 				merticI.add(new keyVal(i, _reportFieldV.get(i)));
 		}
 		
+		@SuppressWarnings("unchecked")
 		List<String> [] coldimN = new List[coldimI.size()];
+		
 		for (int i=0; i< coldimI.size(); i++) 
 			coldimN[i] = new ArrayList<String>();
 		

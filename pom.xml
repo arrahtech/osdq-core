@@ -245,6 +245,14 @@
 		</dependency>
 
 	</dependencies>
+	<developers>
+    		<developer>
+      			<name>Arrah Technology</name>
+      			<email>dev@arrahtec.org</email>
+      			<organization>Arrah Technology</organization>
+      			<organizationUrl>http://www.arrahtec.org</organizationUrl>
+    		</developer>
+  	</developers>
 	<issueManagement>
 		<system>github</system>
 		<url>https://github.com/arunwizz/profiler/issues</url>
@@ -257,4 +265,10 @@
 		<name>Arrah Technology</name>
 		<url>>http://www.arrahtec.org</url>
 	</organization>
+	<licenses>
+  		<license>
+    		<name>GNU LESSER GENERAL PUBLIC LICENSE</name>
+    		<url>http://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+        </license>
+</licenses>
 </project>

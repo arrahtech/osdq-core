@@ -260,6 +260,11 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		}
 		if (action.equals("ok")) {
 			// d_f.dispose(); do not dispose now
+			if (_rt.isSorting() || _rt.table.isEditing()) {
+				JOptionPane.showMessageDialog(null, "Please Cancel Editing or Sorting. Then proceed");
+				return;
+			}
+			
 			beginIndex = ((Long) jrn_low.getValue()).intValue();
 			endIndex = ((Long) jrn_high.getValue()).intValue();
 			if (beginIndex <= 0 || beginIndex > _rowC)
@@ -281,7 +286,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 				validateNumberInput();
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 if (numValidated == false) {
 						 if (colObject instanceof Number) {
@@ -311,7 +316,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 								
 							} else continue; // not valid value	
 					}
-					_rt.setTableValueAt(colVal, i, _colIndex);
+					_rt.getModel().setValueAt(colVal, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 			} // end of Number
@@ -323,7 +328,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 				validateDateInput();
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 if (dateValidated == false) {
 						 if (colObject instanceof java.util.Date) {
@@ -348,7 +353,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 								
 							} else continue; // not valid value	
 					}
-					_rt.setTableValueAt(colVal, i, _colIndex);
+					_rt.getModel().setValueAt(colVal, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 			} // end of Seasonality
@@ -376,7 +381,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 				boolean dateValidated = false;
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 if (dateValidated == false) {
 						 if (colObject instanceof java.util.Date) {
@@ -391,7 +396,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 					 }
 					 
 					String colVal = TimeUtil.timeValue((Date)colObject, grpType, format); 
-					_rt.setTableValueAt(colVal, i, _colIndex);
+					_rt.getModel().setValueAt(colVal, i, _colIndex);
 					
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition

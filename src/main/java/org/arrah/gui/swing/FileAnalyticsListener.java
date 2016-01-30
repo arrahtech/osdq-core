@@ -1062,8 +1062,7 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 	
 	private String mapKey(Object key) {
 		if (isDate == false
-				|| comboT.getSelectedItem().toString()
-						.compareToIgnoreCase("None") == 0
+				|| comboT.getSelectedItem().toString().compareToIgnoreCase("None") == 0
 				|| key.toString().compareToIgnoreCase(OTHER) == 0)
 			return key.toString();
 		else {
@@ -1236,17 +1235,21 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 		
 		LocationAnalysis.LocationComparator lcomp = new LocationAnalysis.LocationComparator();
 		ReportTable newRT = new ReportTable(_rt.getAllColName(), false, true);
+		newRT.getRTMModel().addColumn("distanceFromCenter");
 		
 		int rowC= _rt.getModel().getRowCount();
 		
 		for (int i=0; i < rowC; i++) {
 			try {
 				Object[] row = _rt.getRow(i);
+				Object[] distance = new Object[1];
+				double distance_d = lcomp.compare(clat, clong, cRad, row , latIndex, longIndex);
+				distance[0] = Math.abs(distance_d);
 			
-				if (iswithin == true && lcomp.compare(clat, clong, cRad, row , latIndex, longIndex) <= 0) // within radius
-						newRT.addFillRow(row);
-				else if (iswithin == false  && lcomp.compare(clat, clong, cRad, row , latIndex, longIndex) > 0) // outside radius
-					newRT.addFillRow(row);
+				if (iswithin == true && distance_d <= 0) // within radius
+						newRT.addFillRow(row,distance);
+				else if (iswithin == false  && distance_d > 0) // outside radius
+					newRT.addFillRow(row,distance);
 			} catch (Exception e) {
 				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
 			}
@@ -1395,7 +1398,7 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 	
 	private void showDataEnrichmentTable(String dateCol, String  numCol,  int dimIndex) {
 		
-		XYSeries xyseries = new XYSeries("Data Enrichment");
+		XYSeries xyseries = new XYSeries("Regression Data Enrichment");
 		XYSeriesCollection xyseriescollection = new XYSeriesCollection(xyseries);
 		double[] ad = new double[5];
 		try {

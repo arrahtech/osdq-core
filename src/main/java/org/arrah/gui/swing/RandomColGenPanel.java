@@ -33,6 +33,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -219,6 +220,10 @@ public class RandomColGenPanel implements ActionListener {
 			return;
 		}
 		if (action.equals("ok")) {
+			if (_rt.isSorting() || _rt.table.isEditing()) {
+				JOptionPane.showMessageDialog(null, "Table is in Sorting or Editing State");
+				return;
+			}
 			d_f.dispose();
 			beginIndex = ((Long) jrn_low.getValue()).intValue();
 			endIndex = ((Long) jrn_high.getValue()).intValue();
@@ -242,7 +247,7 @@ public class RandomColGenPanel implements ActionListener {
 					if (sortCheck.isSelected() == true)
 						vc.sort(null);
 					for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-						_rt.setTableValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
+						_rt.getModel().setValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
 					}
 				} else {
 					Vector<Double> vc = new RandomColGen(numGenerate)
@@ -252,7 +257,7 @@ public class RandomColGenPanel implements ActionListener {
 					if (sortCheck.isSelected() == true)
 						vc.sort(null);
 					for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-						_rt.setTableValueAt(vc.get(i- (beginIndex -1)).toString(), i, _colIndex);
+						_rt.getModel().setValueAt(vc.get(i- (beginIndex -1)).toString(), i, _colIndex);
 					}
 				}
 			if (rd2.isSelected() == true) {
@@ -264,7 +269,7 @@ public class RandomColGenPanel implements ActionListener {
 				if (sortCheck.isSelected() == true)
 					vc.sort(null);
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					_rt.setTableValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
+					_rt.getModel().setValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
 				}
 			}
 			if (rd3.isSelected() == true || rd4.isSelected() == true) {
@@ -283,7 +288,7 @@ public class RandomColGenPanel implements ActionListener {
 				if (sortCheck.isSelected() == true)
 					vc.sort(null);
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					_rt.setTableValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
+					_rt.getModel().setValueAt(vc.get(i - (beginIndex -1)).toString(), i, _colIndex);
 				}
 			}
 			return;

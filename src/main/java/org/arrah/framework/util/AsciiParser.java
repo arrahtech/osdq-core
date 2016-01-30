@@ -55,6 +55,7 @@ public class AsciiParser {
 				}
 				ctr++;
 			}
+			br.close();
 		}
 		
 		/* This function will read file and 

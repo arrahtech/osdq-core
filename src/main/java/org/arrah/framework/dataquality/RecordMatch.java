@@ -1,13 +1,14 @@
 package org.arrah.framework.dataquality;
 
 /***************************************************
- *     Copyright to Amish Choudhary    2014        *
+ *     Copyright to Amish Choudhary    2015        *
  *                                                 *
  * Any part of code or file can be changed,        *
  * redistributed, modified with the copyright      *
  * information intact                              *
  *                                                 *
  * Author$ : Amish Choudhary                       *
+ * Author$ : Vivek Singh                           *
  *                                                 *
  **************************************************/
 
@@ -22,16 +23,15 @@ package org.arrah.framework.dataquality;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class RecordMatch
+public class RecordMatch 
 {
 	/*
 	 * Returns the results
 	 */
-	public class Result
+	public class Result implements Comparable<Object>
 	{
 		
 		int index1;
@@ -84,6 +84,17 @@ public class RecordMatch
 			{
 				return "Index [" + index1 + "] no match";
 			}
+		}
+
+		
+		@Override
+		public int compareTo(Object o) {
+			Result newo = (Result)o;
+			if ( this.index1 > newo.index1) 
+				 return 1;
+			 if ( this.index1 < newo.index1) 
+				 return  -1;
+			return 0;
 		}
 		
 	}
@@ -263,40 +274,72 @@ public class RecordMatch
 		{
 			
 			fuzzyCompare fz = new fuzzyCompare(meta1,false);
-			int lIndex = 0; int rIndex = 0;
-			List<Result> matched = new ArrayList<Result>();
-			boolean atleastOneRecordmatch;
+			List<Result> matched = Collections.synchronizedList(new ArrayList<Result>());
 			boolean firstRecordMatch = meta1.isFirstRecordMatch();
-			for(List<String> l : left)
-			{
-				atleastOneRecordmatch = false;
-				// System.out.println("Record left" + l);
-				for(List<String> r : right)
-				{
-					 // System.out.println("Record right " + r);
-					if(fz.compare(l, r) == 0)
-					{
-						atleastOneRecordmatch = true;
-						matched.add(new Result(true,lIndex,rIndex,l,r,fz.simMatchVal));
-						// One row matched
-						//If we are looking for only first right to match 
-						// first left go to next left row
-						if(firstRecordMatch)
-							break;
-					}
-					rIndex++;
-				}
-				if(!atleastOneRecordmatch)
-				{
-					// not showing no matched value
-					//nomatch.add(new Result(false,lIndex,-1));
-				}
-				lIndex++;
-				rIndex = 0;	
-			}
 			
-			//System.out.println(matched);
-			//System.out.println(nomatch);
+			// Make it multi threaded for faster output
+			final int THREADCOUNT = 10;
+			Thread[] tid = new Thread[THREADCOUNT];
+			final int rowthread = left.size() / THREADCOUNT;
+			
+			for (int i = 0; i < THREADCOUNT; i++) {
+				final int tindex = i;
+				tid[tindex] = new Thread(new Runnable() {
+					public void run() {
+						List<List<String>> leftsub;
+						int lIndex = tindex * rowthread; int rIndex = 0; // leftIndex from where thread starts , right Index zero
+						boolean atleastOneRecordmatch;
+						
+						if (tindex < THREADCOUNT - 1) 
+							 leftsub = left.subList(tindex * rowthread, tindex * rowthread + rowthread);
+						else
+							 leftsub = left.subList(tindex * rowthread, left.size());
+						
+								try {
+									for(List<String> l : leftsub)
+									{
+										atleastOneRecordmatch = false;
+										// System.out.println("Record left" + l);
+										for(List<String> r : right)
+										{
+											 // System.out.println("Record right " + r);
+											if(fz.compare(l, r) == 0)
+											{
+												atleastOneRecordmatch = true;
+												matched.add(new Result(true,lIndex,rIndex,l,r,fz.simMatchVal));
+												// System.out.println("Left Index:"+lIndex+" Right Index:"+rIndex);
+												// One row matched
+												//If we are looking for only first right to match 
+												// first left go to next left row
+												if(firstRecordMatch)
+													break;
+											}
+											rIndex++;
+										}
+										if(!atleastOneRecordmatch)
+										{
+											// not showing no matched value
+											//nomatch.add(new Result(false,lIndex,-1));
+										}
+										lIndex++;
+										rIndex = 0;	
+									}
+								} catch (Exception e) {
+									System.out.println(" Thread Comparison Exeception:"+e.getMessage());
+								}
+					}
+				});
+				tid[i].start();
+			}
+			for (int i = 0; i < THREADCOUNT; i++) {
+				try {
+					tid[i].join();
+				} catch (Exception e) {
+					System.out.println(" Thread Exeception:"+e.getMessage());
+				}
+			}
+
+			matched.sort(null); // natural sort on left index T
 			return matched;
 		}
 	};
@@ -380,7 +423,7 @@ public class RecordMatch
 						{
 							
 							Object ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
-						//	System.out.printf("[Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
+							// System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
 							
 							simMatchVal = (Float)ob; // update the matched or unmatched value
 							if(simMatchVal < matchprob)
@@ -492,7 +535,7 @@ public class RecordMatch
 			excp.printStackTrace();
 		} */
 	}
-	
+
 
 }
 

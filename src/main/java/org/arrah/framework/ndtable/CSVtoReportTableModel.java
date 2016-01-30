@@ -101,9 +101,11 @@ public class CSVtoReportTableModel {
 				}
 				line = line.trim();
 				
-				if (line.equals(""))
+				if (line.equals("")) {
+					System.out.println("Empty Record at:" +totalLine);
 					continue;
-
+				}
+					
 				lineCount++;
 				if (skipRowSelection == true) {
 					if (lineCount <= skipRowNumber)
@@ -152,6 +154,7 @@ public class CSVtoReportTableModel {
 						}
 						columnA.add(colI, f_column[0]);
 						colI++;
+						
 						if (f_column.length == 1)
 							break;
 						if (f_column[1] == null || f_column[1].equals(""))
@@ -355,14 +358,19 @@ public class CSVtoReportTableModel {
 		try {
 			CSVReader reader = new CSVReader(new FileReader(f));
 			String [] nextLine = null;
+			int colL=0;
 			boolean headerset = false;
 			while ((nextLine = reader.readNext()) != null) {
 				if (headerset == false) { // 1st line is header
 					showT = new ReportTableModel(nextLine, true, true);
 					headerset = true;
+					colL = nextLine.length;
 					continue;
 				}
-				showT.addFillRow(nextLine);
+				if (colL == nextLine.length)
+					showT.addFillRow(nextLine);
+				else
+					System.out.println("No of Column not matching:" + nextLine);
 			}
 			reader.close();
 		} catch (IOException ie) {

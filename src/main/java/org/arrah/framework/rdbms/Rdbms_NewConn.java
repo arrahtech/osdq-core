@@ -108,12 +108,16 @@ public class Rdbms_NewConn {
 	}
 
 	public  void closeConn() throws SQLException {
-		if (_d_type.compareToIgnoreCase("oracle_native") == 0)
+		if (_d_type.compareToIgnoreCase("oracle_native") == 0) {
 			if (conn != null && conn.isClosed() == false) {
 				conn.close(); // Oracle native has issues with static values in
 								// thread
 				conn = null;
 			}
+		} else {
+			if (conn != null && conn.isClosed() == false) 
+				conn.close();
+		}
 	}
 
 	public  void exitConn() throws SQLException {

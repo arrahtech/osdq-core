@@ -48,8 +48,8 @@ import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.Rdbms_conn;
-import org.arrah.framework.util.DiscreetRange;
 import org.arrah.framework.util.KeyValueParser;
+import org.arrah.framework.util.StringCaseFormatUtil;
 
 
 public class QualityListener implements ActionListener {
@@ -134,7 +134,7 @@ public class QualityListener implements ActionListener {
 				new CompareTablePanel();
 				return;
 			}
-			if (source.equals("Fuzzy-Delete")) {
+			if (source.equals("DeDup-Delete")) {
 				menuSel = 8;
 				createDialog();
 				return;
@@ -220,7 +220,7 @@ public class QualityListener implements ActionListener {
 				createDialog();
 				return;
 			}
-			if (source.equals("Fuzzy-Replace")) {
+			if (source.equals("DeDup-Replace")) {
 				menuSel = 23;
 				createDialog();
 				return;
@@ -388,7 +388,7 @@ public class QualityListener implements ActionListener {
 					dig.createDialog();
 					String dtext = dig.getRawText();
 					String ddelim = dig.getDelimiter();
-					Vector<String> token = DiscreetRange.tokenizeText(dtext,ddelim);
+					Vector<String> token = StringCaseFormatUtil.tokenizeText(dtext,ddelim);
 					if (token == null || token.size()  == 0 ) {
 						ConsoleFrame.addText("\n No Token Processed");
 						return;

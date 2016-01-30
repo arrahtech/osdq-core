@@ -447,7 +447,7 @@ public class FirPanel extends JPanel {
 
 			JPanel jpanel2 = new JPanel();
 			LinkMouseListener linkmouselistener = new LinkMouseListener();
-			ImageIcon imageicon = new ImageIcon("./Filter.gif", "Query");
+			ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
 			int imageLS = imageicon.getImageLoadStatus();
 
 			JLabel jlabel;
@@ -516,8 +516,9 @@ public class FirPanel extends JPanel {
 			s = "Community License (LGPL) used. ";
 		}
 		*/
-		String s = " Community License (LGPL) or Apache . ";
-		s = "<html> <B> <I> <U> &copy; 2006-2015  Arrah Technology </U> <BR>"
+		
+		String s = " Community License (LGPL). ";
+		s = "<html> <B> <I> <U> &copy; 2006-2016  Arrah Technology </U> <BR>"
 				+ s + "</I></B> </html>";
 		
 		jpanel.setLayout(new GridLayout(12, 1));

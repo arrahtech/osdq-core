@@ -20,11 +20,10 @@ package org.arrah.framework.datagen;
  */
 
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
+import org.arrah.framework.profile.StatisticalAnalysis;
 
 public class AggrCumRTM {
 
@@ -153,6 +152,28 @@ public class AggrCumRTM {
 		return prevVal;
 	}
 	
+	/* Get Pearson correlation  */
+	public static Double getPCorrelation(Vector<Double> one, Vector<Double> two) {
+		
+		StatisticalAnalysis sa_1 = new StatisticalAnalysis(one.toArray());
+		Double mean_1 = sa_1.getMean(); // Mean value of Data
+		
+		StatisticalAnalysis sa_2 = new StatisticalAnalysis(two.toArray());
+		Double mean_2 = sa_2.getMean(); // Mean value of Data
+		
+		double num=0.0D,denum_a=0.0D, denum_b=0.0D;
+		
+		int rowC = one.size();
+		
+		for (int i=0; i < rowC; i++) {
+			double a = one.get(i) - mean_1;
+			double b = two.get(i) - mean_2;
+			num = num + a*b;
+			denum_a = denum_a + a*a;
+			denum_b = denum_b + b*b;
+		}
+		return num/(Math.sqrt(denum_a) * Math.sqrt(denum_b));
+	}
 	
 	/* This is utility function to get ReportTableModel data into vector */
 	public static Vector<Double> getColumnNumberData(ReportTableModel rpt, int columnIndex) {
@@ -173,165 +194,6 @@ public class AggrCumRTM {
 		return columnDataVector;	
 	}
 	
-	/* This is a utility function to split String in two parts only */
-	public static String[] splitColString(String value, String regex) {
-		String[] output= new String[2];
-		output[0] = ""; output[1] = "";
-		
-		if (value == null || "".equals(value) )
-				return output;
-	
-		return output = value.split(regex,2);
-	}
-	
-	/* This is a utility function to split String in subString*/
-	public static String[] splitColSubString(String value, String regex) {
-		String[] output = null;
-		
-		if (value == null || "".equals(value) )
-				return output;
-	
-		return output = value.split(regex);
-	}
-	
-	/* This is a utility function to Remove MetaChar from String */
-	public static String removeMetaCharString(String oldString, String skipString) {
-		String newString="";
-		for (int curIndex = 0; curIndex < oldString.length(); curIndex++ ) {
-			 char c = oldString.charAt(curIndex);
-			 Character ch = new Character(c);
-			 if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
-			 newString += ch.toString();
-		 }
-		return newString;
-	}
-	// From Start, end and inBetween
-	public static String removeMetaCharString(String oldString, String skipString, boolean start,  boolean inBtw, boolean end) {
-		String newString="";
-		int len =  oldString.length();
-		
-		{ // Start Block
-			char c = oldString.charAt(0); // First char
-		 	Character ch = new Character(c);
-		 	
-			if (start == true) {
-			 	if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
-					 newString += ch.toString();
-			} else 
-				newString += ch.toString();
-		}
-		
-		if (len > 1) { // inBet Block
-			for (int curIndex = 1; curIndex < len - 1 ; curIndex++ ) {
-				 char c = oldString.charAt(curIndex);
-				 Character ch = new Character(c);
-				 if (inBtw == true ) {	
-					 if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
-					 newString += ch.toString();
-				 } else
-					 newString += ch.toString();	 
-			}
-		}
-		
-		if ((len > 1)) { // end block
-			char c = oldString.charAt(len -1); // last char
-		 	Character ch = new Character(c);
-			if ( end == true) {
-			 	if (Character.isLetterOrDigit(c) || skipString.contains(ch.toString()))
-					 newString += ch.toString();
-			} else
-				 newString += ch.toString();
-		}
-		
-		return newString;
-	}
-	
-	/* This is a utility function to Remove Character from String */
-	public static String removeCharacterString(String oldString, String skipString) {
-		String newString="";
-		for (int curIndex = 0; curIndex < oldString.length(); curIndex++ ) {
-			 char c = oldString.charAt(curIndex);
-			 Character ch = new Character(c);
-			 if ( skipString.contains(ch.toString()) == false)
-			 newString += ch.toString();
-		 }
-		return newString;
-	}
-	// From Start, end and inBetween
-	public static String removeCharacterString(String oldString, String skipString, boolean start,  boolean inBtw, boolean end) {
-		String newString="";
-		int len =  oldString.length();
-		
-		for (int curIndex = 0 ; curIndex < len ; curIndex++ ) {
-			 char c = oldString.charAt(curIndex);
-			 Character ch = new Character(c);
-			 
-			 if (curIndex == 0) { //Start block
-				 if (start == true ) {
-					 if ( skipString.contains(ch.toString()) == false)
-						 newString += ch.toString();
-				 } else 
-					 newString += ch.toString();
-				 
-				 continue; // will work for single byte character
-			 }
-			 
-			 if (curIndex < len -1 ) {
-				 if (inBtw == true) { // middle block
-					 if ( skipString.contains(ch.toString()) == false)
-						 newString += ch.toString();
-				 } else 
-					 newString += ch.toString();
-			 } else {
-				 if (end == true) { // end block
-					 if ( skipString.contains(ch.toString()) == false)
-						 newString += ch.toString();
-				 } else 
-					 newString += ch.toString();
-			 }
-			 
-		 } // For Loop
-		
-		return newString;
-	}
-	
-	/* This is a utility function which will take date and give output as millisecond */
-	public static long dateIntoSecond(java.util.Date date) {
-		if (date == null ) return 0;
-		Calendar cal = Calendar.getInstance();
-		cal.setLenient(true);
-		cal.setTime(date);
-		return cal.getTimeInMillis();
-	}
-	
-	/* This is a utility function which will take millisecond  and give output as current date */
-	// Default TimeZone
-	public static java.util.Date secondIntoDate(long millisec) {
-		Calendar cal = Calendar.getInstance();
-		cal.setLenient(true);
-		cal.setTimeInMillis(millisec);
-		return cal.getTime();
-	}
-	
-	/* This is a utility function which will take millisecond  and give output as current date */
-	public static java.util.Date secondIntoDate(long millisec, TimeZone tz) {
-		Calendar cal = Calendar.getInstance(tz);
-		cal.setLenient(true);
-		cal.setTimeInMillis(millisec);
-		return cal.getTime();
-	}
-	
-	/* This is a utility function to Remove Character from String */
-	public static String replaceString(String fullString, String matchString, String replaceString, boolean fromStart) {
-		String newString ="";
-		if ( fromStart == true) 
-			newString = fullString.replaceFirst(matchString, replaceString);
-		 else 
-			newString = fullString.replaceAll(matchString, replaceString);
-		
-		return newString;
-	}
-	
-	
+
 	
 } // End of AggrCumRTM
