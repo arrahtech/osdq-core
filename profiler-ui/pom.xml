@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.arrahtec</groupId>
     <artifactId>profiler</artifactId>
-    <version>6.1.5-SNAPSHOT</version>
+    <version>6.1.6-SNAPSHOT</version>
   </parent>
   <groupId>org.arrahtec</groupId>
   <artifactId>profiler-ui</artifactId>
