@@ -20,19 +20,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+import org.arrah.framework.analytics.MetadataMatcher;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.profile.DBMetaInfo;
 import org.arrah.framework.profile.TableMetaInfo;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
 import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.rdbms.TableRelationInfo;
+import org.arrah.framework.util.KeyValueParser;
 
 
 public class DBMetaInfoPanel implements ActionListener {
@@ -93,7 +97,59 @@ public class DBMetaInfoPanel implements ActionListener {
 				ConsoleFrame.addText("\nData Dictionary File Saved at:"+pdfFile.getAbsolutePath());
 				return;
 			}
-			if (s.equals("General Info")) {
+			if (s.equals("Personally Identifiable Info")) {
+				// Create the Column name into hashtable
+				Hashtable<String,String>__h = KeyValueParser.parseFile("./resource/piiSearch.txt");
+				Vector<String> tableName = Rdbms_conn.getTable();
+				
+				if (tableName == null || __h == null) {
+					JOptionPane.showMessageDialog(null, "Resource file not Found or \n"
+							+ " No Table found");
+					return;
+				}
+				// Create MetaData Matcher
+				MetadataMatcher mm = new MetadataMatcher(__h);
+				String[] colName = new String[] {"Table","Column","PIIGroup","Confidence",
+						"field1","field2","field3","field4","field5","field6","field7","field8","field9","field10"};
+				rtm__ = new ReportTableModel(colName,true,true);
+				
+				for (int i=0; i<tableName.size(); i++) {
+					String table = tableName.get(i);
+					
+					Vector<?>[] colInfo = Rdbms_conn.populateColumn(table, null);
+					if (colInfo == null ) {
+						JOptionPane.showMessageDialog(null,  "No Column found for Table:"+table);
+						continue;
+					}
+					String[] colNames = new String[colInfo[0].size()];
+					colNames = colInfo[0].toArray(colNames);
+					Hashtable<String, Vector<String>> ht = mm.matchedKeys(colNames,0.8f);
+					
+					for (Enumeration<String> e = ht.keys(); e.hasMoreElements();) {
+						String key = e.nextElement();
+						Vector<String>piiv= ht.get(key);
+						int size = piiv.size();
+						// System.out.println("--- Table:" + table+" Column:" + key + " Value:" + ht.get(key) + "Size:" + size);
+						for (int j = 0; j < size; j++) {
+							Object[] row = new Object[10+4];
+							Object[] colD = new Object[10];
+							colD = mm.getPIIColData(table, key, piiv.get(j), colD);
+							String confidence = mm.getConfidenceLevel();
+							row[0]= table;row[1]= key;row[2]= piiv.get(j);row[3]= confidence;
+							for (int z=0; z < colD.length; z++) 
+								row[z+4] = colD[z];
+							rtm__.addFillRow(row);
+						}
+						
+					} // end of column 
+				} // End of table loop
+				
+				rt__ = new ReportTable(rtm__);
+				isFrame = true;
+				summary_info = true;
+			}
+			
+			else if (s.equals("General Info")) {
 				f_title = "General Information";
 				rtm__ = new DBMetaInfo().getGeneralInfo();
 				rt__ = new ReportTable(rtm__);

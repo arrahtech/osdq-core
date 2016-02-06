@@ -141,6 +141,10 @@ public class ToolListener implements ActionListener {
 					 new RegexPanel();
 					return;
 				}
+				if (source.equals("Create Standardization Value")) {
+					 new StandardizePanel();
+					return;
+				}
 				if (source.equals("Search DB")) {
 					final String input = JOptionPane
 							.showInputDialog("Enter String to Search Database","Search String");
@@ -164,6 +168,12 @@ public class ToolListener implements ActionListener {
 					if (input == null || "".equals(input))
 						return;
 					TableSearchDialog tsd = new TableSearchDialog(input,true);
+					tsd.createMapDialog();
+					return;
+				}
+				if (source.equals("Multi Facet Search")) {
+					
+					TableSearchDialog tsd = new TableSearchDialog(true);
 					tsd.createMapDialog();
 					return;
 				}

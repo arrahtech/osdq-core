@@ -19,7 +19,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.xml.FilePaths;
 import org.arrah.framework.xml.XmlReader;
-import org.arrah.gui.swing.JobScheduler;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -35,18 +34,16 @@ public class ScheduleJob implements Job{
 	 XmlReader xmlReader;
 	 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 	String dbConnName;
+	private String jcbRule;
 	
 	// Get the input Query from BusinessRules.xml to schedule the job	
 	File xmlFile=new File(FilePaths.getFilePathRules());
-	public ScheduleJob(){
-		
-	}
 	
- 
 	
-	public ScheduleJob(String text){
+	public ScheduleJob(String text, Hashtable<String, String> hashValues, String jcbRule){
 		query=text;
-		
+		this.hashTable = hashValues;
+		this.jcbRule = jcbRule;
 	}
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
@@ -79,10 +76,10 @@ public class ScheduleJob implements Job{
         
 		try {
 			
-			Rdbms_NewConn dbConn=new Rdbms_NewConn(JobScheduler.hashValues);
+			Rdbms_NewConn dbConn=new Rdbms_NewConn(hashTable);
 			dbConn.openConn();
 			XmlReader xmlReader=new XmlReader();
-			columnNames=xmlReader.getColumnNames(xmlFile, JobScheduler.jcbRules.getSelectedItem().toString());
+			columnNames=xmlReader.getColumnNames(xmlFile, jcbRule);
 			
 			 
 			 if(columnNames != null && "".equals(columnNames) == false)

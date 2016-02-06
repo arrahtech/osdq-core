@@ -215,7 +215,7 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 					c.setBackground(Color.YELLOW);
 				
 				if (prerender.indexOf(col) != -1)
-					return c; // Allready renderded
+					return c; // Already renderded
 				
 				// Default Date Format
 		        if( value instanceof java.util.Date) {
@@ -531,6 +531,11 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 		table.addNotify();
 
 	}
+	public void addFillRow(Object[] rowset,Object[] rowset1) {
+		rpt_tabModel.addFillRow(rowset,rowset1);
+		table.addNotify();
+
+	}
 
 	public void addFillRow(Vector<?> rowset) {
 		rpt_tabModel.addFillRow(rowset);
@@ -646,14 +651,29 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 			regex_table.addActionListener(new TableMenuListener(table));
 			menu3.add(regex_table);
 			popup.add(menu3);
-			
-			
 			popup.addSeparator();
+			
 			JMenuItem menu4 = new JMenuItem("Analyse Selected");
 			menu4.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L,
 					InputEvent.CTRL_MASK));
 			menu4.addActionListener(new TableMenuListener(table));
 			popup.add(menu4);
+			popup.addSeparator();
+			
+			JMenuItem menu5 = new JMenuItem("Number Rendering");
+			menu5.addActionListener(new TableMenuListener(table));
+			popup.add(menu5);
+			popup.addSeparator();
+			
+			JMenuItem menu6 = new JMenuItem("WhiteSpace Rendering");
+			menu6.addActionListener(new TableMenuListener(table));
+			popup.add(menu6);
+			popup.addSeparator();
+			
+			JMenuItem menu7 = new JMenuItem("BlankSpace Rendering");
+			menu7.addActionListener(new TableMenuListener(table));
+			popup.add(menu7);
+			
 			popup.show(menu, 0, menu.getHeight());
 
 		} else if (but_c.compareTo("Print") == 0) {
@@ -1214,6 +1234,14 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 	public Object[] getAllColName() {
 		int colC = tabModel.getColumnCount();
 		Object[] colN = new Object[colC];
+		for (int i = 0; i < colC; i++)
+		 colN[i] = tabModel.getColumnName(i);	
+		return colN;
+	}
+	
+	public String[] getAllColNameAsString() {
+		int colC = tabModel.getColumnCount();
+		String[] colN = new String[colC];
 		for (int i = 0; i < colC; i++)
 		 colN[i] = tabModel.getColumnName(i);	
 		return colN;

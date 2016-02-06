@@ -129,7 +129,7 @@ public class RightView implements ItemListener,ActionListener {
 		Border line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 		ep.setBorder(line_b);
 
-		ImageIcon imageicon = new ImageIcon("./Filter.gif", "Query");
+		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
 		int imageLS = imageicon.getImageLoadStatus();
 		JLabel jlabel;
 		if (imageLS == MediaTracker.ABORTED || imageLS == MediaTracker.ERRORED)

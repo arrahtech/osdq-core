@@ -96,7 +96,16 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 							f.toString());
 					dft.showGUI();
 				}
-			} else {
+			} else if (f.getName().toLowerCase().endsWith(".csv")){
+				CSVtoReportTableModel csvReader = new CSVtoReportTableModel(f);
+				showT = new ReportTable(csvReader.loadOpenCSVIntoTable());
+				if (_showGUI == true) {
+					DisplayFileTable dft = new DisplayFileTable(showT,
+							f.toString());
+					dft.showGUI();
+				}
+			}
+			else {
 				takeOptions(f);
 				createIDialog();
 			}
@@ -106,7 +115,9 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		}
 
 	};
-	
+	// This constructor is for openCSV
+	// ideally it should be merged with above 
+	// if someone has csv format it is expected it will use openCSV format
 	public ImportFilePanel(boolean isGUI, int fileType) {
 		_showGUI = isGUI;
 
@@ -414,8 +425,14 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 			return;
 		}
 		if (command.equals("ok")) {
-			loadFileIntoTable(1);
-			d_f.dispose();
+			try{
+				d_f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+				loadFileIntoTable(1);
+				
+			} finally {
+				d_f.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				d_f.dispose();
+			}
 			if (_showGUI == true) {
 				DisplayFileTable dft = new DisplayFileTable(showT, f.toString());
 				dft.showGUI();

@@ -23,11 +23,16 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 import java.util.Vector;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.Query;
+import org.arrah.framework.dataquality.SimilarityCheckLucene;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
-import org.arrah.gui.swing.ConsoleFrame;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Millisecond;
@@ -193,6 +198,20 @@ public class RTMUtil {
 
 		return lookup;
 	}
+	// This function will return Hashtable with with key and rowno id
+		public static Hashtable<Object,Object> lookupIndex( ReportTableModel rightT, int indexR) {
+			
+			Hashtable<Object,Object> lookup = new Hashtable<Object,Object>();
+
+			int rrow_c = rightT.getModel().getRowCount();
+			for (int i = 0; i < rrow_c; i++) {
+				Object key = rightT.getModel().getValueAt(i, indexR);
+				if (key != null )
+					lookup.put(key, i);
+			}
+
+			return lookup;
+		}
 
 	/*
 	 * It will look for the conditions in table based on column Index. Int will
@@ -531,7 +550,7 @@ public class RTMUtil {
 					default:
 				}
 			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			  throw new Exception("\n Exception for row :" +i, e);
 			}
 		}
 		return dataset;
@@ -552,13 +571,13 @@ public class RTMUtil {
 				dataset.add(new Double(xcell.toString()) ,new Double(ycell.toString()));
 				
 			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			  throw new Exception("\n Exception for row :" +i, e);
 			}
 		}
 		return dataset;
 	}
 	
-	// Data Enrichment
+	// Regression Data Enrichment
 	public static ReportTableModel addEnrichment(ReportTableModel rtm, String xcol1, String ycol2, double[] val, int rtype) throws Exception {
 		int rowC= rtm.getModel().getRowCount();		
 		int index = rtm.getColumnIndex(xcol1);
@@ -583,10 +602,162 @@ public class RTMUtil {
 				rtm.setValueAt(ycell, i,comIndex);
 				
 			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			  throw new Exception("\n Exception for row :" +i, e);
 			}
 		}
 		return rtm;
+	}
+	
+	// Null or Empty replacement based on other attribute values
+	// It will form lucene query and their indexes of null values
+	public static Hashtable<String, Vector<Integer>> getLuceneQueryForNull(ReportTableModel rtm, int nullCindex, String[] otherCols) {
+		int otherClen = otherCols.length;
+		int[] otherCindex = new int[otherClen];
+		Hashtable<String, Vector<Integer>> queryHash = new Hashtable<String, Vector<Integer>>();
+		
+		for (int i=0; i < otherClen; i++) 
+			otherCindex[i] = rtm.getColumnIndex(otherCols[i]);
+		
+		int rowC = rtm.getModel().getRowCount();
+		
+		for (int i=0; i < rowC; i++) {
+			Object o = rtm.getModel().getValueAt(i, nullCindex);
+			
+			if (o == null || o.toString().equals("")) { // Got Null or Empty -- put it inside
+				Object[] otherO = new Object[otherClen];
+				String luceneQ="";
+				
+				for (int j=0; j <otherClen; j++) {
+					otherO[j] = rtm.getModel().getValueAt(i, otherCindex[j]);
+					if (otherO[j] == null ) continue; // null not used for making lucene query
+					if ("".equals(luceneQ)  == false)
+						luceneQ = luceneQ + " AND ";
+					
+					luceneQ = luceneQ + otherCols[j] + ":\""+otherO[j].toString()+"\"";
+				} // Lucene Query Formed
+				
+				// Now put into queryHashTable
+				Vector <Integer> val = queryHash.get(luceneQ);
+				if ( val == null) 
+					val = new Vector<Integer>();
+				
+					if ( val.add(i) == true ) // add new matched Index
+						queryHash.put(luceneQ,val );
+					
+			} else
+				continue;
+		}
+		
+		// Now return the hashtable
+		return queryHash;
+		
+	}
+	// This util function will replace null and return the indexes it changed
+	public static Vector<Integer> replaceNullbyAttr(ReportTableModel rtm, int nullI, Hashtable<String, Vector<Integer>> hashT) {
+		Vector<Integer> changedI = new Vector<Integer>();
+		// Create Lucene index
+		SimilarityCheckLucene simcheck = new SimilarityCheckLucene(rtm);
+		simcheck.makeIndex();
+		
+		if (simcheck.openIndex() == false) // Open Index
+			return changedI;
+		
+		for (Enumeration<String> e = hashT.keys(); e.hasMoreElements();) {
+			String lucquey = e.nextElement();	
+			
+			if (lucquey == null || "".equals(lucquey))
+				continue;
+			
+			
+			Vector<Integer> listI = hashT.get(lucquey);
+			Query qry = simcheck.parseQuery(lucquey);
+			
+			Hits hit = simcheck.searchIndex(qry);
+			
+			if (hit == null || hit.length() <= listI.size())  // It will atleast match all null indexes
+				continue; 
+			
+			// Iterate over the Documents in the Hits object
+
+			for (int j = 0; j < hit.length(); j++) {
+				try {
+					Document doc = hit.doc(j);
+					String rowid = doc.get("at__rowid__");
+					int hitI = Integer.parseInt(rowid);
+					
+					if (listI.contains(hitI) == true) // matching null Index
+						continue;
+					
+					// Got row now fill it
+					Object[] row = rtm.getRow(hitI);
+					Object val = row[nullI];
+					if (val == null) continue;
+					else { // ready for replace
+						for ( int i=0; i < listI.size(); i++ ) {
+							rtm.getModel().setValueAt(val, listI.get(i), nullI); // set Value
+							changedI.add(listI.get(i));
+						}
+						
+						break;
+					}
+
+				} catch (Exception e1) {
+					System.out.println("Document match exception:"+e1.getLocalizedMessage());
+				}
+			}
+
+		}
+		
+		simcheck.closeSeachIndex(); // Close index and return value
+		return changedI;
+		
+	}
+	
+	// This util function will create a random sample RTM 
+	public static ReportTableModel sampleRTM(ReportTableModel rtm, int count) {
+		if (count < 0  || rtm == null || rtm.getModel().getRowCount() <= 0 
+				|| rtm.getModel().getColumnCount() <= 0) return rtm; // no sampling needed
+		
+		String[] colName = rtm.getAllColNameStr();
+		ReportTableModel newRTM = new ReportTableModel(colName,true,true);
+		
+		for (int i=0; i < count; i++ ) {
+			int randInt = new Random().nextInt(count);
+			Object[] row = rtm.getRow(randInt);
+			newRTM.addFillRow(row);
+		}
+		
+		return newRTM;
+	}
+	
+	// This util function will split the rtm in multiple rtm 
+	public static ReportTableModel[] splitRTM(ReportTableModel rtm, int count) {
+		ReportTableModel[] newrtm = null;
+		int rowc = rtm.getModel().getRowCount();
+		
+		if (count < 0  || rtm == null || rowc <= 0 || rtm.getModel().getColumnCount() <= 0)  {
+			 newrtm= new ReportTableModel[1];
+			 newrtm[0] = rtm; // no split required
+			 return newrtm;
+		}
+		
+		int grp1 = Math.floorDiv(rowc,count);
+		newrtm= new ReportTableModel[count];
+		
+		String[] colName = rtm.getAllColNameStr();
+		
+		for (int i=0; i < count; i++ ) {
+			ReportTableModel newRTM = new ReportTableModel(colName,true,true);
+			newrtm[i] = newRTM;
+			for (int j=i*grp1; j < i*grp1 + grp1; j++) {
+				newrtm[i].addFillRow(rtm.getRow(j));
+			}
+		}
+		for (int j=count*grp1; j <rowc; j++) {
+			newrtm[count-1].addFillRow(rtm.getRow(j));
+		}
+		
+		return newrtm;
 	}
 	
 	

@@ -154,7 +154,7 @@ public class CompareTableInfoDialog implements ActionListener {
 
 		d_m = new JDialog();
 		d_m.setModal(true);
-		d_m.setTitle("Table Comparision Dialog");
+		d_m.setTitle("Table Comparison Dialog");
 		d_m.setLocation(250, 100);
 		d_m.getContentPane().add(jp_p);
 		d_m.pack();

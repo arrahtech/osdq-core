@@ -1,28 +1,24 @@
 package org.arrah.framework.scheduler;
 
 
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Hashtable;
 
-
-import org.arrah.gui.swing.JobScheduler;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
-
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
-
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.SimpleTrigger;
-
 import org.quartz.impl.StdSchedulerFactory;
-
-import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
-import static org.quartz.JobBuilder.*;
-import static org.quartz.TriggerBuilder.*;
 
 public class QuartzScheduler{
 
@@ -35,12 +31,31 @@ CronTrigger trigger1;
 SimpleTrigger trigger;
 Date date=new Date();
 
-	public QuartzScheduler(String text, int hour, int minute, int second) throws SchedulerException, InterruptedException{
+private final String jcbSfrequency;
+private final String jcbFrequency;
+private final Date jdcEdate;
+private final int startdayofMonth;
+private final Hashtable<String, String> hashtable;
+private final String jcbRule;
+
+	public QuartzScheduler(String text, int hour, int minute, int second, 
+	    String jcbSfrequency, 
+	    String jcbFrequency, 
+	    Date jdcEdate, 
+	    int startdayofMonth, 
+	    Hashtable<String, String> hashtable, 
+	    String jcbRule) throws SchedulerException, InterruptedException{
 		
 		hours=hour;
 		minutes=minute;
 		seconds=second;
 		quer=text;
+		this.jcbSfrequency = jcbSfrequency;
+		this.jcbFrequency = jcbFrequency;
+		this.jdcEdate = jdcEdate;
+		this.startdayofMonth = startdayofMonth;
+		this.hashtable = hashtable;
+		this.jcbRule = jcbRule;
 		try {
 			task();
 		} catch (ParseException e) {
@@ -67,7 +82,7 @@ Date date=new Date();
 			// Tell quartz to schedule the job using our trigger
 			
 			
-			new ScheduleJob(quer);
+			new ScheduleJob(quer, hashtable, jcbRule);
 			String key="ExecuteJob1", value="Report Generation1";
 			JobKey jobKey = new JobKey(key, value);
 							
@@ -76,7 +91,7 @@ Date date=new Date();
 			    .build();
 			
 			// This logic applies if the user want to schedule on a one-time basis
-			if(JobScheduler.jcbFrequency.getSelectedItem().toString().equals("One Time")){
+			if(jcbFrequency.equals("One Time")){
 			      
 				  java.util.Calendar cal = new java.util.GregorianCalendar();
 				  cal.set(Calendar.HOUR_OF_DAY, hours);
@@ -97,7 +112,7 @@ Date date=new Date();
 			}
 						
 			// This logic applies if the user want to schedule on a daily basis
-			if(JobScheduler.jcbFrequency.getSelectedItem().toString().equals("Daily")){
+			if(jcbFrequency.equals("Daily")){
 			 trigger1 = newTrigger()
 				    .withIdentity("trigger1", "Report Generation3")
 				    .withSchedule(dailyAtHourAndMinute(hours, minutes)) 
@@ -105,7 +120,7 @@ Date date=new Date();
 			}
 			
 			// This logic applies if the user want to schedule on a weekly basis
-			else if(JobScheduler.jcbFrequency.getSelectedItem().toString().equals("Weekly")){
+			else if(jcbFrequency.equals("Weekly")){
 				dayoftheWeek();
 				trigger1 = newTrigger()
 					    .withIdentity("trigger1", "Report Generation3")
@@ -114,11 +129,11 @@ Date date=new Date();
 			}
 			
 			// This logic applies if the user want to schedule on a Monthly basis
-			else if(JobScheduler.jcbFrequency.getSelectedItem().toString().equals("Monthly")){
+			else if(jcbFrequency.equals("Monthly")){
 				trigger1 = newTrigger()
 					    .withIdentity("trigger1", "Report Generation3")
-					    .withSchedule(CronScheduleBuilder.monthlyOnDayAndHourAndMinute(JobScheduler.startdayofMonth, hours, minutes))
-					    .endAt(JobScheduler.jdcEdate.getDate())
+					    .withSchedule(CronScheduleBuilder.monthlyOnDayAndHourAndMinute(startdayofMonth, hours, minutes))
+					    .endAt(jdcEdate)
 					    .build();
 				}
 			         if (trigger1 !=null)
@@ -133,19 +148,19 @@ Date date=new Date();
 
 	
 private int dayoftheWeek(){
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("SUNDAY") )
+	if(jcbSfrequency.equals("SUNDAY") )
 		dayofWeek = 1;
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("MONDAY") )
+	if(jcbSfrequency.equals("MONDAY") )
 		dayofWeek = 2;
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("TUESDAY") )
+	if(jcbSfrequency.equals("TUESDAY") )
 		dayofWeek = 3;
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("WEDNESDAY") )
+	if(jcbSfrequency.equals("WEDNESDAY") )
 		dayofWeek = 4;
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("THURSDAY") )
+	if(jcbSfrequency.equals("THURSDAY") )
 		dayofWeek = 5;
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("FRIDAY") )
+	if(jcbSfrequency.equals("FRIDAY") )
 		dayofWeek = 6;
-	if(JobScheduler.jcbSfrequency.getSelectedItem().toString().equals("SATURDAY") )
+	if(jcbSfrequency.equals("SATURDAY") )
 		dayofWeek = 7;
 	return dayofWeek;
 }

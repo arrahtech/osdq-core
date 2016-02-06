@@ -365,7 +365,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		JMenuItem jmenuitem1 = new JMenuItem("Show Console");
 		jmenuitem1.addActionListener(new FileActionListener());
 		jmenu.add(jmenuitem1);
-		JMenu jmenu1 = new JMenu("DB Info");
+		JMenu jmenu1 = new JMenu("Metadata Info");
 		jmenu1.setMnemonic('D');
 		jmenubar.add(jmenu1);
 		JMenuItem jmenuitem2 = new JMenuItem("General Info");
@@ -458,6 +458,10 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenuitem43.addActionListener(new DBMetaInfoPanel(jmenubar));
 		jmenu10.add(jmenuitem43);
 		jmenu1.add(jmenu10);
+		jmenu1.addSeparator();
+		JMenuItem piimenu = new JMenuItem("Personally Identifiable Info");
+		piimenu.addActionListener(new DBMetaInfoPanel(jmenubar));
+		jmenu1.add(piimenu);
 		
 
 		JMenu jmenu6 = new JMenu("Tools");
@@ -535,20 +539,35 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenuitem34.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, 10));
 		jmenu6.add(jmenuitem34);
 		jmenu6.addSeparator();
+		
+		JMenuItem standardV = new JMenuItem("Create Standardization Value");
+		standardV.addActionListener(new ToolListener(jmenubar));
+		jmenu6.add(standardV);
+		jmenu6.addSeparator();
+		
+		JMenu likeSearch = new JMenu("DB LIKE Search");
+		
 		JMenuItem jmenuitem23 = new JMenuItem("Search DB");
 		jmenuitem23.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, 10));
 		jmenuitem23.addActionListener(new ToolListener(jmenubar));
-		jmenu6.add(jmenuitem23);
-		jmenu6.addSeparator();
+		likeSearch.add(jmenuitem23);
+		likeSearch.addSeparator();
 		JMenuItem jmenuitem35 = new JMenuItem("Search Table");
 		jmenuitem35.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, 10));
 		jmenuitem35.addActionListener(new ToolListener(jmenubar));
-		jmenu6.add(jmenuitem35);
+		likeSearch.add(jmenuitem35);
+		jmenu6.add(likeSearch);
 		jmenu6.addSeparator();
+		
 		JMenuItem jmenuitem36 = new JMenuItem("Fuzzy Search");
 		jmenuitem36.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, 10));
 		jmenuitem36.addActionListener(new ToolListener(jmenubar));
 		jmenu6.add(jmenuitem36);
+		jmenu6.addSeparator();
+		
+		JMenuItem mfsearch = new JMenuItem("Multi Facet Search");
+		mfsearch.addActionListener(new ToolListener(jmenubar));
+		jmenu6.add(mfsearch);
 		
 		// Add record related item here
 		jmenu6.addSeparator();
@@ -586,14 +605,19 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenuitem24.addActionListener(new QualityListener());
 		jmenu7.add(jmenuitem24);
 		jmenu7.addSeparator();
-		JMenuItem jmenuitem31 = new JMenuItem("Fuzzy-Delete");
+		
+		JMenu fdedup = new JMenu("Fuzzy DeDup");
+		JMenuItem jmenuitem31 = new JMenuItem("DeDup-Delete");
 		jmenuitem31.addActionListener(new QualityListener());
-		jmenu7.add(jmenuitem31);
-		jmenu7.addSeparator();
-		JMenuItem freplace = new JMenuItem("Fuzzy-Replace");
+		fdedup.add(jmenuitem31);
+		fdedup.addSeparator();
+		
+		JMenuItem freplace = new JMenuItem("DeDup-Replace");
 		freplace.addActionListener(new QualityListener());
-		jmenu7.add(freplace);
+		fdedup.add(freplace);
+		jmenu7.add(fdedup);
 		jmenu7.addSeparator();
+		
 		JMenuItem jmenuitem25 = new JMenuItem("Standardisation");
 		jmenuitem25.addActionListener(new QualityListener());
 		jmenu7.add(jmenuitem25);

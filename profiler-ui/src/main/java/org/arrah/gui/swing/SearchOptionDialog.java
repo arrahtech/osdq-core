@@ -114,7 +114,7 @@ public class SearchOptionDialog implements ActionListener {
 		ButtonGroup bg = new ButtonGroup();
 		bg.add(find); bg.add(fullmatch);
 		
-		JLabel fileSelection = new JLabel("Choose a file which has Key Value format like \n \"searchReplace.txt\" ");
+		JLabel fileSelection = new JLabel("Choose a file which has Key Value format like \n \"resource/searchReplace.txt\" ");
 		JButton fileSB = new JButton("Select File");
 		fileSB.setActionCommand("selectfile");
 		fileSB.addActionListener(this);

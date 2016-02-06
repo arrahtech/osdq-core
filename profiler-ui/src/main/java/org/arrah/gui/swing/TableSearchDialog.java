@@ -52,7 +52,7 @@ public class TableSearchDialog implements ActionListener {
 	private JScrollPane jscrollpane1;
 	private JPanel jp_p;
 	private String _searchStr="";
-	private boolean isFuzzy = false;
+	private boolean isFuzzy = false, isMultifacet=false, isDispose=true;;
 	
 	public TableSearchDialog (String searchStr) {
 		_searchStr = searchStr;
@@ -60,6 +60,9 @@ public class TableSearchDialog implements ActionListener {
 	public TableSearchDialog (String searchStr, boolean fuzzy) {
 		_searchStr = searchStr;
 		isFuzzy = fuzzy;
+	}
+	public TableSearchDialog (boolean multifacet) {
+		isMultifacet = multifacet;
 	}
 
 	public JDialog createMapDialog() {
@@ -105,7 +108,10 @@ public class TableSearchDialog implements ActionListener {
 
 		d_m = new JDialog();
 		d_m.setModal(true);
-		d_m.setTitle("\""+ _searchStr + "\""+" String Table Search ");
+		if (_searchStr == null || "".equals(_searchStr))
+			d_m.setTitle("Multi Facet Table Search ");
+		else
+			d_m.setTitle("\""+ _searchStr + "\""+" String Table Search ");
 		d_m.setLocation(250, 100);
 		d_m.getContentPane().add(jp_p);
 		d_m.pack();
@@ -189,17 +195,25 @@ public class TableSearchDialog implements ActionListener {
 			
 			try {
 			d_m.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-			if (isFuzzy == false) {
-				new SearchDBPanel(_searchStr, tableList.get(index), colName_v);
-			}
-			else {
-				 new SimilarityCheckPanel(_searchStr, tableList.get(index), colName_v);
-			}
+				if (isMultifacet == true) {
+					MultifacetPanel mf = new MultifacetPanel(tableList.get(index), colName_v);
+					if (mf.isCancel() == true)  {
+						isDispose = false;
+						return;
+					}
+				}
+				else if (isFuzzy == false) {
+					new SearchDBPanel(_searchStr, tableList.get(index), colName_v);
+				}
+				else {
+					 new SimilarityCheckPanel(_searchStr, tableList.get(index), colName_v);
+				}
 			} catch (Exception ee) {
 				System.out.println("Exeption in Table Search:"+ee.getMessage());
 			} finally {
 				d_m.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
-				d_m.dispose();
+				if (isDispose == true)
+					d_m.dispose();
 			}
 			d_m.dispose();
 		}

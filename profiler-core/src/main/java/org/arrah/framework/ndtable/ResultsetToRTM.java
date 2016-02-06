@@ -369,13 +369,12 @@ public class ResultsetToRTM {
 					boolean match) throws SQLException  {
 		
 		ReportTableModel rtm = null;
-		Vector avector[] = Rdbms_conn.populateColumn(lTable,null);
+		Vector<?> avector[] = Rdbms_conn.populateColumn(lTable,null);
 		QueryBuilder qb = new QueryBuilder(
 				Rdbms_conn.getHValue("Database_DSN"), lTable,
 				Rdbms_conn.getDBType());
 		String s1 = qb.get_selCol_query(avector[0].toArray(),"");
 		
-	
 		Rdbms_conn.openConn();
 		ResultSet resultset = Rdbms_conn.runQuery(s1); 
 		Vector<BigInteger> hashNumber = ResultsetToRTM.getMD5Value(resultset);
@@ -388,13 +387,13 @@ public class ResultsetToRTM {
 		qb = new QueryBuilder(
 				newConn.getHValue("Database_DSN"), rtable,
 				newConn.getDBType());
-		Vector avectorR[] = newConn.populateColumn(rtable,null);
+		Vector<?> avectorR[] = newConn.populateColumn(rtable,null);
 		s1 = qb.get_selCol_query(avectorR[0].toArray(),"");
 		
 		if ( newConn.openConn() == true ) {
-			resultset = newConn.runQuery(s1);
-			rtm = ResultsetToRTM.matchMD5Value(resultset,hashNumber,match);
-			resultset.close();
+			ResultSet resultset_new = newConn.runQuery(s1);
+			rtm = ResultsetToRTM.matchMD5Value(resultset_new,hashNumber,match);
+			resultset_new.close();
 			newConn.closeConn();
 			
 		}

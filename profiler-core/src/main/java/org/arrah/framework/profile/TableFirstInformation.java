@@ -27,20 +27,18 @@ import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.ndtable.ResultsetToRTM;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
-import org.arrah.gui.swing.ConsoleFrame;
 
 
 public class TableFirstInformation {
 	private Vector<Double> patV ;
 	
-	public double getTableCount(String tableName) {
+	public double getTableCount(String tableName) throws SQLException {
 		
 	double tabCount = 0;
 	String countS = "0";
 
 	QueryBuilder querybuilder = new QueryBuilder(Rdbms_conn.getHValue("Database_DSN"), tableName,
 			Rdbms_conn.getHValue("Database_Type"));
-	try {
 	Rdbms_conn.openConn();
 	String s2 = querybuilder.get_tableCount_query();
 	
@@ -51,13 +49,10 @@ public class TableFirstInformation {
 	tabCount = Double.parseDouble(countS);
 	Rdbms_conn.closeConn();
 	
-	} catch (SQLException e) {
-		ConsoleFrame.addText("\n Table Count Sql Error :"+ e.getMessage());
-	}
 		return tabCount;
 	} // end of table count
 	
-	public double getPatternCount(String tableName) {
+	public double getPatternCount(String tableName) throws Exception {
 		double patCount= 0;
 		patV = new Vector<Double> ();
 		
@@ -71,7 +66,6 @@ public class TableFirstInformation {
 		
 		ResultSet resultset1 = Rdbms_conn.runQuery(s2);
 		if (resultset1 == null ) {
-			ConsoleFrame.addText  ("resultset null for Pattern query");
 			return patCount;
 		}
 		while( resultset1.next()) {
@@ -83,7 +77,7 @@ public class TableFirstInformation {
 		Rdbms_conn.closeConn();
 		
 		} catch (Exception e) {
-			ConsoleFrame.addText("Table Pattern Sql Error :"+ e.getMessage());
+		  throw new Exception("Table Pattern Sql Error :", e);
 		}
 		return patCount;
 	}
@@ -97,7 +91,7 @@ public class TableFirstInformation {
 	/* Get profiler information in hashmap.
 	 * Calling function should parse keys and get information.
 	 */
-	public HashMap<String, Double> getTableProfile(String tableName) {
+	public HashMap<String, Double> getTableProfile(String tableName) throws Exception {
 		double dupcount=0;
 		HashMap<String, Double> hm = new HashMap<String, Double>();
 		double tabCount = getTableCount(tableName);
@@ -119,12 +113,11 @@ public class TableFirstInformation {
 	/* Get the fill information 
 	 * 
 	 */
-	public int[] getTableFill(String tableName) {
+	public int[] getTableFill(String tableName) throws SQLException {
 		int[] emptyCount = null;
 		
 		QueryBuilder querybuilder = new QueryBuilder(Rdbms_conn.getHValue("Database_DSN"), tableName,
 				Rdbms_conn.getHValue("Database_Type"));
-		try {
 			Rdbms_conn.openConn();
 			String s2 = querybuilder.get_tableAll_query();
 			ResultSet resultset1 = Rdbms_conn.runQuery(s2);
@@ -132,13 +125,6 @@ public class TableFirstInformation {
 			emptyCount = FillCheck.getEmptyCount(rtm);
 			Rdbms_conn.closeConn();
 			return emptyCount;
-			
-			} catch (SQLException e) {
-				ConsoleFrame.addText("\n Table Count Sql Error :"+ e.getMessage());
-			}
-		
-		return emptyCount;
-		
 	}
 	
 }

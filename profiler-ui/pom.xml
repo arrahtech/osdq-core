@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.arrahtec</groupId>
     <artifactId>profiler</artifactId>
-    <version>6.1.2-SNAPSHOT</version>
+    <version>6.1.5-SNAPSHOT</version>
   </parent>
   <groupId>org.arrahtec</groupId>
   <artifactId>profiler-ui</artifactId>
-  <version>6.1.2-SNAPSHOT</version>
+  <version>6.1.5-SNAPSHOT</version>
   <name>profiler-ui</name>
   <url>http://www.arrahtec.org</url>
   <properties>
@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.arrahtec</groupId>
       <artifactId>profiler-core</artifactId>
-      <version>6.1.2-SNAPSHOT</version>
+      <version>6.1.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>

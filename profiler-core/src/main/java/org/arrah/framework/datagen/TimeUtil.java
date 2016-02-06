@@ -19,6 +19,7 @@ package org.arrah.framework.datagen;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.Vector;
 
 import org.jfree.data.time.RegularTimePeriod;
@@ -57,9 +58,9 @@ public class TimeUtil {
 		case 3:
 			return Integer.toString(yr) + getMonthCode(month);
 		case 4:
-			return getMonthCode(month);
+			return getMonthCode(month); // will help in sorting
 		case 5:
-			return Integer.toString(day);
+			return Integer.toString(day); // natural sorting
 		default:
 			return date.toString();
 		}
@@ -411,6 +412,44 @@ public class TimeUtil {
 		
 		return fcdataset;
 		
+	}
+	
+	/* This is a utility function which will take date and give output as millisecond */
+	public static long dateIntoSecond(java.util.Date date) {
+		if (date == null ) return 0;
+		Calendar cal = Calendar.getInstance();
+		cal.setLenient(true);
+		cal.setTime(date);
+		return cal.getTimeInMillis();
+	}
+	
+	/* This is a utility function which will take two dates and give diff output as millisecond */
+	public static long diffIntoSecond(java.util.Date date, java.util.Date date1) {
+		if (date == null  || date1 == null) return 0;
+		Calendar cal = Calendar.getInstance();
+		cal.setLenient(true);
+		cal.setTime(date);
+		long datet = cal.getTimeInMillis();
+		cal.setTime(date1);
+		long date1t = cal.getTimeInMillis();
+		return datet - date1t;
+	}
+	
+	/* This is a utility function which will take millisecond  and give output as current date */
+	// Default TimeZone
+	public static java.util.Date secondIntoDate(long millisec) {
+		Calendar cal = Calendar.getInstance();
+		cal.setLenient(true);
+		cal.setTimeInMillis(millisec);
+		return cal.getTime();
+	}
+	
+	/* This is a utility function which will take millisecond  and give output as current date */
+	public static java.util.Date secondIntoDate(long millisec, TimeZone tz) {
+		Calendar cal = Calendar.getInstance(tz);
+		cal.setLenient(true);
+		cal.setTimeInMillis(millisec);
+		return cal.getTime();
 	}
 	
 } // End of TimeUtil

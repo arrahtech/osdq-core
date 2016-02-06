@@ -222,8 +222,8 @@ public class RandomColGen {
 				return 0xFFFF;
 		}
 	}
-	/* This function will populate more data based on input colObj */
 	
+	/* This function will populate more data based on input colObj */
 	public static Object[] burstData(Object[] colObj, int colC) {
 		if (colObj == null || colObj.length >= colC) return colObj;
 		Object[] newObj = new Object[colC];

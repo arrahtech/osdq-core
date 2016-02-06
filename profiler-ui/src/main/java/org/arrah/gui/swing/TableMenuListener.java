@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2014      *
+ *     Copyright to Arrah Technology 2015      *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with the copyright  *
@@ -12,11 +12,13 @@ package org.arrah.gui.swing;
  ***********************************************/
 
 /* This file is used for  creating listener for
- * ReportTable menu items. 
+ * ReportTable menu items like search, count,
+ * analyse selected or conditional formatting
  *
  */
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -39,7 +41,9 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -49,6 +53,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -60,9 +66,10 @@ import org.arrah.framework.util.KeyValueParser;
 public class TableMenuListener implements ActionListener, ItemListener {
 	private JTable table;
 	private JTextField f, colName_t[];
+	private JFormattedTextField gt, lt, et;
 	private String prev = ""; // Empty string not null
 	private String reg_prev = ""; // Empty string not null
-	private JDialog d, jd;
+	private JDialog d, jd, jdc;
 	private int rowI = 0;
 	private int colI = 0, columnSearchIndex= -1; // selected Column for search
 	private int rowcount = 0;
@@ -73,6 +80,8 @@ public class TableMenuListener implements ActionListener, ItemListener {
 	private JCheckBox cs, em;
 	private Pattern pat = null;
 	private boolean stateChanged = true, columnSearch = false;
+	private String replace = null; // replace string
+	private JComboBox<String> c_combo, c_combo1, c_combo2;
 	
 
 	public TableMenuListener(JTable rt) {
@@ -89,7 +98,7 @@ public class TableMenuListener implements ActionListener, ItemListener {
 		JLabel pr = new JLabel("<html><body><a href=\"\">Saved Regex</A><body></html>");
 		pr.addMouseListener(new LinkMouseListener());
 
-		final JButton s = new JButton("Search"); // Used by JLable
+		final JButton s = new JButton("Search"); // Used by JLabel
 
 		f = new JTextField(15);
 		f.addKeyListener(new KeyAdapter() {
@@ -106,6 +115,12 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			s.setActionCommand("search");
 		s.addActionListener(this);
 		s.addKeyListener(new KeyBoardListener());
+		
+		JButton sr = new JButton("Search & Replace");
+		sr.setMnemonic(KeyEvent.VK_R);
+		sr.setActionCommand("replace");
+		sr.addActionListener(this);
+		sr.addKeyListener(new KeyBoardListener());
 
 		JButton c = new JButton("Cancel");
 		c.setMnemonic(KeyEvent.VK_C);
@@ -121,37 +136,29 @@ public class TableMenuListener implements ActionListener, ItemListener {
 
 		sn = new JLabel(" Match Index: ");
 
-		dia_p.add(l);
-		dia_p.add(pr);
-		dia_p.add(f);
-		dia_p.add(s);
-		dia_p.add(c);
-		dia_p.add(cs);
-		dia_p.add(em);
-		dia_p.add(sn);
+		dia_p.add(l);dia_p.add(pr);dia_p.add(f);dia_p.add(s);
+		dia_p.add(sr);dia_p.add(c);dia_p.add(cs);dia_p.add(em);dia_p.add(sn);
 		dia_p.setOpaque(true);
 
 		layout.putConstraint(SpringLayout.WEST, dia_p, 2, SpringLayout.WEST, l);
 		layout.putConstraint(SpringLayout.WEST, f, 2, SpringLayout.EAST, l);
-		layout.putConstraint(SpringLayout.NORTH, l, 2, SpringLayout.NORTH,
-				dia_p);
+		layout.putConstraint(SpringLayout.NORTH, l, 2, SpringLayout.NORTH,dia_p);
 		layout.putConstraint(SpringLayout.NORTH, f, 0, SpringLayout.NORTH, l);
 		layout.putConstraint(SpringLayout.WEST, pr, 10, SpringLayout.EAST, f);
 		layout.putConstraint(SpringLayout.NORTH, pr, 0, SpringLayout.NORTH, f);
 
 		layout.putConstraint(SpringLayout.NORTH, cs, 4, SpringLayout.SOUTH, l);
-		
-		
 		layout.putConstraint(SpringLayout.NORTH, em, 2, SpringLayout.SOUTH, cs);
 
 		layout.putConstraint(SpringLayout.WEST, s, 15, SpringLayout.EAST, em);
 		layout.putConstraint(SpringLayout.SOUTH, s, -5, SpringLayout.SOUTH, em);
-		layout.putConstraint(SpringLayout.WEST, c, 5, SpringLayout.EAST, s);
+		layout.putConstraint(SpringLayout.WEST, sr, 5, SpringLayout.EAST, s);
+		layout.putConstraint(SpringLayout.SOUTH, sr, -5, SpringLayout.SOUTH, em);
+		layout.putConstraint(SpringLayout.WEST, c, 5, SpringLayout.EAST, sr);
 		layout.putConstraint(SpringLayout.SOUTH, c, -5, SpringLayout.SOUTH, em);
 		layout.putConstraint(SpringLayout.EAST, dia_p, 5, SpringLayout.EAST, c);
 		layout.putConstraint(SpringLayout.NORTH, sn, 2, SpringLayout.SOUTH, em);
-		layout.putConstraint(SpringLayout.SOUTH, dia_p, 2, SpringLayout.SOUTH,
-				sn);
+		layout.putConstraint(SpringLayout.SOUTH, dia_p, 2, SpringLayout.SOUTH, sn);
 
 		Container container = table.getTopLevelAncestor();
 		if (container != null && container instanceof JDialog)
@@ -177,11 +184,19 @@ public class TableMenuListener implements ActionListener, ItemListener {
 	public void actionPerformed(ActionEvent e) {
 		String action_c = e.getActionCommand();
 		if (action_c.compareToIgnoreCase("cancel") == 0) {
+			replace = null;
 			d.dispose();
 			return;
 		}
 		if (action_c.compareToIgnoreCase("exit") == 0) {
+			replace = null;
 			jd.dispose();
+			return;
+		}
+		if (action_c.compareToIgnoreCase("cancelcond") == 0) {
+			replace = null;
+			columnSearchIndex= -1;
+			jdc.dispose();
 			return;
 		}
 		if (action_c.compareToIgnoreCase("save") == 0) {
@@ -195,7 +210,8 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			return;
 		}
 		if (action_c.compareToIgnoreCase("search") == 0 || 
-				action_c.compareToIgnoreCase("searchCol") == 0) {
+				action_c.compareToIgnoreCase("searchCol") == 0 ||
+				action_c.compareToIgnoreCase("replace") == 0) {
 			boolean match_found = false;
 			String s_s = f.getText();
 			if (s_s == null || s_s.compareTo("") == 0) {
@@ -203,6 +219,11 @@ public class TableMenuListener implements ActionListener, ItemListener {
 						"Error Message", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
+			if (action_c.compareToIgnoreCase("replace") == 0 && replace == null) {
+				replace = JOptionPane.showInputDialog("Please enter replace String");
+				if (replace == null) return;
+			}
+			
 			if (prev.compareTo(s_s) != 0) {
 				rowI = 0;
 				
@@ -262,7 +283,12 @@ public class TableMenuListener implements ActionListener, ItemListener {
 						table.setRowSelectionInterval(i, i);
 						table.setColumnSelectionInterval(j, j);
 						table.scrollRectToVisible(table.getCellRect(i, j, true));
+						
+						if (action_c.compareToIgnoreCase("replace") == 0)
+							table.getModel().setValueAt(replace, i, j);
+						
 						sn.setText(" Match Index: " + ++match_c);
+						
 						rowI = (j < colcount - 1) ? i : i + 1;
 						if (columnSearch == true)
 							colI = (j < colcount - 1) ? j + 1 : columnSearchIndex ;
@@ -288,6 +314,7 @@ public class TableMenuListener implements ActionListener, ItemListener {
 					d.setVisible(true);
 					rowI = rowcount;
 					colI = colcount; // it will not go into loop because of rowcount
+					replace = null;
 					return;
 				}
 				colI = 0;
@@ -296,6 +323,23 @@ public class TableMenuListener implements ActionListener, ItemListener {
 				sn.setText(" Match Index: ");
 				d.setVisible(true);
 			}
+			return;
+		}
+		
+		// For conditioning coloring
+		if (action_c.compareToIgnoreCase("render") == 0) {
+			double dgt = (double) gt.getValue();
+			double lgt = (double) lt.getValue();
+			double egt = (double) et.getValue();
+			int index = columnSearchIndex;
+			
+			int colgt = c_combo.getSelectedIndex();
+			int collt = c_combo1.getSelectedIndex();
+			int colet = c_combo2.getSelectedIndex();
+			
+			// Set Display on first pattern
+			table.getColumnModel().getColumn(index).setCellRenderer(new MyCellRenderer(dgt,colgt,lgt,collt,egt,colet));
+			jdc.dispose();
 			return;
 		}
 
@@ -358,6 +402,25 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			fp.createAndShowGUI();
 			return;
 		}
+		if (source.getText().compareTo("Number Rendering") == 0) {
+			int i = selectedColIndex(table);
+			if (i < 0 ) return;
+			columnSearchIndex = i;
+			conditonalDialog();
+			return;
+		}
+		if (source.getText().compareTo("WhiteSpace Rendering") == 0) {
+			int i = selectedColIndex(table);
+			if (i < 0 ) return;
+			table.getColumnModel().getColumn(i).setCellRenderer(new MyCellRenderer(true));
+			return;
+		}
+		if (source.getText().compareTo("BlankSpace Rendering") == 0) {
+			int i = selectedColIndex(table);
+			if (i < 0 ) return;
+			table.getColumnModel().getColumn(i).setCellRenderer(new MyCellRenderer(false));
+			return;
+		}
 
 	}// End of Action Performed
 
@@ -400,7 +463,6 @@ public class TableMenuListener implements ActionListener, ItemListener {
 	private void tableRenameDialog(String[] colName) {
 		JPanel dp = new JPanel();
 		dp.setLayout(new BorderLayout());
-		
 		
 		//Create and populate the panel for table rename       
 		JPanel p = new JPanel(new SpringLayout());
@@ -448,6 +510,83 @@ public class TableMenuListener implements ActionListener, ItemListener {
 
 	}
 	
+	private void conditonalDialog() {
+		JPanel dp = new JPanel();
+		dp.setLayout(new BorderLayout());
+		
+		//Create and populate the panel for table rename       
+		JPanel p = new JPanel(new SpringLayout());
+		
+		
+			JLabel gl = new JLabel("Greater Than",JLabel.TRAILING);
+			p.add(gl);
+			gt = new JFormattedTextField(new Double(100.00D));
+			p.add(gt);
+		
+			c_combo = new JComboBox<String>(new String[] { "Red", "Green",
+					"Yellow", "Blue" });
+			c_combo.setBorder(new EmptyBorder(0, 4, 0, 0));
+			p.add(c_combo);
+			
+
+			JLabel el = new JLabel("Equal To",JLabel.TRAILING);
+			p.add(el);
+			et = new JFormattedTextField(new Double(100.00D));
+			p.add(et);
+		
+			c_combo2 = new JComboBox<String>(new String[] { "Red", "Green",
+					"Yellow", "Blue" });
+			c_combo2.setBorder(new EmptyBorder(0, 4, 0, 0));
+			p.add(c_combo2);
+			
+			
+			JLabel ll = new JLabel("Less Than",JLabel.TRAILING);
+			p.add(ll);
+			lt = new JFormattedTextField(new Double(100.00D));
+			p.add(lt);
+		
+			c_combo1 = new JComboBox<String>(new String[] { "Red", "Green",
+					"Yellow", "Blue" });
+			c_combo1.setBorder(new EmptyBorder(0, 4, 0, 0));
+			c_combo1.setSelectedIndex(3); // Blue selected
+			p.add(c_combo1);
+			
+		
+		//Lay out the panel.        
+		SpringUtilities.makeCompactGrid(p,                                        
+				3, 3,  //rows, cols                                        
+				6, 6,        //initX, initY                                        
+				6, 6);       //xPad, yPad          
+		
+
+		JPanel bp = new JPanel();
+
+		JButton tstc = new JButton("Render");
+		tstc.setActionCommand("render");
+		tstc.addKeyListener(new KeyBoardListener());
+		tstc.addActionListener(this);
+		bp.add(tstc);
+		
+		JButton cn_b = new JButton("Cancel");
+		cn_b.setActionCommand("cancelcond");
+		cn_b.addKeyListener(new KeyBoardListener());
+		cn_b.addActionListener(this);
+		bp.add(cn_b);
+		
+		dp.add(p, BorderLayout.CENTER);
+		dp.add(bp, BorderLayout.PAGE_END);
+		
+		jdc = new JDialog ();
+		jdc.setTitle("Conditioning Rendering Dialog");
+		jdc.setModal(true);
+		jdc.setLocation(200, 200);
+		jdc.setPreferredSize(new Dimension(400, 200));
+		jdc.getContentPane().add(dp);
+		jdc.pack();
+		jdc.setVisible(true);
+
+	}
+	
 	/* Link Mouse Adapter */
 	private class LinkMouseListener extends MouseAdapter implements ActionListener {
 		private Hashtable<String,String>__h ;
@@ -462,7 +601,7 @@ public class TableMenuListener implements ActionListener, ItemListener {
 					JPopupMenu popup = new JPopupMenu();
 
 					// Create the popup menu From regexString.txt
-					__h = KeyValueParser.parseFile("./popupmenu.txt");
+					__h = KeyValueParser.parseFile("./resource/popupmenu.txt");
 					if (__h == null)
 						return;
 					Enumeration<String> enum1 = __h.keys();
@@ -512,6 +651,93 @@ public class TableMenuListener implements ActionListener, ItemListener {
 		int index = Integer.valueOf(col[0]).intValue();
 		return index - 1;
 	}
+	
+	private class MyCellRenderer extends DefaultTableCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private double _gt, _lt, _et;
+		private int _colorgt,_colorlt,_coloret;
+		private boolean whitespacerender = false;
+		private Pattern p;
+		
 
+		public MyCellRenderer(double gt, int colorgt, double lt, int colorlt,double et, int coloret ) {
+			_gt = gt;
+			_lt = lt;
+			_et = et;
+			_colorgt = colorgt;
+			_colorlt = colorlt;
+			_coloret = coloret;
+		}
+		public MyCellRenderer(boolean whitespace ) {
+			whitespacerender = true;
+			if ( whitespace == true )
+				p = Pattern.compile("\\s",Pattern.MULTILINE);
+			else
+				p = Pattern.compile(" ",Pattern.MULTILINE);
+
+		}
+
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			
+			Component c = super.getTableCellRendererComponent(table, value,
+					isSelected, hasFocus, row, column);
+			if (value == null) return c; // for null value
+			
+			if (whitespacerender == true) { // whitespace matcher
+				Matcher m = p.matcher(value.toString());
+				
+				if ( m.find() == true ) 
+						c.setForeground(Color.RED.darker());
+				 else 
+					c.setForeground(Color.BLACK); // Default Color
+				
+				return c;
+			}
+			
+			try{
+				double din = Double.parseDouble(value.toString());
+			
+				if (din > _gt) {
+					if (_colorgt == 0 )
+						c.setForeground(Color.RED.darker());
+					if (_colorgt == 1 )
+						c.setForeground(Color.GREEN.darker().darker().darker()); // background is also green
+					if (_colorgt == 2 )
+						c.setForeground(Color.YELLOW.darker());
+					if (_colorgt == 3 )
+						c.setForeground(Color.BLUE.darker());
+				} else if (din < _lt) {
+					if (_colorlt == 0 )
+						c.setForeground(Color.RED.darker());
+					if (_colorlt == 1 )
+						c.setForeground(Color.GREEN.darker().darker().darker());
+					if (_colorlt == 2 )
+						c.setForeground(Color.YELLOW.darker());
+					if (_colorlt == 3 )
+						c.setForeground(Color.BLUE.darker());
+				} else if (din == _et) {
+					if (_coloret == 0 )
+						c.setForeground(Color.RED.darker());
+					if (_coloret == 1 )
+						c.setForeground(Color.GREEN.darker().darker().darker());
+					if (_coloret == 2 )
+						c.setForeground(Color.YELLOW.darker());
+					if (_coloret == 3 )
+						c.setForeground(Color.BLUE.darker());
+				} else {
+					c.setForeground(Color.BLACK); //Default color
+				}
+			} catch (Exception e) {
+					return c;
+			}
+			((JLabel) c).setHorizontalAlignment(JLabel.TRAILING);	
+			return c;
+		}
+	} // End of MyCellRenderer
 
 }

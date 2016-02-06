@@ -259,7 +259,7 @@ public class CompareRecordDialog implements ActionListener {
 				return;
 			
 			Object[] colName = _rt.getAllColName();
-			int colMatI=-1;
+			int colMatI= -1;
 			
 			for (int i =0 ; i < colName.length; i++) {
 				if (option.equals(colName[i].toString())== true) {
@@ -281,11 +281,12 @@ public class CompareRecordDialog implements ActionListener {
 			for ( int i = 0; i < rowcount; i++) {
 				String val = _rt.getTextValueAt(i, 0);
 				if (val.equalsIgnoreCase("Golden Merge") == true) {
-					obj = _rt.getValueAt(i, colMatI);
+					obj = _rt.getModel().getValueAt(i, colMatI);
 				} else if (val.equalsIgnoreCase("") == true) {
 					continue;
 				} else {
-					_rt.setTableValueAt(obj, i, colMatI);
+					//_rt.setTableValueAt(obj, i, colMatI);
+					_rt.getModel().setValueAt(obj, i, colMatI);
 				}
 			}
 			d_r.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -607,13 +608,13 @@ public class CompareRecordDialog implements ActionListener {
 		
 		// Show optionDialog and take input
 		int option = JOptionPane.showOptionDialog(null,
-                "\"One Record One Cluster\" will map a matched record to one and only one cluster \n" +
+                "\"One Record in One Cluster\" will map a matched record to one and only one cluster \n" +
                 "even it matches to many clusters.\n\n" +
                 "Once merged results are displayed User can edit, add, remove records in cluster \n"+
                 "and Refresh the table. Golden values will be recalculated. \n\n",
                 "Record Mapping Input",JOptionPane.OK_OPTION,JOptionPane.INFORMATION_MESSAGE,null,
-                new String[] {"One Record One Cluster","One Record Many Cluster"},
-                new String("One Record One Cluster")) ;
+                new String[] {"One Record in One Cluster","One Record in Many Cluster"},
+                new String("One Record in One Cluster")) ;
 		
 		for (int i=0; i < rowCount ; i++) {
 			RecordMatch.Result  res = resultSet.get(i);

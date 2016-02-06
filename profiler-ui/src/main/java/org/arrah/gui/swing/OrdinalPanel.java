@@ -165,6 +165,11 @@ public class OrdinalPanel implements ActionListener, ItemListener {
 		}
 		if (action.equals("ok")) {
 			// d_f.dispose(); do not dispose now
+			
+			if (_rt.isSorting() || _rt.table.isEditing()) {
+				JOptionPane.showMessageDialog(null, "Table is in Sorting or Editing State");
+				return;
+			}
 			beginIndex = ((Long) jrn_low.getValue()).intValue();
 			endIndex = ((Long) jrn_high.getValue()).intValue();
 			if (beginIndex <= 0 || beginIndex > _rowC)
@@ -187,12 +192,12 @@ public class OrdinalPanel implements ActionListener, ItemListener {
 				} else selColIndex = selColIndex -2;
 				
 				for (int i = (beginIndex -1) ; i < ( endIndex -1 ); i++) {
-					Object colObject = _rt.getValueAt(i, selColIndex);
+					Object colObject = _rt.getModel().getValueAt(i, selColIndex);
 					 if (colObject == null) continue;
 					 int index = key.indexOf(colObject);
 					 if (index < 0) continue;
 					 String grpString= grpName_v.get(index).getText();
-					 _rt.setTableValueAt(grpString, i, _colIndex);
+					_rt.getModel().setValueAt(grpString, i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition
 				return;

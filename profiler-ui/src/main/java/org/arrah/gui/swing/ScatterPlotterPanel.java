@@ -69,6 +69,7 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 
 	public PlotterPanel g_p; // Accessed for repainting
 
+	@SuppressWarnings("unused")
 	private String _dsn = "", _table = "", _column = "", _type = "";
 	private JFormattedTextField text;
 	private int color_index = 0;
@@ -352,7 +353,11 @@ public class ScatterPlotterPanel extends JPanel implements ActionListener,
 		CompoundBorder compoundBorder = new CompoundBorder(emptyBorder,
 				bevelBorder);
 		botP.setBorder(new CompoundBorder(compoundBorder, emptyBorder));
-		botP.setPreferredSize(new Dimension(200, 250));
+		
+		if (isDateType == true)
+			botP.setPreferredSize(new Dimension(300, 250)); // date will take more space
+		else
+			botP.setPreferredSize(new Dimension(200, 250));
 
 		JLabel l_l = new JLabel("Lower");
 		JLabel u_l = new JLabel("Upper");
