@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 
-import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.arrah.framework.rdbms.Rdbms_NewConn;
@@ -86,8 +85,7 @@ public class ScheduleJob implements Job{
 					rs = dbConn.execute(query);
 					else {
 						System.out.println("Column is Empty");
-						JOptionPane.showMessageDialog(null,"Column is Empty");
-						return;
+						throw new JobExecutionException("Column is Empty");
 			}
 			 
 			// Check wether the input Query is null
@@ -95,8 +93,7 @@ public class ScheduleJob implements Job{
 				rs = dbConn.execute(query);
 				else {
 					System.out.println("Query is null");
-					JOptionPane.showMessageDialog(null,"Query is null");
-					return;
+					throw new JobExecutionException("Query is null");
 			}
 								
 			 if(columnNames.contains(",")){
