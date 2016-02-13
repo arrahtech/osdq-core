@@ -1,4 +1,4 @@
-Profiler V6.1.1
+Profiler V6.1.6
 ===========
 
 [![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dm/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dw/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
@@ -53,10 +53,11 @@ Getting Started
 1. git clone git@github.com:arrahtec/profiler.git
 2. cd profiler
 3. mvn package
-4. cd target
+4. cd profiler-ui/target
 5. unzip the ProfilerV<version>.zip
 6. cd ProfilerV<version>
-7. java -jar profiler-<version>-SNAPSHOT.jar
+7. cd bin
+8. runprofiler.[sh|bat]
 
 
 
