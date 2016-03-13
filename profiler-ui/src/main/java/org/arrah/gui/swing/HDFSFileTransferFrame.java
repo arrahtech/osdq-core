@@ -41,7 +41,6 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
 import org.arrah.framework.hadooputil.HDFSTransfer;
-import org.arrah.framework.hadooputil.HDFSTransferProgressListener;
 import org.arrah.framework.util.AsciiParser;
 
 import java.io.File;
@@ -74,15 +73,6 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
     private HDFSFileChooser mc = null;
     
     public static JProgressBar progressBar = new JProgressBar();
-    
-    private HDFSTransferProgressListener hdfsTransferProgressListener = new HDFSTransferProgressListener() {
-      
-      @Override
-      public void progressUpdate(final int progressCounter) {
-        progressBar.setStringPainted(true);
-        progressBar.setValue(progressCounter);
-      }
-    };
    
     
     public HDFSFileTransferFrame( boolean copyToHdfs) {
@@ -231,7 +221,7 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
 						if(destPath != null && srcPath != null)
 						{
 							setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-							hdt = new HDFSTransfer(hdfsTransferProgressListener, hdfspathstring);
+							hdt = new HDFSTransfer(hdfspathstring);
 							hdt.moveToHDFS(srcPath, destPath);	
 						}
 					} catch (IOException e) {
@@ -252,7 +242,7 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
 						if(destPath != null && srcPath != null)
 						{
 							setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-							hdt = new HDFSTransfer(hdfsTransferProgressListener, hdfspathstring);
+							hdt = new HDFSTransfer(hdfspathstring);
 							hdt.moveFromHDFS(srcPath, destPath);
 						}
 					} catch (IOException e) {
@@ -382,11 +372,11 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
 						
 						if(toHdfs == false){
 							filesystem = "hdfs";
-							hdt = new HDFSTransfer(hdfsTransferProgressListener, hdfspathstring);
+							hdt = new HDFSTransfer(hdfspathstring);
 						}
 						else {
 							filesystem = "local";
-							hdt = new HDFSTransfer(hdfsTransferProgressListener);
+							hdt = new HDFSTransfer();
 						}
 						try {
 							setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
@@ -409,11 +399,11 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
 						
 						if(toHdfs == false){
 							filesystem = "hdfs";
-							hdt = new HDFSTransfer(hdfsTransferProgressListener, hdfspathstring);
+							hdt = new HDFSTransfer(hdfspathstring);
 						}
 						else {
 							filesystem = "local";
-							hdt = new HDFSTransfer(hdfsTransferProgressListener);
+							hdt = new HDFSTransfer();
 						}
 						try {
 							setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
@@ -436,11 +426,11 @@ public class HDFSFileTransferFrame extends JFrame implements ActionListener {
 					
 					if(toHdfs == false){
 						filesystem = "hdfs";
-						hdt = new HDFSTransfer(hdfsTransferProgressListener, hdfspathstring);
+						hdt = new HDFSTransfer(hdfspathstring);
 					}
 					else {
 						filesystem = "local";
-						hdt = new HDFSTransfer(hdfsTransferProgressListener);
+						hdt = new HDFSTransfer();
 					}
 					try {
 						setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));

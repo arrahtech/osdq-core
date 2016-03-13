@@ -121,7 +121,7 @@ public class MultifacetPanel implements ActionListener, ItemListener {
 		
 	}
 
-// UI for multi facet search
+// UI for multi-facet search
 	private JDialog mapDialog() {
 
 		int colC = colName.length;

@@ -172,6 +172,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		preparation_m.setMnemonic('P');
 		menubar.add(preparation_m);
 		
+		JMenuItem testdata_m = new JMenuItem("Test Data Preparation");
+		testdata_m.addActionListener(this);
+		testdata_m.setActionCommand("testdata");
+		preparation_m.add(testdata_m);
+		
 		JMenuItem ordinal_m = new JMenuItem("Ordinal Variables");
 		ordinal_m.addActionListener(this);
 		ordinal_m.setActionCommand("ordinal");
@@ -248,6 +253,28 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		meandistSubs_m.addActionListener(this);
 		meandistSubs_m.setActionCommand("meandist");
 		normal_m.add(meandistSubs_m);
+		normal_m.addSeparator();
+		
+		// rounding, flooring, ceiling, neareast 0
+		JMenuItem rounding_m = new JMenuItem("Rounding");
+		rounding_m.addActionListener(this);
+		rounding_m.setActionCommand("rounding");
+		normal_m.add(rounding_m);
+		
+		JMenuItem flooring_m = new JMenuItem("Flooring");
+		flooring_m.addActionListener(this);
+		flooring_m.setActionCommand("flooring");
+		normal_m.add(flooring_m);
+		
+		JMenuItem ceiling_m = new JMenuItem("Ceiling");
+		ceiling_m.addActionListener(this);
+		ceiling_m.setActionCommand("ceiling");
+		normal_m.add(ceiling_m);
+		
+		JMenuItem nearzero_m = new JMenuItem("Nearest Zero");
+		nearzero_m.addActionListener(this);
+		nearzero_m.setActionCommand("nearestzero");
+		normal_m.add(nearzero_m);
 		
 		// Analytics Menu
 		JMenu analytics_m = new JMenu("Analytics");
@@ -350,7 +377,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		analytics_m.addSeparator();
 		
 		// Pearson Correlation
-		JMenuItem correlation = new JMenuItem("Correlation");
+		JMenuItem correlation = new JMenuItem("Pearson Correlation");
 		correlation.addActionListener(this);
 		correlation.setActionCommand("pcorrelation");
 		analytics_m.add(correlation);
@@ -586,6 +613,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		undoC_m.setActionCommand("undocond");
 		option_m.add(undoC_m);
 		option_m.addSeparator();
+		
+		JMenuItem dedupC_m = new JMenuItem("DeDup");
+		dedupC_m.addActionListener(this);
+		dedupC_m.setActionCommand("dedup");
+		option_m.add(dedupC_m);
 
 		JMenu dedup = new JMenu("Fuzzy DeDup");
 		JMenuItem similarC_m = new JMenuItem("Delete");
@@ -1398,6 +1430,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				fp.createAndShowGUI();
 				return;
 			}
+			if (command.equals("dedup")) {
+				new NewTableDialog(_rt.getRTMModel(),true);
+				 return;
+			}
 			if (command.equals("simcheck")) {
 				_rt.cancelSorting();
 				new SimilarityCheckPanel(_rt,true);
@@ -1616,7 +1652,8 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				 return;
 			}
 			if (command.equals("splittable")) {
-				String splitC = JOptionPane.showInputDialog("How may Split Tables?", new Integer(10));
+				String splitC = JOptionPane.showInputDialog("How many tables to split into?", new Integer(10));
+				if (splitC == null) return;
 				try {
 					int count = Integer.parseInt(splitC);
 					ReportTableModel[] rtm = RTMUtil.splitRTM(_rt.getRTMModel(),count);
@@ -1655,6 +1692,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("randomtable")) {
 				String randomC = JOptionPane.showInputDialog("How may random Rows??", new Integer(100));
+				if (randomC == null) return;
 				try {
 					int count = Integer.parseInt(randomC);
 					ReportTableModel rtm = RTMUtil.sampleRTM(_rt.getRTMModel(),count);
@@ -1732,6 +1770,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				return;
 			}
 			// Data Preparation 
+			if (command.equals("testdata")) {
+				new TestdataDialog(_rt.getRTMModel());
+				return;
+			}
 			if (command.equals("ordinal")) {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
@@ -1848,6 +1890,25 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 					NormalizeCol.meanStdNormal(_rt.getRTMModel(), outputindex, popindex,1);
 				else
 					NormalizeCol.meanStdNormal(_rt.getRTMModel(), outputindex, popindex,2);
+				return;
+			}
+			if (command.equals("rounding") || command.equals("flooring") || command.equals("ceiling")
+					|| command.equals("nearestzero")) {
+				_rt.cancelSorting(); // No sorting 
+				int popindex = selectedColIndex(_rt, "Select Column to Populate:");
+				if (popindex < 0)
+					return;
+				int outputindex = selectedColIndex(_rt, "Select Column to get Rounding values");
+				if (outputindex < 0)
+					return;
+				if (command.equals("rounding"))
+					NormalizeCol.roundingIndex(_rt.getRTMModel(), outputindex, popindex,1);
+				else if (command.equals("ceiling"))
+					NormalizeCol.roundingIndex(_rt.getRTMModel(), outputindex, popindex,2);
+				else if (command.equals("flooring"))
+					NormalizeCol.roundingIndex(_rt.getRTMModel(), outputindex, popindex,3);
+				else // nearest 0
+					NormalizeCol.roundingIndex(_rt.getRTMModel(), outputindex, popindex,4);
 				return;
 			}
 			
@@ -2340,15 +2401,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		_rt.cancelSorting();
 		if (d_m != null)
 			d_m.dispose();
-		try {
-      InterTableInfo.loadQuery(query, _rt.getRTMModel(), unique_table_s, _ht);
-    } catch (Exception e) {
-      JOptionPane.showMessageDialog(null,
-          "Load Query is not supported for Hive Data Storage", "Hive Support Error",
-          JOptionPane.ERROR_MESSAGE);
-      ConsoleFrame.addText("Load Query is not supported for Hive Data Storage");
-      e.printStackTrace();
-    }
+		InterTableInfo.loadQuery(query, _rt.getRTMModel(), unique_table_s, _ht);
 
 	}
 

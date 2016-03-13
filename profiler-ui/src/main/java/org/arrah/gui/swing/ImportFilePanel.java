@@ -32,7 +32,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Vector;
-import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -665,15 +664,8 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 			csv_tableModel.setAdv_widthSelection(true, vc);
 		}
 		csv_tableModel.setFirstRowColumnName(hd.isSelected(), vc);
-		ReportTableModel rpt_model = null;
-		try {
-		  rpt_model = csv_tableModel
-		      .loadFileIntoTable(clickButtonType);
-		} catch (PatternSyntaxException pe) {
-		  JOptionPane.showMessageDialog(null,
-          pe.getMessage(), "Regex Error",
-          JOptionPane.ERROR_MESSAGE);
-		}
+		ReportTableModel rpt_model = csv_tableModel
+				.loadFileIntoTable(clickButtonType);
 		return showT = new ReportTable(rpt_model);
 	}
 
