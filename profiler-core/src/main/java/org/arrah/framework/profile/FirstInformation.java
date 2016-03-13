@@ -24,7 +24,6 @@ import java.util.Vector;
 
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
-import org.arrah.gui.swing.ConsoleFrame;
 
 public class FirstInformation {
 	private static String minVal = "";
@@ -94,7 +93,7 @@ public class FirstInformation {
 		return  (new double[] { d, d1, d1 != -1D ? d - d1 : -1D, d5, d2 });
 	}
 
-	public static Vector[] getPatternValues(QueryBuilder querybuilder) {
+	public static Vector[] getPatternValues(QueryBuilder querybuilder) throws Exception {
 		String s = querybuilder.get_freq_query();
 		int i = 0;
 		Vector avector[] = new Vector[2];
@@ -119,9 +118,8 @@ public class FirstInformation {
 				resultset.close();
 			Rdbms_conn.closeConn();
 		} catch (SQLException sqlexception) {
-			ConsoleFrame.addText("\n Warning: Could not Get Pattern Information");
-			System.out.println("Warning:"+sqlexception.getMessage());
-			return null;
+		  System.out.println("Warning:"+sqlexception.getMessage());
+			throw new Exception("\n Warning: Could not Get Pattern Information");
 		}
 		return avector;
 	}

@@ -28,7 +28,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import org.arrah.gui.swing.HDFSFileTransferFrame; // this class is used to set % complete
 
 public class HDFSTransfer {
 	
@@ -37,6 +36,7 @@ public class HDFSTransfer {
 	int progressctr = 0;
 	private boolean success = false;
 	
+	private HDFSTransferProgressListener hdfsTransferProgressListener;
 	/**
 	 * Constructor accepting the configuration parameter
 	 * <p>
@@ -44,13 +44,15 @@ public class HDFSTransfer {
 	 * hdfs://hostAddress:port
 	 * @param  fsDefaultName  HadoopDFS URL
 	 */
-	public HDFSTransfer(String fsDefaultName){
-		conf = new Configuration();
+	public HDFSTransfer(HDFSTransferProgressListener hdfsTransferProgressListener, String fsDefaultName){
+		this.hdfsTransferProgressListener = hdfsTransferProgressListener;
+	  conf = new Configuration();
 		conf.set("fs.default.name", fsDefaultName);
 	}
 	
-	public HDFSTransfer(){
+	public HDFSTransfer(HDFSTransferProgressListener hdfsTransferProgressListener){
 		// default constructor
+	  this.hdfsTransferProgressListener = hdfsTransferProgressListener;
 	}
 	
 	/**
@@ -110,17 +112,14 @@ public class HDFSTransfer {
 							if(bytectr%progressfactor == 0 && progressctr<=100 )
 							{
 								progressctr++;
-								HDFSFileTransferFrame.progressBar.setStringPainted(true);
-								HDFSFileTransferFrame.progressBar.setValue(progressctr);
+								hdfsTransferProgressListener.progressUpdate(progressctr);
 							}
 						} else if(filesize<100){
 							if(!(progressctr ==  ((filesize)*((int)(100/filesize)))))
 								progressctr = progressctr + (int)(100/filesize);
 				        	if(progressctr == ((filesize)*((int)(100/filesize))))
 				        		progressctr=100;
-				        						
-				        	HDFSFileTransferFrame.progressBar.setStringPainted(true);
-				        	HDFSFileTransferFrame.progressBar.setValue(progressctr);
+				        	hdfsTransferProgressListener.progressUpdate(progressctr);
 						}
 				    }
 					success = true;
@@ -197,17 +196,15 @@ public class HDFSTransfer {
 							if(bytectr%progressfactor == 0 && progressctr<=100)
 							{
 								progressctr++;					
-								HDFSFileTransferFrame.progressBar.setStringPainted(true);
-								HDFSFileTransferFrame.progressBar.setValue(progressctr);
+								hdfsTransferProgressListener.progressUpdate(progressctr);
 							}
 				        } else if(filesize<100){
 				        	if(!(progressctr ==  ((filesize)*((int)(100/filesize)))))
 								progressctr = progressctr + (int)(100/filesize);
 				        	if(progressctr == ((filesize)*((int)(100/filesize))))
 				        		progressctr=100;					
-				        	HDFSFileTransferFrame.progressBar.setStringPainted(true);
-				        	HDFSFileTransferFrame.progressBar.setValue(progressctr);
-						}
+				        	hdfsTransferProgressListener.progressUpdate(progressctr);
+				        }
 				    }   
 					
 					success = true;

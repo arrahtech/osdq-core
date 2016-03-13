@@ -22,13 +22,10 @@ import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JOptionPane;
-
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
-import org.arrah.gui.swing.ConsoleFrame;
 
 public class InterTableInfo {
 
@@ -105,17 +102,12 @@ public class InterTableInfo {
 	 */
 	public static void loadQuery(final String[] query,
 			final ReportTableModel _rt, final Vector<String> unique_table_s,
-			final Hashtable<String, Integer> _ht) {
+			final Hashtable<String, Integer> _ht) throws Exception {
 		final int count = _rt.getModel().getRowCount();
 		
 		// This method is not supported for hive
 		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
-			ConsoleFrame.addText("\n Load Query is not supported for Hive Data Storage");
-			JOptionPane.showMessageDialog(null,
-					"Load Query is not supported for Hive Data Storage", "Hive Support Error",
-					JOptionPane.ERROR_MESSAGE);
-			
-			return;
+			throw new Exception("\n Load Query is not supported for Hive Data Storage");
 		} else {
 
 		Thread[] tid = new Thread[query.length];

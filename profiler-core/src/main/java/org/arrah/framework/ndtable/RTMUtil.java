@@ -33,7 +33,6 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
 import org.arrah.framework.dataquality.SimilarityCheckLucene;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
-import org.arrah.gui.swing.ConsoleFrame;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Millisecond;
@@ -551,7 +550,7 @@ public class RTMUtil {
 					default:
 				}
 			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			  throw new Exception("\n Exception for row :" +i, e);
 			}
 		}
 		return dataset;
@@ -572,7 +571,7 @@ public class RTMUtil {
 				dataset.add(new Double(xcell.toString()) ,new Double(ycell.toString()));
 				
 			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			  throw new Exception("\n Exception for row :" +i, e);
 			}
 		}
 		return dataset;
@@ -603,7 +602,7 @@ public class RTMUtil {
 				rtm.setValueAt(ycell, i,comIndex);
 				
 			} catch (Exception e) {
-				ConsoleFrame.addText("\n Exception for row :" +i + "  Execption:"+e.getLocalizedMessage());
+			  throw new Exception("\n Exception for row :" +i, e);
 			}
 		}
 		return rtm;

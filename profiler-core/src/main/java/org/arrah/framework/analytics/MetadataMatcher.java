@@ -10,8 +10,7 @@ import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.util.StringCaseFormatUtil;
-
-import uk.ac.shef.wit.simmetrics.similaritymetrics.JaroWinkler;
+import org.simmetrics.metrics.JaroWinkler;
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh  2016    *
@@ -96,7 +95,7 @@ public class MetadataMatcher {
 			String key = e.nextElement();
 			String[] val = getCSValue(key);
 			for (String newval: val) {
-				float simI = simAlgo.getSimilarity(newval.toLowerCase(), colName.toLowerCase());
+				float simI = simAlgo.compare(newval.toLowerCase(), colName.toLowerCase());
 				// System.out.println("Val:"+newval +" ColN:" + colName + " SimI:" +simI);
 				if (simI >= nearness) { 
 					if (matchV.indexOf(key) == -1) // if not there add it
@@ -180,12 +179,8 @@ public class MetadataMatcher {
 				isMatch = piiv.isEmail(s.toString());
 				break;
 			// if Phone Number
-			case "PhoneNumber":		
+			case "PhoneNum":		
 				isMatch = piiv.isPhone(onlyd);	
-				break;
-			// if IP 
-			case "IP":		
-				isMatch = piiv.isIp(s.toString());	
 				break;
 			
 			default:

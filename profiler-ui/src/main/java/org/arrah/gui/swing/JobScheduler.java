@@ -659,7 +659,13 @@ public class JobScheduler extends javax.swing.JFrame {
                 }
 
                 try {
-                    new QuartzScheduler(query, hour, minute, seconds);
+                    new QuartzScheduler(query, hour, minute, seconds, 
+                        jcbSfrequency.getSelectedItem().toString(), 
+                        jcbFrequency.getSelectedItem().toString(), 
+                        jdcEdate.getDate(), 
+                        startdayofMonth,
+                        hashValues,
+                        jcbRules.getSelectedItem().toString());
                 } catch (SchedulerException   e) {
                     e.printStackTrace();
                 } catch (InterruptedException  e) {

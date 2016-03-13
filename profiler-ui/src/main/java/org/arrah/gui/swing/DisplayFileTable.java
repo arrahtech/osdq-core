@@ -1972,7 +1972,10 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				return;
 			}
 			
-		} finally {
+		} catch (Exception e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    } finally {
 			frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}// End of Action Performed
@@ -2397,7 +2400,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		}
 	}
 
-	private void loadQuery(final String[] query) {
+	private void loadQuery(final String[] query) throws Exception {
 		_rt.cancelSorting();
 		if (d_m != null)
 			d_m.dispose();
