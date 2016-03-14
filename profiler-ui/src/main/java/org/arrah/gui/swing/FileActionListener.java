@@ -64,6 +64,10 @@ import javax.swing.filechooser.FileFilter;
 
 public class FileActionListener extends JPanel implements MouseListener,
 		ActionListener, ChangeListener, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Object _saveO = null;
 	private PlotterPanel sp_dc = null;
 	private PlotterPanel sp = null;

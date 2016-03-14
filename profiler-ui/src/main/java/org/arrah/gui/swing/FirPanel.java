@@ -285,11 +285,12 @@ public class FirPanel extends JPanel {
 				repaint();
 				_ad = FirstInformation.getProfileValues(querybuilder);
 				try {
-				  _avector = FirstInformation
-						.getPatternValues(querybuilder);
-				} catch(Exception e) {
-				  ConsoleFrame.addText(e.getMessage());
-				}
+          _avector = FirstInformation
+          		.getPatternValues(querybuilder);
+        } catch (Exception e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
 				_avector1 = getDistributionValues(querybuilder);
 				showBar(_ad);
 				showPatternChart(_avector);

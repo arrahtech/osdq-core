@@ -174,6 +174,26 @@ public class PIIValidator {
 		return true;
 		
 	}
+	// Validating IP v4 and v6
+	public boolean isIp(String ipaddress) {
+		
+		final Pattern IPV4_PATTERN =
+				Pattern.compile("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
+		final Pattern IPV6_STD_PATTERN =
+				Pattern.compile("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
+		final Pattern IPV6_HEX_COMPRESSED_PATTERN =
+				Pattern.compile("^((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)::((?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4})*)?)$");
+
+		  if (IPV4_PATTERN.matcher(ipaddress).matches() == true ||
+				  IPV6_STD_PATTERN.matcher(ipaddress).matches() == true ||
+				  IPV6_HEX_COMPRESSED_PATTERN.matcher(ipaddress).matches() == true ) {
+			  errdef = "IP Validation successful";
+				return true;
+		  } else {
+			  errdef = "Not well formed IP";
+			  return false;
+		  }
+	}
 	
 	// Get error message
 	public String getErrdef() {

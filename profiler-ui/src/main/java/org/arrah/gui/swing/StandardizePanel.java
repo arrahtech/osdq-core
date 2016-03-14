@@ -53,6 +53,7 @@ public class StandardizePanel extends JDialog implements ActionListener {
 	public StandardizePanel () {
 		// Constructor
 		JPanel cen =createPanel();
+		if (cen == null ) return;
 		
 		this.setLocation(250,50);
 		this.getContentPane().add(cen);
@@ -66,13 +67,14 @@ public class StandardizePanel extends JDialog implements ActionListener {
 		
 		try {
 			 f = FileSelectionUtil.chooseFile("Select Standardisation File");
+			 if ( f== null) return null;
 			 ConsoleFrame.addText("\n Selected File is:"+f.toString());
-		} catch (FileNotFoundException fe) {
+		} catch (FileNotFoundException fe ) {
 			JOptionPane.showMessageDialog(null, fe.getMessage(),"File not Found Dialog",
 					JOptionPane.ERROR_MESSAGE);
 			ConsoleFrame.addText("\n ERROR: Selected File Not Found");
 			return new JPanel(); // to avoid null pointer exception
-		}
+		} 
 			
 		__h = KeyValueParser.parseFile(f.getAbsolutePath());
 		if (__h == null)  {

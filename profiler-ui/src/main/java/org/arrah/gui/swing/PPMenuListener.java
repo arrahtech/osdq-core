@@ -106,9 +106,6 @@ public class PPMenuListener implements ActionListener {
 				TableFirstInformation tabInfo = new TableFirstInformation();
 				double tabCount = tabInfo.getTableCount(_table);
 				double patCount = tabInfo.getPatternCount(_table);
-				if (patCount == 0) {
-				  ConsoleFrame.addText  ("resultset null for Pattern query");
-				}
 				Vector<Double> pv = tabInfo.getPatternValue();
 				
 				_rt = new ReportTable(new String[]{"Pattern","Count","Percentage"}, false, false);

@@ -142,6 +142,7 @@ public class ToolListener implements ActionListener {
 					return;
 				}
 				if (source.equals("Create Standardization Value")) {
+					JOptionPane.showMessageDialog(null, "Choose a file which has \n key val pair of standardization values");
 					 new StandardizePanel();
 					return;
 				}

@@ -56,7 +56,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 	private JTextField catalog,schemaPattern,tablePattern,colPattern,type;
 	private JTextArea info;
 	private JButton ok_b,add_b;
-	private JCheckBox quoteC, demoDB;
+	private JCheckBox quoteC, demoDB, fileLoad;
 	
 	private String infoStatus ="INFORMATION: \n$ORACLE_HOME/lib should be in LIBPATH (for AIX), \n" +
 			"LD_LIBRARY_PATH (for Solaris) or \nSHLIBPATH (for HP) for UNIX user. \n\n"+
@@ -65,6 +65,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 				
 	private int dbIndex;
 	private int connectionType = 0 ; // default existing connection
+	private boolean isFileLoad=false;
 
 	public TestConnectionDialog(int connectionType) {
 		_dbparam = new Hashtable <String,String>();
@@ -222,6 +223,10 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 		JPanel bp = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 25));
 		bp.setPreferredSize(new Dimension(500,70));
 		
+		fileLoad = new JCheckBox("File Load");
+		fileLoad.addItemListener(this);
+		bp.add(fileLoad);
+		
 		demoDB = new JCheckBox("Demo DB");
 		demoDB.addItemListener(this);
 		bp.add(demoDB);
@@ -238,7 +243,8 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 		add_b.addActionListener(this);
 		bp.add(add_b);
 		add_b.setEnabled(false);
-                
+        
+		/*** Not used for now
 		JButton modc = new JButton("Modify");
 		modc.setActionCommand("modconn");
 		modc.addKeyListener(new KeyBoardListener());
@@ -251,7 +257,8 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 		delc.addKeyListener(new KeyBoardListener());
 		delc.addActionListener(this);
 		bp.add(delc);
-                delc.setEnabled(false);
+        delc.setEnabled(false);
+        ***/
 		
 		ok_b = new JButton("Continue");
 		ok_b.setActionCommand("continue");
@@ -795,9 +802,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 
 	@Override
 	public void itemStateChanged(ItemEvent e) {
-		if (e.getStateChange() == ItemEvent.SELECTED ) {
-			
-			
+		if (e.getStateChange() == ItemEvent.SELECTED && e.getSource() == demoDB) {
 		SwingUtilities.invokeLater(new Runnable() {
 	        public void run()
 	         {
@@ -807,6 +812,22 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 					return;
 				} else {
 					fillDemoVal();
+				}
+	         }
+	    });
+			
+		}
+		if (e.getStateChange() == ItemEvent.SELECTED && e.getSource() == fileLoad) {
+		SwingUtilities.invokeLater(new Runnable() {
+	        public void run()
+	         {
+				int selop = JOptionPane.showConfirmDialog(null,"Do you want to load File ?","Choose FILE", JOptionPane.YES_NO_OPTION);
+				if (selop == JOptionPane.NO_OPTION) {
+					fileLoad.setSelected(false);
+					return;
+				} else {
+					dispose();
+					setFileLoad(true);
 				}
 	         }
 	    });
@@ -855,4 +876,12 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 				return;
 			}		
 		}
+
+	public boolean isFileLoad() {
+		return isFileLoad;
+	}
+
+	public void setFileLoad(boolean isFileLoad) {
+		this.isFileLoad = isFileLoad;
+	}
 }

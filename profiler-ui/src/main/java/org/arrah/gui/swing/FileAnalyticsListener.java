@@ -1220,7 +1220,7 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			ReportTableModel crossRTM = TabularReport.tabToCrossTab(newRTM1, orgreportColV, orgreportFieldV);
 			 newRT = new ReportTable(crossRTM);
 		} else
-		 newRT = new ReportTable(newRTM1);
+			newRT = new ReportTable(newRTM1);
 		
 		jd = new JDialog();
 		jd.setTitle("Report Table");
@@ -1299,7 +1299,6 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			km.drawKMeanPlot(noClus,colname);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
-			ConsoleFrame.addText(e.getLocalizedMessage());
 			return;
 		}
 		
@@ -1363,7 +1362,6 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			rs.drawTimeRegressionPlot(rtype);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
-			ConsoleFrame.addText(e.getLocalizedMessage());
 			return;
 		}
 		
@@ -1385,7 +1383,6 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			rs.drawRegressionPlot(dimIndex);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
-			ConsoleFrame.addText(e.getLocalizedMessage());
 			return;
 		}
 		
@@ -1417,7 +1414,6 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null,"Exception:"+e.getMessage());
-			ConsoleFrame.addText(e.getLocalizedMessage());
 			return;
 		}
 	}

@@ -206,6 +206,71 @@ public class NormalizeCol {
 		 return rtm;
 	}
 	
+ // Following functions will be used for Rounding, Ceiling and Roofing
+	
+	// This function will return rounding of input number
+	public static ReportTableModel roundingIndex(ReportTableModel rtm, int inputIndex, int outPutIndex, int roundtingType) {
+		int rowC = rtm.getModel().getRowCount();
+		
+		for (int i=0; i < rowC; i++) {
+			Object d = rtm.getModel().getValueAt(i, inputIndex);
+			
+			if (d == null ) {
+				rtm.getModel().setValueAt(d,i, outPutIndex);
+				continue;
+			}
+			
+			Double factor = 0.0d;
+			if (d instanceof Number) {
+				switch(roundtingType) {
+				case 1: // Rounding
+					factor = (double) Math.round((Double)d);
+					break;
+				case 2: // Ceiling
+					factor = Math.ceil((Double)d);
+					break;
+				case 3: // Flooring
+					factor = Math.floor((Double)d);
+					break;
+				case 4: // Nearest 0
+					factor = (double) (Math.round((Double)(d)/10) * 10);
+					break;
+					
+				default:
+					break;
+				}
+			}
+			else if (d instanceof String) {
+				try {
+						d = Double.parseDouble(d.toString());
+						switch(roundtingType) {
+						case 1: // Rounding
+							factor = (double) Math.round((Double)d);
+							break;
+						case 2: // Ceiling
+							factor = Math.ceil((Double)d);
+							break;
+						case 3: // Flooring
+							factor = Math.floor((Double)d);
+							break;
+						case 4: // Nearest 0
+							factor = (double) (Math.round((Double)(d)/10) * 10);
+							break;
+							
+						default:
+							break;
+						}
+						
+					} catch (Exception e) {
+						System.out.println("Exception:"+ e.getLocalizedMessage());
+						factor = null;
+					}
+			}
+			rtm.getModel().setValueAt(factor,i, outPutIndex);
+		}
+		 
+		 return rtm;
+	}
 	
 	
 } // End of NormalizeCol

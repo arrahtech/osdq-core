@@ -823,6 +823,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 
 	public static void main(String args[]) {
 		boolean success = false;
+		boolean fileLoad = false;
 		
 		if ((args.length > 0) && ( args[0] != null || "".equals(args[0]) == false)) { // open the confileFile.txt
 			_fileParse = KeyValueParser.parseFile(args[0]);
@@ -845,6 +846,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 			TestConnectionDialog tcd = new TestConnectionDialog(0); // Default main connection
 			tcd.createGUI();
 			_fileParse = tcd.getDBParam();
+			fileLoad = tcd.isFileLoad();
 		}
 		
 		Thread t = new Thread(new Runnable() {
@@ -853,7 +855,10 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 			}
 		});
 		t.start();
-		
-		createAndShowGUI();
+		if (fileLoad == false)
+			createAndShowGUI();
+		else { // Show FileMenu
+			new FileLoaderFrame();
+		}
 	}
 }

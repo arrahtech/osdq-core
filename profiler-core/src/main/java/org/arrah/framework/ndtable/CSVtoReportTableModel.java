@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.regex.PatternSyntaxException;
 
+import javax.swing.JOptionPane;
+
 import com.opencsv.CSVReader;
 
 public class CSVtoReportTableModel {
@@ -145,10 +147,9 @@ public class CSVtoReportTableModel {
 							else
 								f_column = new String[] { line };
 						} catch (PatternSyntaxException pe) {
-						  //removed coupling between core and ui
-/*							JOptionPane.showMessageDialog(null,
+							JOptionPane.showMessageDialog(null,
 									pe.getMessage(), "Regex Error",
-									JOptionPane.ERROR_MESSAGE);*/
+									JOptionPane.ERROR_MESSAGE);
 							return null;
 						}
 						columnA.add(colI, f_column[0]);

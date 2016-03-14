@@ -415,7 +415,6 @@ public class StringCaseFormatUtil {
 			if (Character.isDigit(c) == true )
 				onlyDigit += c;
 		}
-		
 		return onlyDigit;
 	}
 }

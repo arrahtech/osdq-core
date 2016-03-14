@@ -68,7 +68,6 @@ public class ShuffleRTM {
 	}
 	
 	/* It will shuffle across table but will not modify record */
-	
 	public static ReportTableModel shuffleColumns(ReportTableModel rtm, int[] colIndex, int beginRow, int endRow) {
 		if (rtm == null || rtm.getModel().getRowCount() == 0) return rtm;
 		ArrayList<Integer> rowList = new ArrayList<Integer>();
@@ -90,6 +89,7 @@ public class ShuffleRTM {
 		return rtm;
 	}
 
+	// It will mask columns with given maskChar **** /
 	public static ReportTableModel maskColumn(ReportTableModel rtm, int colIndex, 
 				int beginRow, int endRow, String maskChar, int maskPosition) {
 		

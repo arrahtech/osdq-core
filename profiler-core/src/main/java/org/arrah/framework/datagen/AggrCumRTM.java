@@ -163,7 +163,9 @@ public class AggrCumRTM {
 		
 		double num=0.0D,denum_a=0.0D, denum_b=0.0D;
 		
-		int rowC = one.size();
+		int rowC_one = one.size(); // select the lowest number
+		int rowC_two = two.size();
+		int rowC = (rowC_one > rowC_two ) ? rowC_two: rowC_one;
 		
 		for (int i=0; i < rowC; i++) {
 			double a = one.get(i) - mean_1;

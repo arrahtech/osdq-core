@@ -285,7 +285,10 @@ public class TableMenuListener implements ActionListener, ItemListener {
 						table.scrollRectToVisible(table.getCellRect(i, j, true));
 						
 						if (action_c.compareToIgnoreCase("replace") == 0)
-							table.getModel().setValueAt(replace, i, j);
+							if ("null".equals(replace)) // replace with null value
+								table.getModel().setValueAt(null, i, j);
+							else
+								table.getModel().setValueAt(replace, i, j);
 						
 						sn.setText(" Match Index: " + ++match_c);
 						

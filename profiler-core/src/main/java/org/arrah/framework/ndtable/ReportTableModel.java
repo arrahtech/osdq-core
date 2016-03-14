@@ -372,7 +372,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int i = 0; i < colC; i++) {
 			try {
 				obj[i] = tabModel.getValueAt(rowIndex, colI[i]);
-			} catch (Exception e) { // in case array out of bound
+			} catch (Exception e) { // in case array out-of-bound
 				obj[i] = null;
 				continue;
 			}

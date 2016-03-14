@@ -243,7 +243,7 @@ public class ResultsetToRTM {
 			}
 		// System.out.println("Big Integer is:"+number);
 		return number;
-		}
+	}
 	
 	synchronized public static ReportTableModel matchMD5Value(ResultSet rs, Vector<BigInteger> hashValue, boolean match)
 			throws SQLException {
