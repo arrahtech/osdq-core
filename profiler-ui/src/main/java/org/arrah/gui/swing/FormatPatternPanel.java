@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Enumeration;
@@ -253,7 +254,7 @@ public class FormatPatternPanel implements ActionListener {
 	private void loadFormatFile(String fileName) {
 		try {
 			// Open the file and load Hashtable
-			FileInputStream fileIn = new FileInputStream(fileName);
+			InputStream fileIn = FormatPatternPanel.class.getResourceAsStream(fileName);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			_nf = (Hashtable<String, StringBuffer>) in.readObject();
 			_df = (Hashtable<String, StringBuffer>) in.readObject();
@@ -276,44 +277,44 @@ public class FormatPatternPanel implements ActionListener {
 	}
 
 	public Hashtable<String, StringBuffer> getNumberTable() {
-		loadFormatFile("./resource/formatFile.atc");
+		loadFormatFile("resource/formatFile.atc");
 		return _nf;
 	}
 
 	public void setNumberTable(Hashtable<String, StringBuffer> nt) {
 		_nf = nt;
-		saveFormatFile("./resource/formatFile.atc");
+		saveFormatFile("resource/formatFile.atc");
 
 	}
 
 	public Hashtable<String, StringBuffer> getDateTable() {
-		loadFormatFile("./resource/formatFile.atc");
+		loadFormatFile("resource/formatFile.atc");
 		return _df;
 	}
 
 	public void setDateTable(Hashtable<String, StringBuffer> dt) {
 		_df = dt;
-		saveFormatFile("./resource/formatFile.atc");
+		saveFormatFile("resource/formatFile.atc");
 	}
 
 	public Hashtable<String, Object> getStringTable() {
-		loadFormatFile("./resource/formatFile.atc");
+		loadFormatFile("resource/formatFile.atc");
 		return _sf;
 	}
 
 	public void setStringTable(Hashtable<String, Object> st) {
 		_sf = st;
-		saveFormatFile("./resource/formatFile.atc");
+		saveFormatFile("resource/formatFile.atc");
 	}
 
 	public Hashtable<String, Object> getPhoneTable() {
-		loadFormatFile("./resource/formatFile.atc");
+		loadFormatFile("resource/formatFile.atc");
 		return _pf;
 	}
 
 	public void setPhoneTable(Hashtable<String, Object> pt) {
 		_pf = pt;
-		saveFormatFile("./resource/formatFile.atc");
+		saveFormatFile("resource/formatFile.atc");
 	}
 
 	public void actionPerformed(ActionEvent e) {

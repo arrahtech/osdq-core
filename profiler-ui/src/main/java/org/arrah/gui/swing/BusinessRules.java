@@ -873,16 +873,16 @@ public class BusinessRules extends javax.swing.JFrame implements ActionListener 
         });
 
         labTdelete.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
-        labTdelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/arrah/gui/swing/delete.png"))); // NOI18N
+        labTdelete.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/delete.png"))); // NOI18N
         labTdelete.setToolTipText("Click here to delete table details");
         labTdelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
-        labVdelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/arrah/gui/swing/delete.png"))); // NOI18N
+        labVdelete.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/delete.png"))); // NOI18N
         labVdelete.setToolTipText("Click here to delete value details");
         labVdelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
         labCdelete.setFont(new java.awt.Font("Verdana", 0, 12)); // NOI18N
-        labCdelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/arrah/gui/swing/delete.png"))); // NOI18N
+        labCdelete.setIcon(new javax.swing.ImageIcon(getClass().getClassLoader().getResource("images/delete.png"))); // NOI18N
         labCdelete.setToolTipText("Click here to delete column details");
         labCdelete.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
