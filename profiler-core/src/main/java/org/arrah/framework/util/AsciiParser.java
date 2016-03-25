@@ -22,10 +22,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import org.arrah.framework.ndtable.ReportTableModel;
+
+import com.google.common.base.Ascii;
 
 public class AsciiParser {
 
@@ -36,7 +39,8 @@ public class AsciiParser {
 		 */
 		public void init(String fileName) throws IOException{
 			
-			BufferedReader br = new BufferedReader(new  FileReader(fileName));
+    BufferedReader br = new BufferedReader(new InputStreamReader(
+        AsciiParser.class.getClassLoader().getResourceAsStream(fileName)));
 			 
 			int ctr = 1; // Counter
 			String sCurrentLine = null;
