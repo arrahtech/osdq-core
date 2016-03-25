@@ -15,7 +15,7 @@
 	<url>http://www.arrahtec.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+	</properties>	
 	<dependencies>
 		<dependency>
 			<groupId>com.github.mpkorstanje</groupId>
@@ -37,20 +37,26 @@
 			<artifactId>itextpdf</artifactId>
 			<version>5.4.0</version>
 		</dependency>
-		<!-- <dependency> <groupId>javax.sql</groupId> <artifactId>rowset</artifactId> 
-			<version>1.0.1</version> </dependency> -->
+		<!-- 
+		<dependency>
+		  <groupId>javax.sql</groupId>
+		  <artifactId>rowset</artifactId>
+		   <version>0.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/rowset.jar</systemPath>
+		</dependency>
+		 -->
 		<dependency>
 			<groupId>saxon</groupId>
 			<artifactId>saxon</artifactId>
 			<version>6.5.3</version>
 		</dependency>
+		<!-- JDBC DRIVER -->
 		<dependency>
 			<groupId>org.jumpmind.symmetric.jdbc</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>9.2-1002-jdbc4</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.oracle</groupId> <artifactId>ojdbc14</artifactId> 
-			<version>10.2.0.4.0</version> </dependency> -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -60,7 +66,42 @@
 		    <groupId>net.sf.ucanaccess</groupId>
 		    <artifactId>ucanaccess</artifactId>
 		    <version>3.0.4</version>
-		</dependency>		
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.derby</groupId>
+		    <artifactId>derby</artifactId>
+		    <version>10.12.1.1</version>
+		</dependency>
+		<!-- NON MAVENIZED JDBC JARS -->
+    <dependency>
+      <groupId>db2jcc4</groupId>
+      <artifactId>db2jcc4</artifactId>
+      <version>0.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/db2jcc4.jar</systemPath>
+    </dependency>		
+    <dependency>
+      <groupId>sqljdbc4</groupId>
+      <artifactId>sqljdbc4</artifactId>
+      <version>0.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/sqljdbc4.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>ojdbc14</groupId>
+      <artifactId>ojdbc14</artifactId>
+      <version>0.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/ojdbc14.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>ifxjdbc</groupId>
+      <artifactId>ifxjdbc</artifactId>
+      <version>0.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/ifxjdbc.jar</systemPath>
+    </dependency>
+		<!-- END OF JDBC DRIVER -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>

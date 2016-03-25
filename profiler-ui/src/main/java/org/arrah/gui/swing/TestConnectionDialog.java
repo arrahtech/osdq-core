@@ -24,9 +24,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.nio.file.CopyOption;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Hashtable;
 
 import javax.swing.JButton;
@@ -863,7 +865,11 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 			  //and copies the same as a file under configuration.
 			  //this removes filesystem dependency
 			  Path path = FileSystems.getDefault().getPath("configuration", "ArrahDemo.accdb");
-			  Files.copy(TestConnectionDialog.class.getClassLoader().getResourceAsStream("ArrahDemo.accdb"), path);
+      Files
+          .copy(
+              TestConnectionDialog.class.getClassLoader()
+                  .getResourceAsStream("ArrahDemo.accdb"),
+              path, StandardCopyOption.REPLACE_EXISTING);
 				
 				if (connectionType == 0 ) { // Default connection
 					Rdbms_conn.init(_dbparam);

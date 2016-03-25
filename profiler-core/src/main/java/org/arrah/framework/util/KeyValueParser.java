@@ -40,7 +40,7 @@ public class KeyValueParser {
 		try {
 
 			// Create the tokenizer to read from a file
-		  InputStreamReader inputStreamReader = new InputStreamReader(KeyValueParser.class.getResourceAsStream(filename));
+		  InputStreamReader inputStreamReader = new InputStreamReader(KeyValueParser.class.getClassLoader().getResourceAsStream(filename));
 		  BufferedReader rd = new BufferedReader(inputStreamReader);
 		  //FileReader rd = new FileReader(filename);
 			StreamTokenizer st = new StreamTokenizer(rd);
