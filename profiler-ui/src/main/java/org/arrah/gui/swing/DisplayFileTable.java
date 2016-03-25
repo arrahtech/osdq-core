@@ -1161,7 +1161,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			if (command.equals("piinfo")) {
 				// Create the Column name into hashtable
-				Hashtable<String,String>__h = KeyValueParser.parseFile("./resource/piiSearch.txt");
+				Hashtable<String,String>__h = KeyValueParser.parseFile("resource/piiSearch.txt");
 				if ( __h == null) {
 					JOptionPane.showMessageDialog(null, " No Table found");
 					return;

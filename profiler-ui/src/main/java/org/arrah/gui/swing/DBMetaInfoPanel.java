@@ -99,7 +99,7 @@ public class DBMetaInfoPanel implements ActionListener {
 			}
 			if (s.equals("Personally Identifiable Info")) {
 				// Create the Column name into hashtable
-				Hashtable<String,String>__h = KeyValueParser.parseFile("./resource/piiSearch.txt");
+				Hashtable<String,String>__h = KeyValueParser.parseFile("resource/piiSearch.txt");
 				Vector<String> tableName = Rdbms_conn.getTable();
 				
 				if (tableName == null || __h == null) {
