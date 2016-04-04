@@ -195,7 +195,11 @@ public class XmlReader {
 		if (document == null)
 			return;
 		final NodeList headerList = document.getElementsByTagName("header");
+		if (headerList == null) 
+			return;
 		final Node firstNode = headerList.item(0);
+		if (firstNode == null) 
+			return;
 		if (firstNode.getNodeType() == Node.ELEMENT_NODE) {
 			final Element element = (Element) firstNode;
 			final NodeList nodeList = element
