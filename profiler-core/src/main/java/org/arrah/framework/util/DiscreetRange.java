@@ -16,6 +16,9 @@ package org.arrah.framework.util;
  * discreet range analysis.
  * It matches one vector set with another
  * vector set and utilities related to that
+ * 
+ * This file also will be used for one hot encoding
+ * and binary encoding
  *
  */
 
@@ -141,4 +144,34 @@ public class DiscreetRange {
 		}
 		return newUniq;
 	}
-}
+
+
+	// This function will take list of unique cardinal values and
+	// put same amount of 0 as state machine. The matching value it
+	// will put 1 like 00001, 00010 
+	// it will only have one 1 in any value
+	public static Hashtable<Object,Integer> getOneHotEncoding(Vector<Object> list){
+		
+		
+		return null;
+		
+	}
+	
+	// This function will take list of unique cardinal values across
+	// columns put  0 for non matching and 1 for matching. The matching value it
+	// It will look like 10010,10011
+	// It may have multiple 1s in values
+	public static Hashtable<Object,Integer> getBinaryEncoding(Vector<Object> list){
+		
+		
+		return null;
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+} // End of DiscreetRange

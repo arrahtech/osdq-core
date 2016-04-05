@@ -187,7 +187,7 @@ public class OrdinalPanel implements ActionListener, ItemListener {
 			
 				int selColIndex = colSel.getSelectedIndex(); // Take value from  col on which grouping will be done
 				if (selColIndex < 2 ) {
-					JOptionPane.showMessageDialog(null, "Select the columns to make ordinal");
+					JOptionPane.showMessageDialog(null, "Select the column to make ordinal");
 					return;
 				} else selColIndex = selColIndex -2;
 				
