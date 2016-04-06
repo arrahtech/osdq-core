@@ -182,6 +182,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		ordinal_m.setActionCommand("ordinal");
 		preparation_m.add(ordinal_m);
 		
+		JMenuItem onehot_m = new JMenuItem("One Hot Encoding");
+		onehot_m.addActionListener(this);
+		onehot_m.setActionCommand("onehot");
+		preparation_m.add(onehot_m);
+		
 		JMenuItem season_m = new JMenuItem("Seasonality");
 		season_m.addActionListener(this);
 		season_m.setActionCommand("seasonality");
@@ -1778,7 +1783,14 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
 					return;
-				new OrdinalPanel(_rt,index);
+				new OrdinalPanel(_rt,index,0);
+				return;
+			}
+			if (command.equals("onehot")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new OrdinalPanel(_rt,index,1); // Hot one
 				return;
 			}
 			if (command.equals("seasonality")) {

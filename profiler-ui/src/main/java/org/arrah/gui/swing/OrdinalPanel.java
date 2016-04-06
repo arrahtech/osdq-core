@@ -61,9 +61,11 @@ public class OrdinalPanel implements ActionListener, ItemListener {
 	private JPanel cps;
 	private Vector<JTextField> grpName_v;
 	private ArrayList<Object> key;
+	private boolean onehot = false;
 
 	
-	public OrdinalPanel(ReportTable rt, int colIndex) {
+	public OrdinalPanel(ReportTable rt, int colIndex,int ordinaltype) {
+		if (ordinaltype == 1) onehot = true;
 		_rt = rt;
 		_colIndex = colIndex;
 		_rowC = rt.table.getRowCount();
@@ -254,12 +256,22 @@ public class OrdinalPanel implements ActionListener, ItemListener {
 		
 		key.sort(null);
 		
+		// for one hot key
+		Hashtable<Object,String> ht = null;
+		if (onehot == true)
+			ht= DiscreetRange.getOneHotEncoding(null,ordinalData);
 		
 		for (int i=0; i < carSize; i++ ) {
 			JLabel ordinalName = new JLabel("  Nominal String:"+key.get(i).toString());
 			JLabel ordinalCount = new JLabel("   Repeat Count:"+ ordinalData.get(key.get(i)).toString());
-			JTextField ordgrp = new JTextField(10);
-			ordgrp.setText(""+i);
+			JTextField ordgrp = new JTextField(15);
+			
+			// for one hot key
+			if (onehot == true)
+				ordgrp.setText(""+ht.get(key.get(i)));
+			else
+				ordgrp.setText(""+i);
+			
 			ordgrp.setToolTipText("Enter Ordinal  value");
 			grpName_v.add(i,ordgrp);
 			
