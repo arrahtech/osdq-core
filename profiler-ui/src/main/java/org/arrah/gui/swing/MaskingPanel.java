@@ -177,7 +177,7 @@ public class MaskingPanel implements ActionListener {
 		JLabel lrange = new JLabel("  Example:", JLabel.LEADING);
 		JLabel showImg;
 		
-		ImageIcon imageicon = new ImageIcon("./image/ShuffleTable.jpg", "Example Image");
+		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/ShuffleTable.jpg"), "Example Image");
 		int imageLS = imageicon.getImageLoadStatus();
 
 		if (imageLS == MediaTracker.ABORTED

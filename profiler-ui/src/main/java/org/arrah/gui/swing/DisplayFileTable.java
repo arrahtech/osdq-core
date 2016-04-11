@@ -2137,7 +2137,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		SpringLayout layout = new SpringLayout();
 		jp.setLayout(layout);
 
-		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
+		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/Filter.gif"), "Query");
 		int imageLS = imageicon.getImageLoadStatus();
 
 		for (int i = 0; i < colC; i++) {

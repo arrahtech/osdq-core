@@ -112,7 +112,7 @@ public class SplitColumnPanel implements ActionListener {
 		splitjp.add(dummy);
 		
 		JLabel imageIfo;
-		ImageIcon imageicon = new ImageIcon("./image/SplitColumn_nohd.png", "Image with no first column split");
+		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/SplitColumn_nohd.png"), "Image with no first column split");
 		int imageLS = imageicon.getImageLoadStatus();
 		if (imageLS == MediaTracker.ABORTED
 				|| imageLS == MediaTracker.ERRORED)
@@ -139,7 +139,7 @@ public class SplitColumnPanel implements ActionListener {
 		rd2 = new JRadioButton("Append First subString to all rows");
 		
 		JLabel imageIfo;
-		ImageIcon imageicon = new ImageIcon("./image/SplitColumn_ighd.png", "Image with ignore first column split");
+		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/SplitColumn_ighd.png"), "Image with ignore first column split");
 		int imageLS = imageicon.getImageLoadStatus();
 		if (imageLS == MediaTracker.ABORTED
 				|| imageLS == MediaTracker.ERRORED)
@@ -161,7 +161,7 @@ public class SplitColumnPanel implements ActionListener {
 		splitjp.add(rd2);
 		
 		JLabel imageIfo2;
-		ImageIcon imageicon2 = new ImageIcon("./image/SplitColumn_apphd.png", "Image with append first column split");
+		ImageIcon imageicon2 = new ImageIcon(getClass().getClassLoader().getResource("images/SplitColumn_apphd.png"), "Image with append first column split");
 		int imageLS2 = imageicon2.getImageLoadStatus();
 		if (imageLS2 == MediaTracker.ABORTED
 				|| imageLS2 == MediaTracker.ERRORED)

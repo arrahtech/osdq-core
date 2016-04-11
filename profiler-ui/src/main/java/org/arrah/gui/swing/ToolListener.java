@@ -327,22 +327,22 @@ public class ToolListener implements ActionListener {
 
 		switch (classID) {
 		case 0:
-			fileN = "DecimalFormatHelp.html";
+			fileN = "htmls/DecimalFormatHelp.html";
 			break;
 		case 1:
-			fileN = "DateFormatHelp.html";
+			fileN = "htmls/DateFormatHelp.html";
 			break;
 		case 2:
-			fileN = "PhoneFormatHelp.html";
+			fileN = "htmls/PhoneFormatHelp.html";
 			break;
 		case 3:
-			fileN = "MaskFormatHelp.html";
+			fileN = "htmls/MaskFormatHelp.html";
 			break;
 		default:
 			break;
 		}
-
-		java.net.URL helpURL = ToolListener.class.getResource(fileN);
+		
+		java.net.URL helpURL = ToolListener.class.getClassLoader().getResource(fileN);
 		if (helpURL != null) {
 			try {
 				editorPane.setPage(helpURL);
