@@ -137,7 +137,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		numjp.add(rd1);
 		numjp.setBorder(line_b);
 		
-		JButton addcol = new JButton("Add Column");
+		JButton addcol = new JButton("Add Row");
 		addcol.setActionCommand("addcol");
 		addcol.addActionListener(this);
 		addcol.addKeyListener(new KeyBoardListener());
@@ -166,7 +166,7 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		numjp.add(rd2);
 		numjp.setBorder(line_b);
 		
-		JButton addcol = new JButton("Add Column");
+		JButton addcol = new JButton("Add Row");
 		addcol.setActionCommand("addcolseason");
 		addcol.addActionListener(this);
 		addcol.addKeyListener(new KeyBoardListener());

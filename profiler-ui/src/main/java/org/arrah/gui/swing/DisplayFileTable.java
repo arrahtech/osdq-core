@@ -192,6 +192,11 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		season_m.setActionCommand("seasonality");
 		preparation_m.add(season_m);
 		
+		JMenuItem timegrp_m = new JMenuItem("Time Grouping");
+		timegrp_m.addActionListener(this);
+		timegrp_m.setActionCommand("timegrouping");
+		preparation_m.add(timegrp_m);
+		
 		JMenu enrich_m = new JMenu("Enrichment");
 		preparation_m.add(enrich_m);
 		
@@ -1798,6 +1803,13 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				if (index < 0)
 					return;
 				new GroupingPanel(_rt,index);
+				return;
+			}
+			if (command.equals("timegrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index);
 				return;
 			}
 			if (command.equals("attreplace")) {
