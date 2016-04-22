@@ -192,9 +192,29 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		season_m.setActionCommand("seasonality");
 		preparation_m.add(season_m);
 		
-		JMenuItem timegrp_m = new JMenuItem("Time Grouping");
-		timegrp_m.addActionListener(this);
-		timegrp_m.setActionCommand("timegrouping");
+		JMenu timegrp_m = new JMenu("Time Grouping");
+		
+		JMenuItem monthgrp_m = new JMenuItem("Month Grouping");
+		monthgrp_m.addActionListener(this);
+		monthgrp_m.setActionCommand("monthgrouping");
+		timegrp_m.add(monthgrp_m);
+		JMenuItem daygrp_m = new JMenuItem("Day Grouping");
+		daygrp_m.addActionListener(this);
+		daygrp_m.setActionCommand("daygrouping");
+		timegrp_m.add(daygrp_m);
+		JMenuItem dategrp_m = new JMenuItem("Date Grouping");
+		dategrp_m.addActionListener(this);
+		dategrp_m.setActionCommand("dategrouping");
+		timegrp_m.add(dategrp_m);
+		JMenuItem minutegrp_m = new JMenuItem("Minute Grouping");
+		minutegrp_m.addActionListener(this);
+		minutegrp_m.setActionCommand("minutegrouping");
+		timegrp_m.add(minutegrp_m);
+		JMenuItem secondgrp_m = new JMenuItem("Second Grouping");
+		secondgrp_m.addActionListener(this);
+		secondgrp_m.setActionCommand("secondgrouping");
+		timegrp_m.add(secondgrp_m);
+		
 		preparation_m.add(timegrp_m);
 		
 		JMenu enrich_m = new JMenu("Enrichment");
@@ -1805,11 +1825,46 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				new GroupingPanel(_rt,index);
 				return;
 			}
-			if (command.equals("timegrouping")) {
+			if (command.equals("monthgrouping")) {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
 					return;
-				new TimeGroupingPanel(_rt,index);
+				new TimeGroupingPanel(_rt,index,1); // month
+				return;
+			}
+			if (command.equals("daygrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,3); //day
+				return;
+			}
+			if (command.equals("dategrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,2); // date
+				return;
+			}
+			if (command.equals("hourgrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,4); // hour
+				return;
+			}
+			if (command.equals("minutegrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,5); // minute
+				return;
+			}
+			if (command.equals("secondgrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,6); // second
 				return;
 			}
 			if (command.equals("attreplace")) {

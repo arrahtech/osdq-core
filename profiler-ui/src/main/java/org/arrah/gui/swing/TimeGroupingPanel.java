@@ -25,6 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -43,6 +44,8 @@ import javax.swing.SpringLayout;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
+import org.arrah.framework.util.TimeUtil2;
+
 
 public class TimeGroupingPanel implements ActionListener, ItemListener {
 	private ReportTable _rt;
@@ -54,19 +57,20 @@ public class TimeGroupingPanel implements ActionListener, ItemListener {
 	private Border line_b;
 	private int beginIndex, endIndex;
 	private JLabel colType;
-	private Vector<JTextField> grpName_v,otherValue_v,grpName_vS;
-	private Vector<JFormattedTextField>jft_low_v, jft_high_v;
+	private Vector<JTextField> grpName_vS;
 	private Vector<JSpinner>jft_low_vS, jft_high_vS;
-	private JPanel cp,cps; // for adding more row for number grouping
+	private JPanel cps; // for adding more row for number grouping
 	private Vector<Boolean> validDate_bvS;
 
+	private int capacityS;
+	private int heirachycode = 	1; // Month=1, Date =2,Day=3, Hour=4, Min=5, Sec =6
+	private boolean isDay = false, isDate = true;
 	
-	private int capacity, capacityS;
-	
-	public TimeGroupingPanel(ReportTable rt, int colIndex) {
+	public TimeGroupingPanel(ReportTable rt, int colIndex, int hcode) {
 		_rt = rt;
 		_colIndex = colIndex;
 		_rowC = rt.table.getRowCount();
+		heirachycode = hcode;
 		createDialog();
 	}; // Constructor
 	
@@ -183,13 +187,6 @@ public class TimeGroupingPanel implements ActionListener, ItemListener {
 			d_f.dispose();
 			return;
 		}
-		if (action.equals("addcol")) {
-			addRow();
-			cp.setLayout(new SpringLayout());
-			SpringUtilities.makeCompactGrid(cp, capacity, 8, 3, 3, 3, 3);
-			cp.revalidate();
-			return;
-		}
 		if (action.equals("addcolseason")) {
 			addSeasonRow();
 			cps.setLayout(new SpringLayout());
@@ -239,15 +236,44 @@ public class TimeGroupingPanel implements ActionListener, ItemListener {
 				 }
 				 String colVal = "";
 				 for (int j=0; j < capacityS; j++) {
-						if (validDate_bvS.get(j) == true) {
-							Date mindate = (Date) jft_low_vS.get(j).getValue();
-							Date maxdate = (Date) jft_high_vS.get(j).getValue();
-							if ( ((Date)colObject).compareTo(mindate) >= 0 && ((Date)colObject).before(maxdate)) {
-								colVal = grpName_vS.get(j).getText();
-								break; // break the loop and setValue then get next value
-							}
-							
-						} else continue; // not valid value	
+					if (validDate_bvS.get(j) == true) {
+						Date mindate = (Date) jft_low_vS.get(j).getValue();
+						Date maxdate = (Date) jft_high_vS.get(j).getValue();
+						
+						Hashtable<String,String> startD = TimeUtil2.getDateAttributes(mindate,null,true);
+						Hashtable<String,String> endD = TimeUtil2.getDateAttributes(maxdate,null,true);
+						Hashtable<String,String> validD = TimeUtil2.getDateAttributes((Date)colObject,null,true);
+						
+						switch (heirachycode)  {
+						case 6:
+							// make second redundant
+							validD.put("minute", "");
+						case 5:
+							// make minute redundant
+							validD.put("hour", "");
+						case 4:
+							// make day date redundant
+							validD.put("day", "");
+							if ( heirachycode == 4)  { isDay=true; isDate=false; }//day
+						case 3:
+							validD.put("date", "");
+							if ( isDay != true) isDate=true; //day
+						case 2:
+							// make month redundant
+							validD.put("month", "");
+						case 1:
+							// make year redundant
+							validD.put("year", "");
+						default:
+								break;
+								
+						}
+						if (TimeUtil2.isInGroup(startD, endD, validD, isDate) == true) { // date of month
+							colVal = grpName_vS.get(j).getText();
+							// System.out.println("True -- "+colVal);
+							break; // break the loop and setValue then get next value
+						}
+					} else continue; // not valid value	
 				}
 				_rt.getModel().setValueAt(colVal, i, _colIndex);
 			}
@@ -264,45 +290,7 @@ public class TimeGroupingPanel implements ActionListener, ItemListener {
 	} // End of ItemStateChange
 	
 	
-	/* This function will be used to add row to number grouping feature */
-	private void addRow() {
-		
-		JLabel grpNameL = new JLabel("Group ID:");
-		JTextField grpName = new JTextField(10);
-		grpName.setText("Group_"+ (capacity+1));
-		grpName.setToolTipText("Enter Group Name");
-		
-		JLabel lrange = new JLabel("  Min:", JLabel.LEADING);
-		JFormattedTextField jft_low = new JFormattedTextField();
-		jft_low.setValue(new Double(capacity * 100.00D));
-		jft_low.setColumns(10);
-		JLabel hrange = new JLabel("  Max:", JLabel.LEADING);
-		JFormattedTextField jft_high = new JFormattedTextField();
-		jft_high.setValue(new Double((capacity+1) * 100.00D)); // default Min
-		jft_high.setColumns(10);
-		
-		JLabel otherValueL = new JLabel("Others:", JLabel.LEADING);
-		otherValueL.setToolTipText("Comma Separated List of Numbers");
-		JTextField otherValue = new JTextField(20);
-		otherValue.setToolTipText("Comma Separated List of Numbers");
-		
-		grpName_v.add(capacity,grpName);
-		jft_low_v.add(capacity,jft_low);
-		jft_high_v.add(capacity,jft_high);
-		otherValue_v.add(capacity,otherValue);
-		
-		/* Add value to Panel */
-		cp.add(grpNameL);
-		cp.add(grpName);
-		cp.add(lrange);
-		cp.add(jft_low);
-		cp.add(hrange);
-		cp.add(jft_high);
-		cp.add(otherValueL);
-		cp.add(otherValue);
-		capacity++;
-	}
-
+	
 	/* This function will be used to add row to season grouping feature */
 	private void addSeasonRow() {
 		
@@ -313,8 +301,38 @@ public class TimeGroupingPanel implements ActionListener, ItemListener {
 		
 		JSpinner jsp_low = new JSpinner(new SpinnerDateModel());
 		JSpinner jsp_high = new JSpinner(new SpinnerDateModel());
-		jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "HH:mm:ss"));
-		jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "HH:mm:ss"));
+		
+		if (heirachycode == 1) { // for month
+			jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "dd/MM HH:mm:ss"));
+			jsp_low.setToolTipText("dd/MM HH:mm:ss format");
+			jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "dd/MM HH:mm:ss"));
+			jsp_high.setToolTipText("dd/MM  HH:mm:ss format");
+		} else if (heirachycode == 2) { // for date date
+			jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "dd HH:mm:ss"));
+			jsp_low.setToolTipText("dd HH:mm:ss format. \n Monday first day of week");
+			jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "dd HH:mm:ss"));
+			jsp_high.setToolTipText("dd  HH:mm:ss format. \n Monday first day of week");
+		} else if (heirachycode == 3) { // for day date
+			jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "EEE HH:mm:ss"));
+			jsp_low.setToolTipText("EEE HH:mm:ss format. \n Monday first day of week");
+			jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "EEE HH:mm:ss"));
+			jsp_high.setToolTipText("EEE  HH:mm:ss format. \n Monday first day of week");
+		} else if (heirachycode == 4) { // for Hour
+			jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "HH:mm:ss"));
+			jsp_low.setToolTipText("HH:mm:ss format");
+			jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "HH:mm:ss"));
+			jsp_high.setToolTipText("HH:mm:ss format");
+		} else if (heirachycode == 5) { // for Minute
+			jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "mm:ss"));
+			jsp_low.setToolTipText("mm:ss format");
+			jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "mm:ss"));
+			jsp_high.setToolTipText("mm:ss format");
+		} else if (heirachycode == 6) { // for Second
+			jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "ss"));
+			jsp_low.setToolTipText("ss format");
+			jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "ss"));
+			jsp_high.setToolTipText("ss format");
+		} 
 		
 		JLabel lrange = new JLabel("Start Time:", JLabel.LEADING);
 		JLabel hrange = new JLabel("End Time:", JLabel.LEADING);

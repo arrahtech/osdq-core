@@ -132,19 +132,19 @@ public class TimeUtil2 {
 	public static String getCanonicalDay(int day, boolean isNumber) {
 		switch (day) {
 		case Calendar.SUNDAY:
-			return (isNumber == true)?"1":"Sunday";
+			return (isNumber == true)?"7":"Sunday";
 		case Calendar.MONDAY:
-			return (isNumber == true)?"2":"Monday";
+			return (isNumber == true)?"1":"Monday"; // Monday Starting day of week
 		case Calendar.TUESDAY:
-			return (isNumber == true)?"3":"Tuesday";
+			return (isNumber == true)?"2":"Tuesday";
 		case Calendar.WEDNESDAY:
-			return (isNumber == true)?"4":"Wednesday";
+			return (isNumber == true)?"3":"Wednesday";
 		case Calendar.THURSDAY:
-			return (isNumber == true)?"5":"Thursday";
+			return (isNumber == true)?"4":"Thursday";
 		case Calendar.FRIDAY:
-			return (isNumber == true)?"6":"Friday";
+			return (isNumber == true)?"5":"Friday";
 		case Calendar.SATURDAY:
-			return (isNumber == true)?"7":"Saturday";
+			return (isNumber == true)?"6":"Saturday";
 		default:
 			return (isNumber == true)?"0":"Undefined";
 		}
@@ -152,123 +152,279 @@ public class TimeUtil2 {
 	
 	// This function will provide a boolean output to a date/long column
 	// and say if it belongs to that group or not
-	public static boolean isInGroup (Hashtable<String,String> start,Hashtable<String,String> end, Hashtable<String,String> tobeValid) {
+	public static boolean isInGroup (Hashtable<String,String> start,Hashtable<String,String> end, 
+					Hashtable<String,String> tobeValid, boolean isDate) {
 		
 		if (tobeValid == null || start == null || end == null ) return false; // nothing to match
+		boolean isSameNumber=true; // for year which is highest hierarchy
+		boolean left = false, right = false;
 		
 		 // if year matches
 		String startv = start.get("year");
-		String endv = start.get("year");
+		String endv = end.get("year");
 		String validv = tobeValid.get("year");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
+		
+		if (validv != null && "".equals(validv) == false) {
 			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
-					return false;
-			} catch (Exception r) {
+				int validno = Integer.parseInt(validv); 
+				int startno = Integer.parseInt(startv);
+				int endno = Integer.parseInt(endv);
+				
+				// System.out.println("Year:"+startv+"-"+endv+"-"+validv);
+				
+				if ((validno > startno) &&  (validno < endno)) // In between range
+					return true;
+				
+				if (isSameNumber == true) {
+					if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+						return false;
+				} else {
+					if (right == true && validno < endno ) return true; // less than end threshold. Start does not matter
+					if (right == true && validno > endno ) return false;
+					if (left == true && validno > startno ) return true; // more than start threshold
+					if (left == true && validno < startno ) return false;
+				}
+				
+				if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+					if (endno > startno) {
+						isSameNumber = false;
+						//if reached here either it will match left or right
+						if (validno==startno) left = true; else right = true;
+					}
+				
+			} catch (Exception r) { // Null or not in right format
 				return false;
 			}
 		}
 		
 		// if month matches no canonical month
 		startv = start.get("month");
-		endv = start.get("month");
+		endv = end.get("month");
 		validv = tobeValid.get("month");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
+		
+		if (validv != null && "".equals(validv) == false) {
 			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
-					return false;
-			} catch (Exception r) {
+				int validno = Integer.parseInt(validv); 
+				int startno = Integer.parseInt(startv);
+				int endno = Integer.parseInt(endv);
+				
+				// System.out.println("Month:"+startv+"-"+endv+"-"+validv);
+				
+				if ((validno > startno) &&  (validno < endno)) // In between range
+					return true;
+				
+				if (isSameNumber == true) {
+					if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+						return false;
+				} else {
+					if (right == true && validno < endno ) return true; // less than end threshold. Start does not matter
+					if (right == true && validno > endno ) return false;
+					if (left == true && validno > startno ) return true; // more than start threshold
+					if (left == true && validno < startno ) return false;
+				}
+				
+				if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+					if (endno > startno) {
+						isSameNumber = false;
+						//if reached here either it will match left or right
+						if (validno==startno) left = true; else right = true;
+					}
+				
+			} catch (Exception r) { // Null or not in right format
 				return false;
 			}
 		}
 		
 		// if day matches no canonical day
-		startv = start.get("day");
-		endv = start.get("day");
-		validv = tobeValid.get("day");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
-			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
+		// Either day ( weekday ) will be active or date ( day of month) will be active
+		if (isDate == false) {
+			startv = start.get("day");
+			endv = end.get("day");
+			validv = tobeValid.get("day");
+			
+			if (validv != null && "".equals(validv) == false) {
+				try {
+					int validno = Integer.parseInt(validv); 
+					int startno = Integer.parseInt(startv);
+					int endno = Integer.parseInt(endv);
+					
+					// System.out.println("Day:"+startv+"-"+endv+"-"+validv);
+					
+					if ((validno > startno) &&  (validno < endno)) // In between range
+						return true;
+					
+					if (isSameNumber == true) {
+						if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+							return false;
+					} else {
+						if (right == true && validno < endno ) return true; // less than end threshold. Start does not matter
+						if (right == true && validno > endno ) return false;
+						if (left == true && validno > startno ) return true; // more than start threshold
+						if (left == true && validno < startno ) return false;
+					}
+
+					if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+						if (endno > startno) {
+							isSameNumber = false;
+							//if reached here either it will match left or right
+							if (validno==startno) left = true; else right = true;
+						}
+					
+				} catch (Exception r) { // Null or not in right format
 					return false;
-			} catch (Exception r) {
-				return false;
+				}
 			}
-		}
-		
-		// if date matches
-		startv = start.get("date");
-		endv = start.get("date");
-		validv = tobeValid.get("date");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
-			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
+		} else {
+			// if date matches
+			startv = start.get("date");
+			endv = end.get("date");
+			validv = tobeValid.get("date");
+			if (validv != null && "".equals(validv) == false) {
+				try {
+					int validno = Integer.parseInt(validv); 
+					int startno = Integer.parseInt(startv);
+					int endno = Integer.parseInt(endv);
+					
+					// System.out.println("Date:"+startv+"-"+endv+"-"+validv);
+					
+					if ((validno > startno) &&  (validno < endno)) // In between range
+						return true;
+					
+					if (isSameNumber == true) {
+						if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+							return false;
+					} else {
+						if (right == true && validno < endno ) return true; // less than end threshold. Start does not matter
+						if (right == true && validno > endno ) return false;
+						if (left == true && validno > startno ) return true; // more than start threshold
+						if (left == true && validno < startno ) return false;
+					}
+
+					if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+						if (endno > startno) {
+							isSameNumber = false;
+							//if reached here either it will match left or right
+							if (validno==startno) left = true; else right = true;
+						}
+					
+				} catch (Exception r) { // Null or not in right format
 					return false;
-			} catch (Exception r) {
-				return false;
+				}
 			}
 		}
 		
 		// if hour matches
 		startv = start.get("hour");
-		endv = start.get("hour");
+		endv = end.get("hour");
 		validv = tobeValid.get("hour");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
+		if (validv != null && "".equals(validv) == false) {
 			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
-					return false;
-			} catch (Exception r) {
+				int validno = Integer.parseInt(validv); 
+				int startno = Integer.parseInt(startv);
+				int endno = Integer.parseInt(endv);
+				
+				// System.out.println("Hour:"+startv+"-"+endv+"-"+validv);
+				
+				if ((validno > startno) &&  (validno < endno)) // In between range
+					return true;
+				
+				if (isSameNumber == true) {
+					if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+						return false;
+				} else {
+					if (right == true && validno < endno ) return true; // less than end threshold. Start does not matter
+					if (right == true && validno > endno ) return false;
+					if (left == true && validno > startno ) return true; // more than start threshold
+					if (left == true && validno < startno ) return false;
+				}
+
+				if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+					if (endno > startno) {
+						isSameNumber = false;
+						//if reached here either it will match left or right
+						if (validno==startno) left = true; else right = true;
+					}
+				
+			} catch (Exception r) { // Null or not in right format
 				return false;
 			}
 		}
 		
 		// if minute matches
 		startv = start.get("minute");
-		endv = start.get("minute");
+		endv = end.get("minute");
 		validv = tobeValid.get("minute");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
+		if (validv != null && "".equals(validv) == false) {
 			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
-					return false;
-			} catch (Exception r) {
+				int validno = Integer.parseInt(validv); 
+				int startno = Integer.parseInt(startv);
+				int endno = Integer.parseInt(endv);
+				
+				// System.out.println("Minute:"+startv+"-"+endv+"-"+validv);
+				
+				if ((validno > startno) &&  (validno < endno)) // In between range
+					return true;
+				
+				if (isSameNumber == true) {
+					if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+						return false;
+				} else {
+					if (right == true && validno < endno ) return true; // less than end threshold. Start does not matter
+					if (right == true && validno > endno ) return false;
+					if (left == true && validno > startno ) return true; // more than start threshold
+					if (left == true && validno < startno ) return false;
+				}
+
+				if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+					if (endno > startno) {
+						isSameNumber = false;
+						//if reached here either it will match left or right
+						if (validno==startno) left = true; else right = true;
+					}
+				
+			} catch (Exception r) { // Null or not in right format
 				return false;
 			}
 		}
 		
 		// if seconds matches
 		startv = start.get("second");
-		endv = start.get("second");
+		endv = end.get("second");
 		validv = tobeValid.get("second");
-		if (validv != null) {
-			if (startv == null || endv == null)
-				return false;
+		if (validv != null && "".equals(validv) == false) {
 			try {
-				if ( (Integer.parseInt(validv) < Integer.parseInt(startv)) ||
-					(Integer.parseInt(validv) > Integer.parseInt(endv)) )
-					return false;
-			} catch (Exception r) {
+				int validno = Integer.parseInt(validv); 
+				int startno = Integer.parseInt(startv);
+				int endno = Integer.parseInt(endv);
+				
+				// System.out.println("Second:"+startv+"-"+endv+"-"+validv);
+				
+				if ((validno >= startno) &&  (validno <= endno)) // In between range for last equal to fine
+					return true;
+				
+				if (isSameNumber == true) {
+					if ( (validno < startno ) || (validno > endno) ) // Out of range for same start and end
+						return false;
+				} else {
+					if (right == true && validno <= endno ) return true; // less than end threshold. Start does not matter
+					if (right == true && validno > endno ) return false;
+					if (left == true && validno >= startno ) return true; // more than start threshold
+					if (left == true && validno < startno ) return false;
+				}
+
+				if (isSameNumber == true)  // if false only end no need to be checked and fall thru heirarchy 
+					if (endno > startno) {
+						isSameNumber = false;
+						//if reached here either it will match left or right
+						if (validno==startno) left = true; else right = true;
+					}
+				
+			} catch (Exception r) { // Null or not in right format
 				return false;
 			}
 		}
 		
-		return true;
+		return false;
 		
 	}
 	

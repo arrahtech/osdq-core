@@ -342,16 +342,17 @@ public class GroupingPanel implements ActionListener, ItemListener {
 						}
 					 }
 					 String colVal = "";
-					 for (int j=0; j < capacityS; j++) {
-							if (validDate_bvS.get(j) == true) {
-								Date mindate = (Date) jft_low_vS.get(j).getValue();
-								Date maxdate = (Date) jft_high_vS.get(j).getValue();
-								if ( ((Date)colObject).compareTo(mindate) >= 0 && ((Date)colObject).before(maxdate)) {
-									colVal = grpName_vS.get(j).getText();
-									break; // break the loop and setValue then get next value
-								}
-								
-							} else continue; // not valid value	
+					 for (int j=0; j < capacityS; j++) { // First match will break
+						if (validDate_bvS.get(j) == true) {
+							Date mindate = (Date) jft_low_vS.get(j).getValue();
+							Date maxdate = (Date) jft_high_vS.get(j).getValue();
+							
+							if ( ((Date)colObject).compareTo(mindate) >= 0 && ((Date)colObject).before(maxdate)) {
+								colVal = grpName_vS.get(j).getText();
+								break; // break the loop and setValue then get next value
+							}
+							
+						} else continue; // not valid value	
 					}
 					_rt.getModel().setValueAt(colVal, i, _colIndex);
 				}
@@ -537,7 +538,9 @@ public class GroupingPanel implements ActionListener, ItemListener {
 		JSpinner jsp_low = new JSpinner(new SpinnerDateModel());
 		JSpinner jsp_high = new JSpinner(new SpinnerDateModel());
 		jsp_low.setEditor(new JSpinner.DateEditor(jsp_low, "dd/MM/yyyy HH:mm:ss"));
+		jsp_low.setToolTipText("dd/MM/yyyy HH:mm:ss format");
 		jsp_high.setEditor(new JSpinner.DateEditor(jsp_high, "dd/MM/yyyy HH:mm:ss"));
+		jsp_high.setToolTipText("dd/MM/yyyy HH:mm:ss format");
 		
 		JLabel lrange = new JLabel("Start Date:", JLabel.LEADING);
 		JLabel hrange = new JLabel("End Date:", JLabel.LEADING);
