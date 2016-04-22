@@ -872,7 +872,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 			    Files
 			    .copy(
 			        TestConnectionDialog.class.getClassLoader()
-			        .getResourceAsStream("ArrahDemo.accdb"),
+			        .getResourceAsStream("resource/ArrahDemo.accdb"),
 			        path);
 			  }
 				if (connectionType == 0 ) { // Default connection

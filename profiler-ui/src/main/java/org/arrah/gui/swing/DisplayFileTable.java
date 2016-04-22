@@ -32,6 +32,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -2097,7 +2098,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		return d_f;
 	}
 
-	private JDialog mapDialog(boolean toDb) {
+	private JDialog mapDialog(boolean toDb) throws IOException {
 		init = false;
 		JPanel jp_p = null;
 		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 && toDb == true ) {
@@ -2125,8 +2126,9 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		SpringLayout layout = new SpringLayout();
 		jp.setLayout(layout);
 
-		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
-		int imageLS = imageicon.getImageLoadStatus();
+      ImageIcon imageicon = new ImageIcon(DisplayFileTable.class
+          .getClassLoader().getResource("image/Filter.gif"), "Query");
+  		int imageLS = imageicon.getImageLoadStatus();
 
 		for (int i = 0; i < colC; i++) {
 			tf1[i] = new JTextField(8);

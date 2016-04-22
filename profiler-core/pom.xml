@@ -37,7 +37,6 @@
 			<artifactId>itextpdf</artifactId>
 			<version>5.4.0</version>
 		</dependency>
-		<!-- 
 		<dependency>
 		  <groupId>javax.sql</groupId>
 		  <artifactId>rowset</artifactId>
@@ -45,7 +44,6 @@
       <scope>system</scope>
       <systemPath>${project.basedir}/lib/rowset.jar</systemPath>
 		</dependency>
-		 -->
 		<dependency>
 			<groupId>saxon</groupId>
 			<artifactId>saxon</artifactId>

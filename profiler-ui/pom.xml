@@ -16,6 +16,15 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>resource/**</exclude>
+          <exclude>configFile.txt</exclude>
+        </excludes>
+      </resource>
+    </resources>
 	  <plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>

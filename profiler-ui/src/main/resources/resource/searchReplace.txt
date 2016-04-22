@@ -1,0 +1,7 @@
+road="Rd."
+Apartment="Apt."
+apartment="Apt."
+Bob="Robert"
+United States of America="USA"
+Bangalore="Bangaluru"
+Road="Rd."

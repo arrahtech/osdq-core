@@ -124,9 +124,9 @@ public class UpdatableJdbcRowsetImpl extends BaseRowSet
       System.err.println(this.resBundle.handleGetObject("jdbcrowsetimpl.setconcurrency").toString() + localSQLException6.getLocalizedMessage());
     }
 
-    setTypeMap(null);
     try
     {
+      setTypeMap(null);
       setType(1004);
     } catch (SQLException localSQLException7) {
       System.err.println(this.resBundle.handleGetObject("jdbcrowsetimpl.settype").toString() + localSQLException7.getLocalizedMessage());

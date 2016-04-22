@@ -67,7 +67,7 @@ public class RightView implements ItemListener,ActionListener {
 		parent.setLayout(new BorderLayout());
 
 		// Create top Panel
-		parent.add(createTopPane(), BorderLayout.PAGE_START);
+    parent.add(createTopPane(), BorderLayout.PAGE_START);
 
 		// Create the body Panel
 		body = new JPanel(new GridLayout(0,1));
@@ -129,7 +129,8 @@ public class RightView implements ItemListener,ActionListener {
 		Border line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 		ep.setBorder(line_b);
 
-		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
+    ImageIcon imageicon = new ImageIcon(RightView.class
+        .getClassLoader().getResource("image/Filter.gif"), "Query");
 		int imageLS = imageicon.getImageLoadStatus();
 		JLabel jlabel;
 		if (imageLS == MediaTracker.ABORTED || imageLS == MediaTracker.ERRORED)
