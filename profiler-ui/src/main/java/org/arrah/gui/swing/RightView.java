@@ -131,6 +131,7 @@ public class RightView implements ItemListener,ActionListener {
 
     ImageIcon imageicon = new ImageIcon(RightView.class
         .getClassLoader().getResource("image/Filter.gif"), "Query");
+
 		int imageLS = imageicon.getImageLoadStatus();
 		JLabel jlabel;
 		if (imageLS == MediaTracker.ABORTED || imageLS == MediaTracker.ERRORED)

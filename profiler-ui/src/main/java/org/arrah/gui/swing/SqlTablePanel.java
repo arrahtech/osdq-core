@@ -330,7 +330,7 @@ public class SqlTablePanel extends JPanel implements ActionListener {
 
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
-		loadSQLFile("./resource/storedSQL");
+		loadSQLFile("./configuration/storedSQL");
 		if (command.compareTo("Save as..") == 0) {
 			String q_name = (String) JOptionPane.showInputDialog(null,
 					"Enter Query Name:", "Query Input Dialog",
@@ -340,7 +340,7 @@ public class SqlTablePanel extends JPanel implements ActionListener {
 					|| sql_t.getText().compareTo("") == 0)
 				return;
 			stored_query.put(q_name, sql_t.getText());
-			saveSQLFile("./resource/storedSQL");
+			saveSQLFile("./configuration/storedSQL");
 			return;
 		}
 		if (command.compareTo("Open") == 0) {
@@ -379,7 +379,7 @@ public class SqlTablePanel extends JPanel implements ActionListener {
 			if (q_name == null || q_name.compareTo("") == 0)
 				return;
 			stored_query.remove(q_name);
-			saveSQLFile("./resource/storedSQL");
+			saveSQLFile("./configuration/storedSQL");
 			return;
 		}
 		sql_t.setText(command);

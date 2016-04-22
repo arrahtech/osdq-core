@@ -120,6 +120,7 @@ public class SplitColumnPanel implements ActionListener {
     ImageIcon imageicon = new ImageIcon(SplitColumnPanel.class.getClassLoader()
             .getResource("image/SplitColumn_nohd.png"),
         "Image with no first column split");
+
 		int imageLS = imageicon.getImageLoadStatus();
 		if (imageLS == MediaTracker.ABORTED
 				|| imageLS == MediaTracker.ERRORED)
@@ -149,6 +150,7 @@ public class SplitColumnPanel implements ActionListener {
     ImageIcon imageicon = new ImageIcon(SplitColumnPanel.class.getClassLoader()
             .getResource("image/SplitColumn_ighd.png"),
         "Image with ignore first column split");
+
 		int imageLS = imageicon.getImageLoadStatus();
 		if (imageLS == MediaTracker.ABORTED
 				|| imageLS == MediaTracker.ERRORED)

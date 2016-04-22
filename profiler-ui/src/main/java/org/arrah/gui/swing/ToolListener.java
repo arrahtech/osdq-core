@@ -327,22 +327,22 @@ public class ToolListener implements ActionListener {
 
 		switch (classID) {
 		case 0:
-			fileN = "DecimalFormatHelp.html";
+			fileN = "htmls/DecimalFormatHelp.html";
 			break;
 		case 1:
-			fileN = "DateFormatHelp.html";
+			fileN = "htmls/DateFormatHelp.html";
 			break;
 		case 2:
-			fileN = "PhoneFormatHelp.html";
+			fileN = "htmls/PhoneFormatHelp.html";
 			break;
 		case 3:
-			fileN = "MaskFormatHelp.html";
+			fileN = "htmls/MaskFormatHelp.html";
 			break;
 		default:
 			break;
 		}
-
-		java.net.URL helpURL = ToolListener.class.getResource(fileN);
+		
+		java.net.URL helpURL = ToolListener.class.getClassLoader().getResource(fileN);
 		if (helpURL != null) {
 			try {
 				editorPane.setPage(helpURL);
@@ -377,6 +377,7 @@ public class ToolListener implements ActionListener {
 					ht = new Hashtable<String, StringBuffer>();
 				ht.put(f_t.getText().trim(), output);
 				fp.setNumberTable(ht);
+				JOptionPane.showMessageDialog(null, "Number Format Saved");
 			}
 		} else {
 			JOptionPane.showMessageDialog(null, "Invalid Format",
@@ -406,6 +407,7 @@ public class ToolListener implements ActionListener {
 					ht = new Hashtable<String, StringBuffer>();
 				ht.put(f_t.getText().trim(), output);
 				fp.setDateTable(ht);
+				JOptionPane.showMessageDialog(null, "Date Format Saved");
 			}
 		} else {
 			JOptionPane.showMessageDialog(null, "Invalid Format",
@@ -429,6 +431,7 @@ public class ToolListener implements ActionListener {
 					ht = new Hashtable<String, Object>();
 				ht.put(f_t.getText().trim(), v);
 				fp.setStringTable(ht);
+				JOptionPane.showMessageDialog(null, "String Format Saved");
 			}
 		} else {
 			JOptionPane.showMessageDialog(null, "Invalid Format",
@@ -451,6 +454,7 @@ public class ToolListener implements ActionListener {
 					ht = new Hashtable<String, Object>();
 				ht.put(f_t.getText().trim(), v);
 				fp.setPhoneTable(ht);
+				JOptionPane.showMessageDialog(null, "Phone Format Saved");
 			}
 		} else {
 			JOptionPane.showMessageDialog(null, "Invalid Format",
