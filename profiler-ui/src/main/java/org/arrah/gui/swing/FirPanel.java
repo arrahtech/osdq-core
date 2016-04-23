@@ -452,7 +452,7 @@ public class FirPanel extends JPanel {
 
 			JPanel jpanel2 = new JPanel();
 			LinkMouseListener linkmouselistener = new LinkMouseListener();
-			ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/Filter.gif"), "Query");
+			ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("image/Filter.gif"), "Query");
 			int imageLS = imageicon.getImageLoadStatus();
 
 			JLabel jlabel;
