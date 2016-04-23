@@ -31,6 +31,8 @@ public class RTMDiffUtil {
 	private ReportTableModel matchRTM = null, leftNoMatchRTM= null, rightNoMatchRTM = null;
 	private HashMap<Integer, Integer> matchedIndex;
 	
+	private static Vector<Integer> vc = null;
+	
 	public RTMDiffUtil() {
 		// Default Constructor
 	}
@@ -110,10 +112,12 @@ public class RTMDiffUtil {
 				Object[] rightRow = rightRTM.getRow(j);
 				if (rightRow == null ) continue;
 				
-				if ( allColMatch == true ) 
+				if ( allColMatch == true ) {
 					ismatch =matchAllColumn(leftRow, rightRow, asString);
-				else 
+				}
+				else {
 					ismatch = matchIndexColumn(leftRow,leftIndex, rightRow,rightIndex, asString);
+				}
 				
 				if (ismatch == true) {
 					
@@ -183,50 +187,92 @@ public class RTMDiffUtil {
 	}
 		
 	/* Utility functions */
+	/* To get cell level insight into different cell values
+	 * we have to store all different cell values and track till
+	 * end even if they fail early
+	 */
 	
 	public static boolean matchAllColumn(Object[] leftRow,  Object[] rightRow , boolean asString) {
 		int leftColC = leftRow.length;
 		int rightColC = rightRow.length;
+		vc = new Vector<Integer> ();
+		boolean markedfail = false; // marker for match or no match
 		
+		// Now it has loop thru all columns to find not matched columns
 		int rightC = (leftColC >= rightColC ) ? rightColC : leftColC; // common data set
 			for (int i=0; i < rightC; i++ ) {
-				if ((asString == false) && (leftRow[i].equals( rightRow[i]) == false))
-					return false;
-				if (leftRow[i] == null && rightRow[i] == null) // can't compare Null
+				if ((asString == false) && (leftRow[i].equals( rightRow[i]) == false)) {
+					markedfail = true;
+					vc.add(i);
 					continue;
-				if (leftRow[i] == null && rightRow[i] != null) // can't compare Null
-					return false;
-				if (leftRow[i] != null && rightRow[i] == null) // can't compare Null
-					return false;
-				if ((asString == true) && (leftRow[i].toString().equalsIgnoreCase(rightRow[i].toString()) == false))
-					return false;
+					// return false;
+				}
+				if (leftRow[i] == null && rightRow[i] == null)  { // can't compare Null
+					continue;
+				}
+				if (leftRow[i] == null && rightRow[i] != null) { // can't compare Null
+					markedfail = true;
+					vc.add(i);
+					continue;
+					// return false;
+				}
+				if (leftRow[i] != null && rightRow[i] == null) { // can't compare Null
+					markedfail = true;
+					vc.add(i);
+					continue;
+					// return false;
+				}
+				if ((asString == true) && (leftRow[i].toString().equalsIgnoreCase(rightRow[i].toString()) == false)) {
+					markedfail = true;
+					vc.add(i);
+					continue;
+					// return false;
+				}
 			}
-		return true;
+			if (markedfail == true)
+				return false;
+			else
+				return true;
 	}
 	
 	public static boolean matchIndexColumn(Object[] leftRow, Vector<Integer> leftIndex, Object[] rightRow ,
 			Vector<Integer> rightIndex,boolean asString) {
 		
+		vc = new Vector<Integer> ();
+		boolean markedfail = false; // marker for match or no match
+		
 		int rightC = leftIndex.size();
 		
 			for (int i=0; i < rightC; i++ ) {
 				
-				if ((asString == false) && (leftRow[leftIndex.get(i)].equals(rightRow[rightIndex.get(i)]) == false))
-					return false;
+				if ((asString == false) && (leftRow[leftIndex.get(i)].equals(rightRow[rightIndex.get(i)]) == false)) {
+					markedfail = true;
+					vc.add(i);
+					continue;
+				}
 				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] == null) // can't compare Null
 					continue;
-				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] != null) // one null one not null
-					return false;
-				if (leftRow[leftIndex.get(i)] !=  null && rightRow[rightIndex.get(i)] == null) // one null one not null
-					return false;
+				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] != null) { // one null one not null
+					markedfail = true;
+					vc.add(i);
+					continue;
+				}
+				if (leftRow[leftIndex.get(i)] !=  null && rightRow[rightIndex.get(i)] == null) { // one null one not null
+					markedfail = true;
+					vc.add(i);
+					continue;
+				}
 				if ((asString == true) && (leftRow[leftIndex.get(i)].toString().equalsIgnoreCase(rightRow[rightIndex.get(i)].toString())
-						== false))
-					return false;
+						== false)) {
+					markedfail = true;
+					vc.add(i);
+					continue;
+				}
 			}
-		return true;
-	}
-	
-
-		
+			if (markedfail == true)
+				return false;
+			else
+				return true;
+	}		
 				
-	} // end of class RTMDiffUtil
+} // end of class RTMDiffUtil

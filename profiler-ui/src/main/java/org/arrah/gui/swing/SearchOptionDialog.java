@@ -239,9 +239,14 @@ public class SearchOptionDialog implements ActionListener {
 				 f = FileSelectionUtil.chooseFile("Select Standardisation File");
 				 infoBox.setText("Selected File is:"+f.toString());
 				 fileLabel.setText("Selected File:"+f.toString());
-			} catch (FileNotFoundException fe) {
+			} catch (FileNotFoundException fe ) {
 				JOptionPane.showMessageDialog(null, fe.getMessage(),
 						"File not Found Dialog",
+						JOptionPane.ERROR_MESSAGE);
+				ConsoleFrame.addText("\n ERROR: Selected File Not Found");
+			} catch (Exception fe ) {
+				JOptionPane.showMessageDialog(null, "Exception Occured:"+fe.getLocalizedMessage(),
+						"Exception Dialog",
 						JOptionPane.ERROR_MESSAGE);
 				ConsoleFrame.addText("\n ERROR: Selected File Not Found");
 			}

@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2006      *
+ *     Copyright to Arrah Technology 2016      *
  *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -14,12 +14,14 @@ package org.arrah.gui.swing;
 
 /* This file is used for inputing multiple 
  * Formats and creating formats.
+ * Number, Date, Phone, String
  *
  */
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -27,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -48,8 +52,8 @@ public class FormatPatternPanel implements ActionListener {
 	private Hashtable<String, StringBuffer> _nf, _df;
 	private Hashtable<String, Object>   _sf, _pf;
 	private JComboBox<String> type_c = null;
-	private DefaultListModel all_l_model, input_l_model;
-	private JList all_l = null, input_l = null;
+	private DefaultListModel<String> all_l_model, input_l_model;
+	private JList<String> all_l = null, input_l = null;
 	private MyCellRenderer cellR = null;
 	private int responseType = 0; // 0 for cancel 1 for Ok
 	private String dialogN = "";
@@ -69,14 +73,14 @@ public class FormatPatternPanel implements ActionListener {
 
 		cellR = new MyCellRenderer();
 
-		all_l_model = new DefaultListModel();
+		all_l_model = new DefaultListModel<String>();
 		loadFormat(0);
-		all_l = new JList(all_l_model);
+		all_l = new JList<String>(all_l_model);
 		JScrollPane all_sp = new JScrollPane(all_l);
 		all_l.setCellRenderer(cellR);
 
-		input_l_model = new DefaultListModel();
-		input_l = new JList(input_l_model);
+		input_l_model = new DefaultListModel<String>();
+		input_l = new JList<String>(input_l_model);
 		JScrollPane input_sp = new JScrollPane(input_l);
 		input_l.setCellRenderer(cellR);
 		cellR.setType(0);
@@ -243,18 +247,23 @@ public class FormatPatternPanel implements ActionListener {
 			out.close();
 			fileOut.close();
 		} catch (FileNotFoundException file_exp) {
-			file_exp.getMessage();
-			file_exp.printStackTrace();
-		} catch (IOException e) {
-			e.getMessage();
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, file_exp.getMessage(),
+					"Error Message", JOptionPane.ERROR_MESSAGE);
+		} catch (IOException exp) {
+			JOptionPane.showMessageDialog(null, exp.getMessage(),
+					"Error Message", JOptionPane.ERROR_MESSAGE);
+		} catch (Exception cl_exp) {
+			JOptionPane.showMessageDialog(null, cl_exp.getMessage(),
+					"Error Message", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
 	private void loadFormatFile(String fileName) {
 		try {
 			// Open the file and load Hashtable
-			InputStream fileIn = FormatPatternPanel.class.getResourceAsStream(fileName);
+			Path path = FileSystems.getDefault().getPath(fileName);
+			File formatFile = path.toFile();
+			InputStream fileIn = new FileInputStream(formatFile);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			_nf = (Hashtable<String, StringBuffer>) in.readObject();
 			_df = (Hashtable<String, StringBuffer>) in.readObject();
@@ -268,11 +277,12 @@ public class FormatPatternPanel implements ActionListener {
 		} catch (IOException exp) {
 			JOptionPane.showMessageDialog(null, exp.getMessage(),
 					"Error Message", JOptionPane.ERROR_MESSAGE);
-			exp.printStackTrace();
 		} catch (ClassNotFoundException cl_exp) {
 			JOptionPane.showMessageDialog(null, cl_exp.getMessage(),
 					"Error Message", JOptionPane.ERROR_MESSAGE);
-			cl_exp.printStackTrace();
+		} catch (Exception cl_exp) {
+			JOptionPane.showMessageDialog(null, cl_exp.getMessage(),
+					"Error Message", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -318,8 +328,8 @@ public class FormatPatternPanel implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() instanceof JComboBox) {
-			int index = ((JComboBox) e.getSource()).getSelectedIndex();
+		if (e.getSource() instanceof JComboBox<?>) {
+			int index = ((JComboBox<?>) e.getSource()).getSelectedIndex();
 			refreshFormat(index);
 		}
 		String command = e.getActionCommand();
@@ -336,7 +346,7 @@ public class FormatPatternPanel implements ActionListener {
 			if (obj == null)
 				return;
 			if (input_l_model.removeElement(obj) == true)
-				input_l_model.insertElementAt(obj, 0);
+				input_l_model.insertElementAt(obj.toString(), 0);
 			return;
 		}
 		if (command.equals("cancel")) {
@@ -351,10 +361,10 @@ public class FormatPatternPanel implements ActionListener {
 		}
 	}
 
-	private void moveItem(JList source, JList destination) {
+	private void moveItem(JList<String> source, JList<String> destination) {
 		int[] indices = source.getSelectedIndices();
-		DefaultListModel source_m = (DefaultListModel) source.getModel();
-		DefaultListModel dest_m = (DefaultListModel) destination.getModel();
+		DefaultListModel<String> source_m = (DefaultListModel<String>) source.getModel();
+		DefaultListModel <String> dest_m = (DefaultListModel<String>) destination.getModel();
 
 		/* delete/add from bottom so that index does not change */
 		for (int i = indices.length - 1; i >= 0; i--) {
@@ -374,7 +384,7 @@ public class FormatPatternPanel implements ActionListener {
 		 */
 		private static final long serialVersionUID = 1L;
 		private int listType = 0; // Different label for different type
-		private Hashtable tipValue = null;
+		private Hashtable<?,?> tipValue = null;
 
 		public void setType(int type) {
 			listType = type;

@@ -183,10 +183,40 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		ordinal_m.setActionCommand("ordinal");
 		preparation_m.add(ordinal_m);
 		
+		JMenuItem onehot_m = new JMenuItem("One Hot Encoding");
+		onehot_m.addActionListener(this);
+		onehot_m.setActionCommand("onehot");
+		preparation_m.add(onehot_m);
+		
 		JMenuItem season_m = new JMenuItem("Seasonality");
 		season_m.addActionListener(this);
 		season_m.setActionCommand("seasonality");
 		preparation_m.add(season_m);
+		
+		JMenu timegrp_m = new JMenu("Time Grouping");
+		
+		JMenuItem monthgrp_m = new JMenuItem("Month Grouping");
+		monthgrp_m.addActionListener(this);
+		monthgrp_m.setActionCommand("monthgrouping");
+		timegrp_m.add(monthgrp_m);
+		JMenuItem daygrp_m = new JMenuItem("Day Grouping");
+		daygrp_m.addActionListener(this);
+		daygrp_m.setActionCommand("daygrouping");
+		timegrp_m.add(daygrp_m);
+		JMenuItem dategrp_m = new JMenuItem("Date Grouping");
+		dategrp_m.addActionListener(this);
+		dategrp_m.setActionCommand("dategrouping");
+		timegrp_m.add(dategrp_m);
+		JMenuItem minutegrp_m = new JMenuItem("Minute Grouping");
+		minutegrp_m.addActionListener(this);
+		minutegrp_m.setActionCommand("minutegrouping");
+		timegrp_m.add(minutegrp_m);
+		JMenuItem secondgrp_m = new JMenuItem("Second Grouping");
+		secondgrp_m.addActionListener(this);
+		secondgrp_m.setActionCommand("secondgrouping");
+		timegrp_m.add(secondgrp_m);
+		
+		preparation_m.add(timegrp_m);
 		
 		JMenu enrich_m = new JMenu("Enrichment");
 		preparation_m.add(enrich_m);
@@ -1779,7 +1809,14 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				int index = selectedColIndex(_rt);
 				if (index < 0)
 					return;
-				new OrdinalPanel(_rt,index);
+				new OrdinalPanel(_rt,index,0);
+				return;
+			}
+			if (command.equals("onehot")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new OrdinalPanel(_rt,index,1); // Hot one
 				return;
 			}
 			if (command.equals("seasonality")) {
@@ -1787,6 +1824,48 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 				if (index < 0)
 					return;
 				new GroupingPanel(_rt,index);
+				return;
+			}
+			if (command.equals("monthgrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,1); // month
+				return;
+			}
+			if (command.equals("daygrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,3); //day
+				return;
+			}
+			if (command.equals("dategrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,2); // date
+				return;
+			}
+			if (command.equals("hourgrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,4); // hour
+				return;
+			}
+			if (command.equals("minutegrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,5); // minute
+				return;
+			}
+			if (command.equals("secondgrouping")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				new TimeGroupingPanel(_rt,index,6); // second
 				return;
 			}
 			if (command.equals("attreplace")) {

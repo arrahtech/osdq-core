@@ -1113,7 +1113,7 @@ public class FileAnalyticsListener implements ActionListener, ItemListener {
 		topP.setLayout(bxl);
 
 		JLabel lm = new JLabel("  Tip 1: Columns should be Number Formatted for  Measures", JLabel.LEFT);
-		JLabel lm1 = new JLabel("  Tip 2: For Date Grouping use Populate Column Option",JLabel.LEFT);
+		JLabel lm1 = new JLabel("  Tip 2: For Cross Tab atleast one Column Dimension must be there",JLabel.LEFT);
 		JLabel lm2 = new JLabel("  Tip 3: Same Order of \"Group By\" Columns will be carried to Report",JLabel.LEFT);
 		JLabel lm3 = new JLabel("  Tip 4: Create Column Aliases (Copy) to use same column in multiple Measures",JLabel.LEFT);
 		JLabel dummy1  = new JLabel(" ");

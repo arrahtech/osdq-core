@@ -847,7 +847,7 @@ public class TestConnectionDialog extends JDialog implements ActionListener, Ite
 			_dbparam.put("Database_Type", "MS_ACCESS_JDBC");
 			_dbparam.put("Database_Driver", "net.ucanaccess.jdbc.UcanaccessDriver");
 			_dbparam.put("Database_Protocol", "jdbc:ucanaccess");
-			_dbparam.put("Database_DSN", "//./configuration/ArrahDemo.accdb");
+			_dbparam.put("Database_DSN", "//configuration/ArrahDemo.accdb");
 			_dbparam.put("Database_User", "");
 			_dbparam.put("Database_Passwd", "");
 			_dbparam.put("Database_Catalog", "");
