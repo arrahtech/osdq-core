@@ -81,12 +81,11 @@ Database_ColumnPattern=""
 Database_TableType="TABLE"
 */
 
-
-/* MS Access JDBC connection 
+/* MS Access JDBC connection */ 
 Database_Type="MS_ACCESS_JDBC"
 Database_Driver="net.ucanaccess.jdbc.UcanaccessDriver"
 Database_Protocol="jdbc:ucanaccess"
-Database_DSN="//C:\\Users\\vivek\\Downloads\\ProfilerV6.0.9_prep\\ArrahDemo.accdb"
+Database_DSN="//configuration/ArrahDemo.accdb"
 Database_User=""
 Database_Passwd=""
 Database_Catalog=""
@@ -94,7 +93,8 @@ Database_SchemaPattern=""
 Database_TablePattern=""
 Database_ColumnPattern=""
 Database_TableType="TABLE"
-*/
+
+
 
 
 /* SQL Sever ODBC DRIVER 
@@ -143,16 +143,16 @@ Database_TableType="TABLE"
 Database_Type="MYSQL"
 Database_Driver="com.mysql.jdbc.Driver"
 Database_Protocol="jdbc:mysql"
-Database_DSN="//localhost/mysql"
-Database_User="root"
-Database_Passwd="root"
+Database_DSN="//???/???"
+Database_User="????"
+Database_Passwd="????"
 Database_Catalog=""
 Database_SchemaPattern=""
 Database_TablePattern=""
 Database_ColumnPattern=""
 Database_TableType="TABLE"
-
 */
+
 
 
 /* Postgres Native JConnector DRIVER 
@@ -229,8 +229,9 @@ Database_TableType="TABLE"
 */
 
 
+
 # Global Configuration parameters
 # Unhash it if you want custom format
 
-DateFormat="dd-MM-yyyy hh:mm:ss zzz"
+#DateFormat="dd-MM-yyyy hh:mm:ss"
 #NumberFormat="####.##"

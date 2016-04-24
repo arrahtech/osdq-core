@@ -16,9 +16,13 @@ package org.arrah.framework.util;
  * discreet range analysis.
  * It matches one vector set with another
  * vector set and utilities related to that
+ * 
+ * This file also will be used for one hot encoding
+ * and binary encoding
  *
  */
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -141,4 +145,60 @@ public class DiscreetRange {
 		}
 		return newUniq;
 	}
-}
+
+
+	// This function will take list of unique cardinal values and
+	// put same amount of 0 as state machine. The matching value it
+	// will put 1 like 00001, 00010 
+	// it will only have one 1 in any value
+	public static Hashtable<Object,String> getOneHotEncoding(Vector<Object> list, Hashtable<Object,Integer> ht){
+		
+		Hashtable<Object,String> output = new Hashtable<Object,String>();
+		if (ht == null) // if it is null create it
+			ht = getUniqueInclusive(list);
+		int zcount = ht.size();
+		if (zcount <= 0 ) return null;
+		
+		Vector<Object> vc = new Vector<Object>();
+		// Make an ordered set
+		for (Enumeration<Object> e = ht.keys(); e.hasMoreElements();)
+		       vc.add(e.nextElement());
+		
+		char zarr[] = new char[zcount];
+		for (int i=0; i< zcount; i++) zarr[i] = '0'; // Initialize to 0
+		
+		// Now get the index and change the bit
+		for (Object a:vc) {
+			int index = vc.indexOf(a);
+			zarr[index] = '1'; // Bit changed
+			output.put(a,new String(zarr));
+			zarr[index] = '0'; // reset
+		}
+		// Output bit order for record
+		int i=1;
+		for (Object a: vc) {
+			System.out.println("Order:"+ (i++) + " Data:"+a.toString());
+		}
+		
+		return output;
+		
+	}
+	
+	// This function will take list of unique cardinal values across
+	// columns put  0 for non matching and 1 for matching. The matching value it
+	// It will look like 10010,10011
+	// It may have multiple 1s in values
+	public static Hashtable<Object,Integer> getBinaryEncoding(Vector<Object> list){
+		
+		
+		return null;
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+} // End of DiscreetRange

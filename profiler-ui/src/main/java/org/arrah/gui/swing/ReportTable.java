@@ -870,6 +870,8 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 	}
 
 	public boolean isSorting() {
+		if (sorter == null) 
+			return true; // nothing to sort so in sorting state
 		return sorter.isSorting();
 	}
 

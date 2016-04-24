@@ -113,7 +113,9 @@ public class SelTablePane extends JPanel implements ItemListener,
 		fromInput.setActionCommand("frominput");
 		fromInput.addActionListener(this);
 
-		ImageIcon imageicon = new ImageIcon("./image/Filter.gif", "Query");
+    ImageIcon imageicon;
+    imageicon = new ImageIcon(SelTablePane.class
+        .getClassLoader().getResource("image/Filter.gif"), "Query");
 		int imageLS = imageicon.getImageLoadStatus();
 		JLabel jlabel;
 		if (imageLS == MediaTracker.ABORTED || imageLS == MediaTracker.ERRORED)

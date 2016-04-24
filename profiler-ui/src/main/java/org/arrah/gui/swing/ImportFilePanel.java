@@ -271,7 +271,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		SpringLayout layout = new SpringLayout();
 		content.setLayout(layout);
 		table_s = new JScrollPane();
-		table_s.setPreferredSize(new Dimension(550, 280));
+		table_s.setPreferredSize(new Dimension(600, 280));
 		table_s.setViewportView(showT);
 		content.add(table_s);
 		content.add(p1);
@@ -320,7 +320,7 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		b_p.add(cancel_b);
 		content.add(b_p);
 
-		layout.putConstraint(SpringLayout.NORTH, b_p, 2, SpringLayout.SOUTH, p3);
+		layout.putConstraint(SpringLayout.NORTH, b_p, 10, SpringLayout.SOUTH, p3);
 		layout.putConstraint(SpringLayout.SOUTH, content, 2,SpringLayout.SOUTH, b_p);
 
 		d_f = new JDialog();
@@ -330,7 +330,6 @@ public class ImportFilePanel implements ItemListener, ActionListener {
 		d_f.setModal(true);
 		d_f.pack();
 		d_f.setVisible(true);
-
 	}
 
 	public void itemStateChanged(ItemEvent e) {

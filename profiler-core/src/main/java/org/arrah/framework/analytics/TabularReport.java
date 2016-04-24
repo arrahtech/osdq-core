@@ -233,9 +233,10 @@ public class TabularReport  {
 			Object[] newRow = new Object[rowdimI.size()];
 			isNewRow=false;
 			// Doing Group by for Row Dimension
-			for (int j=0; j< rowdimI.size(); j++ ) { 
+			for (int j=0; j< rowdimI.size(); j++ ) {
 				newRow[j] = _rtm.getModel().getValueAt(i, rowdimI.get(j));
-				if (newRow[j] == prevRow[j]) continue; //already there
+				//if (newRow[j] == prevRow[j]) continue; //already there
+				if (newRow[j].toString().compareToIgnoreCase(prevRow[j].toString()) == 0) continue; //already there
 				else  {
 					isNewRow = true;
 				}

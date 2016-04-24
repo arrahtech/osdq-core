@@ -825,7 +825,8 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		boolean success = false;
 		boolean fileLoad = false;
 		
-		if ((args.length > 0) && ( args[0] != null || "".equals(args[0]) == false)) { // open the confileFile.txt
+		if ((args.length > 0) && ( args[0] != null && !"".equals(args[0]) 
+		    && !"\r".equals(args[0]) && !"\n".equals(args[0]))) { // open the confileFile.txt
 			_fileParse = KeyValueParser.parseFile(args[0]);
 			try {
 				Rdbms_conn.init(_fileParse);

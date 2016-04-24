@@ -170,8 +170,16 @@ public class RegexPanel extends JDialog implements ActionListener {
 						"Regex Save Dialog", JOptionPane.YES_NO_OPTION);
 				if (n == JOptionPane.YES_OPTION) {
 					__h.put(name, format);
-					KeyValueParser.saveTextFile("resource/popupmenu.txt", __h);
-					rt.getRTMModel().addFillRow(new String[] {name,format});
+					boolean saved = KeyValueParser.saveTextFile("resource/popupmenu.txt", __h);
+					if (saved == true) {
+						rt.getRTMModel().addFillRow(new String[] {name,format});
+						JOptionPane.showMessageDialog(null, "Regex Saved.",
+							"Regex Save Dialog",JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						JOptionPane.showMessageDialog(null, "Regex Can't be Saved:",
+							"Regex Save Dialog",JOptionPane.INFORMATION_MESSAGE);
+					}
+						
 				}
 			}
 		}

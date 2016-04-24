@@ -21,10 +21,9 @@ import java.io.BufferedReader;
  */
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.util.Enumeration;
@@ -42,8 +41,7 @@ public class KeyValueParser {
 			// Create the tokenizer to read from a file
 		  InputStreamReader inputStreamReader = new InputStreamReader(KeyValueParser.class.getClassLoader().getResourceAsStream(filename));
 		  BufferedReader rd = new BufferedReader(inputStreamReader);
-		  //FileReader rd = new FileReader(filename);
-			StreamTokenizer st = new StreamTokenizer(rd);
+		  StreamTokenizer st = new StreamTokenizer(rd);
 
 			// Prepare the tokenizer for Java-style tokenizing rules
 			st.wordChars('_', '_');
@@ -144,6 +142,7 @@ public class KeyValueParser {
 		} catch  (IOException e) {
 			System.out.println("\n IO Exception happened:" + filename);
 			System.out.println(e.getMessage());
+			return false;
 
 		}
 		

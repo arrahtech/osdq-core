@@ -42,6 +42,10 @@
 					<!-- Configures the created archive -->
 					<archive>
 						<!-- Configures the content of the created manifest -->
+						<manifestEntries>
+							<Class-Path>lib/rowsets.jar</Class-Path>
+							<Class-Path>configuration/</Class-Path>
+						</manifestEntries>
 						<manifest>
 							<!-- Adds the classpath to the created manifest -->
 							<addClasspath>true</addClasspath>
@@ -51,9 +55,6 @@
 							<!-- Configures the main class of the application -->
 							<mainClass>org.arrah.gui.swing.Profiler</mainClass>
 						</manifest>
-						<manifestEntries>
-							<Class-Path>conf/</Class-Path>
-						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
@@ -102,89 +103,6 @@
 			</plugin>
 		</plugins>
 	</reporting>
-	<dependencies>
-		<dependency>
-			<groupId>com.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-			<version>3.5</version>
-		</dependency>
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<version>5.4.0</version>
-		</dependency>
-		<!-- <dependency> <groupId>javax.sql</groupId> <artifactId>rowset</artifactId> 
-			<version>1.0.1</version> </dependency> -->
-		<dependency>
-			<groupId>saxon</groupId>
-			<artifactId>saxon</artifactId>
-			<version>6.5.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jumpmind.symmetric.jdbc</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.2-1002-jdbc4</version>
-		</dependency>
-		<!-- <dependency> <groupId>com.oracle</groupId> <artifactId>ojdbc14</artifactId> 
-			<version>10.2.0.4.0</version> </dependency> -->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.24</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-core</artifactId>
-			<version>2.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.jexcelapi</groupId>
-			<artifactId>jxl</artifactId>
-			<version>2.6.12</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.jeval</groupId>
-			<artifactId>jeval</artifactId>
-			<version>0.9.4</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math</artifactId>
-			<version>2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jcommon</artifactId>
-			<version>1.0.23</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-			<version>1.0.19</version>
-		</dependency>
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<artifactId>quartz</artifactId>
-			<version>2.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.toedter</groupId>
-			<artifactId>jcalendar</artifactId>
-			<version>1.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>1.2.1</version>
-		</dependency>
-
-	</dependencies>
 	<developers>
 		<developer>
 			<name>Arrah Technology</name>
