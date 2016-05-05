@@ -235,6 +235,7 @@ public class TabularReport  {
 			// Doing Group by for Row Dimension
 			for (int j=0; j< rowdimI.size(); j++ ) {
 				newRow[j] = _rtm.getModel().getValueAt(i, rowdimI.get(j));
+				// Compare as string even other datatype would be fine
 				//if (newRow[j] == prevRow[j]) continue; //already there
 				if (newRow[j].toString().compareToIgnoreCase(prevRow[j].toString()) == 0) continue; //already there
 				else  {

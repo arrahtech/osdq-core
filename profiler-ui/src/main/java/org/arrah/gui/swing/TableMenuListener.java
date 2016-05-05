@@ -343,6 +343,7 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			// Set Display on first pattern
 			table.getColumnModel().getColumn(index).setCellRenderer(new MyCellRenderer(dgt,colgt,lgt,collt,egt,colet));
 			jdc.dispose();
+			table.repaint();
 			return;
 		}
 
@@ -416,12 +417,14 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			int i = selectedColIndex(table);
 			if (i < 0 ) return;
 			table.getColumnModel().getColumn(i).setCellRenderer(new MyCellRenderer(true));
+			table.repaint();
 			return;
 		}
 		if (source.getText().compareTo("BlankSpace Rendering") == 0) {
 			int i = selectedColIndex(table);
 			if (i < 0 ) return;
 			table.getColumnModel().getColumn(i).setCellRenderer(new MyCellRenderer(false));
+			table.repaint(); // to make redering work first time
 			return;
 		}
 

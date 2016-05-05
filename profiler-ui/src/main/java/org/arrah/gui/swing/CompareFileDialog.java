@@ -1,7 +1,7 @@
 package org.arrah.gui.swing;
 
 /***********************************************
- *     Copyright to Arrah Technology 2014      *
+ *     Copyright to Arrah Technology 2016      *
  *     http://www.arrahtec.org                 *
  *                                             *
  * Any part of code or file can be changed,    *
@@ -19,9 +19,11 @@ package org.arrah.gui.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -30,11 +32,16 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.SpringLayout;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import org.arrah.framework.analytics.RTMDiffUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -46,17 +53,18 @@ public class CompareFileDialog implements ActionListener {
 	private JComboBox<String>[] _rColC;
 	private JCheckBox[] _checkB;
 	private Vector<String> _lCols, _rCols;
-	private Vector<Integer> _leftMap, _rightMap; 
+	private Vector<Integer> _leftMap, _rightMap;
+	private ReportTableModel rtmLnoMatch = null, rtmRnoMatch = null;
+	private ReportTable rtmLnoMatchTable = null;
+	private boolean indexadded = false;
 
 	public CompareFileDialog() { // Default Constructor
 		
 	}
 	
-	
-	public CompareFileDialog(ReportTableModel rtmL, ReportTableModel rtmR) { // Default
+	public CompareFileDialog(ReportTableModel rtmL, ReportTableModel rtmR) { // Default left and right RTM
 		this.rtmL = rtmL;
 		this.rtmR = rtmR;
-		
 		createMapDialog();
 	}	
 	
@@ -71,18 +79,37 @@ public class CompareFileDialog implements ActionListener {
 	}
 	
 	rtmdiff = new RTMDiffUtil(rtmL,_leftMap, rtmR,_rightMap);
-	boolean com = rtmdiff.compare(true);
+	boolean com = rtmdiff.compare(true,false);
 	if ( com == false) {
 		ConsoleFrame.addText("\n File Comparison Failed");
 		return;
 	}
 		
 	tabPane.add("Matched Record",new ReportTable(rtmdiff.getMatchedRTM()));
-	tabPane.add("Primary No Match",new ReportTable(rtmdiff.leftNoMatchRTM()));
-	tabPane.add("Secondary No Match",new ReportTable(rtmdiff.rightNoMatchRTM()));
+	rtmLnoMatch = rtmdiff.leftNoMatchRTM();
+	rtmLnoMatchTable = new ReportTable(rtmLnoMatch);
+	tabPane.add("Primary No Match",rtmLnoMatchTable);
+	rtmRnoMatch = rtmdiff.rightNoMatchRTM();
+	tabPane.add("Secondary No Match",new ReportTable(rtmRnoMatch));
+	
+	// Make existing report to go
+	d_recHead.setVisible(false);
+	d_m.setVisible(false); 
 	
 	JDialog db_d = new JDialog();
 	db_d.setTitle("Difference Summary Dialog");
+	
+	// Add menu here
+	JMenuBar menubar = new JMenuBar();
+	JMenu menui = new JMenu("Show Differece");
+	
+	JMenuItem menuitem = new JMenuItem("Primary Table");
+    menuitem.addActionListener( this );
+    menuitem.setActionCommand("showcell");
+    menui.add(menuitem);
+    menubar.add(menui);
+    db_d.setJMenuBar(menubar);
+    
 	db_d.getContentPane().add(tabPane);
 	db_d.setModal(true);
 	db_d.setLocation(75, 75);
@@ -149,7 +176,6 @@ public class CompareFileDialog implements ActionListener {
 		_rColC = new JComboBox[colCount];
 		_checkB = new JCheckBox[colCount];
 
-		
 		for (int i =0; i < colCount; i++ ){
 			_rColC[i] = new JComboBox<String>();
 			for ( int j=0; j < _rCols.size() ; j++)
@@ -233,22 +259,83 @@ public class CompareFileDialog implements ActionListener {
 				return;
 			}
 			try {
-				d_m.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-				d_recHead.setVisible(false);
-				d_m.setVisible(false);
+				d_recHead.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 				createGUI();
 			} catch (Exception ee) {
 				d_m.setVisible(true);
 				System.out.println("Exeption:"+ee.getMessage());
 				ee.printStackTrace();
 			} finally {
-				d_m.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+				d_recHead.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 				d_recHead.dispose();
 			}
 			d_m.dispose(); 
 
+		} if ("showcell".equals(e.getActionCommand())) {
+			
+			// Index has been shifted as new column has been added for once
+			if (indexadded == false) {
+				Integer[] holdl = new Integer[_leftMap.size()];
+				Integer[] holdr = new Integer[_rightMap.size()];
+				_leftMap.copyInto(holdl);_rightMap.copyInto(holdr);
+				_leftMap.clear();_rightMap.clear();
+				
+				for (int i: holdl)
+					_leftMap.add(++i);
+				for (int i: holdr)
+					_rightMap.add(++i);
+				indexadded = true;
+			}
+			
+			RTMDiffUtil rtmdiff = new RTMDiffUtil(rtmLnoMatch,_leftMap, rtmRnoMatch,_rightMap);
+			HashMap<Integer, Vector<Integer>> diffIndex = rtmdiff.compareDiff(true);
+			if ( diffIndex == null || diffIndex.size() == 0) {
+				ConsoleFrame.addText("\n File Comparison Failed");
+				return;
+			}
+			// set the renderer for highlighting
+			for (int k=0; k < _leftMap.size(); k++) 
+				rtmLnoMatchTable.table.getColumnModel().getColumn(_leftMap.get(k)).setCellRenderer
+				( new HighlightCellRenderer(diffIndex));
+			
+			rtmLnoMatchTable.table.repaint();
 		}
-	}
+	} // end of action
+	
+	private class HighlightCellRenderer extends DefaultTableCellRenderer {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		private HashMap<Integer, Vector<Integer>> _diffIndex;
+		
+
+		public HighlightCellRenderer(HashMap<Integer, Vector<Integer>> diffIndex) {
+			_diffIndex = diffIndex;
+		}
+		
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			
+			Component c = super.getTableCellRendererComponent(table, value,
+					isSelected, hasFocus, row, column);
+			if (value == null ) return c; // for null value
+			
+			// If it is sorting row will change so default
+			if (rtmLnoMatchTable.isSorting() == true) {
+				((JLabel )c).setForeground(Color.BLACK); // default color
+				return c;
+			}
+			
+			Vector<Integer> vc = _diffIndex.get(row);
+			if (vc != null && vc.size() > 0 && vc.indexOf(column) != -1) 
+				((JLabel )c).setForeground(Color.RED.darker()); // now select it
+			else
+				((JLabel )c).setForeground(Color.BLACK); // default color
+			return c;
+		}
+	} // End of HighlightCellRenderer
 	
 	
 } // end of class

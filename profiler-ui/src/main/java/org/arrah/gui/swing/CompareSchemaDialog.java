@@ -422,7 +422,7 @@ public class CompareSchemaDialog implements TreeSelectionListener, ActionListene
 				ReportTableModel rtmR = dbmetaright.getParameterInfo();
 				
 				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
-				boolean com = rtmdiff.compare(true);
+				boolean com = rtmdiff.compare(true,false);
 				if ( com == false) {
 					ConsoleFrame.addText("\n Parameter Comparison Failed");
 					return;
@@ -442,7 +442,7 @@ public class CompareSchemaDialog implements TreeSelectionListener, ActionListene
 				ReportTableModel rtmR = dbmetaR.getProcedureInfo();
 				
 				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
-				boolean com = rtmdiff.compare(true);
+				boolean com = rtmdiff.compare(true,false);
 				if ( com == false) {
 					ConsoleFrame.addText("\n Procedure Comparison Failed");
 					return;
@@ -465,7 +465,7 @@ public class CompareSchemaDialog implements TreeSelectionListener, ActionListene
 					rtmR.addFillRow(new String[] {tab});
 				
 				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
-				boolean com = rtmdiff.compare(true);
+				boolean com = rtmdiff.compare(true,false);
 				if ( com == false) {
 					ConsoleFrame.addText("\n Table Name Comparison Failed");
 					return;
@@ -502,7 +502,7 @@ public class CompareSchemaDialog implements TreeSelectionListener, ActionListene
 				rtmL = TableMetaInfo.populateTable(tableType, lefti, lefti+1, rtmL);
 				rtmR = newTableInfo.populateTable(tableType, righti, righti+1, rtmR);
 				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
-				boolean com = rtmdiff.compare(true);
+				boolean com = rtmdiff.compare(true,false);
 				if ( com == false) {
 					ConsoleFrame.addText("\n Table Info Comparison Failed");
 					return;
@@ -517,7 +517,7 @@ public class CompareSchemaDialog implements TreeSelectionListener, ActionListene
 				rtmL = TableMetaInfo.tableKeyInfo(tabName);
 				rtmR = newTableInfo.tableKeyInfo(tabName);
 				rtmdiff = new RTMDiffUtil(rtmL, rtmR);
-				boolean com = rtmdiff.compare(true);
+				boolean com = rtmdiff.compare(true,false);
 				if ( com == false) {
 					ConsoleFrame.addText("\n Index Key Failed");
 					return;

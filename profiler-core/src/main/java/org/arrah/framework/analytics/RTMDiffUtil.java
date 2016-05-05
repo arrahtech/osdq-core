@@ -31,8 +31,6 @@ public class RTMDiffUtil {
 	private ReportTableModel matchRTM = null, leftNoMatchRTM= null, rightNoMatchRTM = null;
 	private HashMap<Integer, Integer> matchedIndex;
 	
-	private static Vector<Integer> vc = null;
-	
 	public RTMDiffUtil() {
 		// Default Constructor
 	}
@@ -80,8 +78,9 @@ public class RTMDiffUtil {
 		
 	/*
 	* Comparator for comparing rows from RTM
+	* as string and whether to make cell listing or not
 	*/	
-	public boolean compare(boolean asString)
+	public boolean compare(boolean asString, boolean showCelldiff)
 	{
 		// return true is comparison is successful
 		if (leftRTM == null || rightRTM == null) {
@@ -185,17 +184,60 @@ public class RTMDiffUtil {
 	public ReportTableModel rightNoMatchRTM() {
 		return rightNoMatchRTM;
 	}
-		
+	
 	/* Utility functions */
+	
+	public static boolean matchAllColumn(Object[] leftRow,  Object[] rightRow , boolean asString) {
+		int leftColC = leftRow.length;
+		int rightColC = rightRow.length;
+		
+		int rightC = (leftColC >= rightColC ) ? rightColC : leftColC; // common data set
+			for (int i=0; i < rightC; i++ ) {
+				if ((asString == false) && (leftRow[i].equals( rightRow[i]) == false))
+					return false;
+				if (leftRow[i] == null && rightRow[i] == null) // can't compare Null
+					continue;
+				if (leftRow[i] == null && rightRow[i] != null) // can't compare Null
+					return false;
+				if (leftRow[i] != null && rightRow[i] == null) // can't compare Null
+					return false;
+				if ((asString == true) && (leftRow[i].toString().equalsIgnoreCase(rightRow[i].toString()) == false))
+					return false;
+			}
+		return true;
+	}
+	
+	public static boolean matchIndexColumn(Object[] leftRow, Vector<Integer> leftIndex, Object[] rightRow ,
+			Vector<Integer> rightIndex,boolean asString) {
+		
+		int rightC = leftIndex.size();
+		
+			for (int i=0; i < rightC; i++ ) {
+				
+				if ((asString == false) && (leftRow[leftIndex.get(i)].equals(rightRow[rightIndex.get(i)]) == false))
+					return false;
+				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] == null) // can't compare Null
+					continue;
+				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] != null) // one null one not null
+					return false;
+				if (leftRow[leftIndex.get(i)] !=  null && rightRow[rightIndex.get(i)] == null) // one null one not null
+					return false;
+				if ((asString == true) && (leftRow[leftIndex.get(i)].toString().equalsIgnoreCase(rightRow[rightIndex.get(i)].toString())
+						== false))
+					return false;
+			}
+		return true;
+	}
+		
 	/* To get cell level insight into different cell values
 	 * we have to store all different cell values and track till
 	 * end even if they fail early
 	 */
 	
-	public static boolean matchAllColumn(Object[] leftRow,  Object[] rightRow , boolean asString) {
+	public static Vector<Integer > diffAllColumn(Object[] leftRow,  Object[] rightRow , boolean asString) {
 		int leftColC = leftRow.length;
 		int rightColC = rightRow.length;
-		vc = new Vector<Integer> ();
+		Vector<Integer>vc = new Vector<Integer> ();
 		boolean markedfail = false; // marker for match or no match
 		
 		// Now it has loop thru all columns to find not matched columns
@@ -229,16 +271,16 @@ public class RTMDiffUtil {
 					// return false;
 				}
 			}
-			if (markedfail == true)
-				return false;
+			if (markedfail == true) //markedfail retained for future use of filtering
+				return vc;
 			else
-				return true;
+				return vc;
 	}
 	
-	public static boolean matchIndexColumn(Object[] leftRow, Vector<Integer> leftIndex, Object[] rightRow ,
+	public static Vector<Integer > diffIndexColumn(Object[] leftRow, Vector<Integer> leftIndex, Object[] rightRow ,
 			Vector<Integer> rightIndex,boolean asString) {
 		
-		vc = new Vector<Integer> ();
+		Vector<Integer > vc = new Vector<Integer> ();
 		boolean markedfail = false; // marker for match or no match
 		
 		int rightC = leftIndex.size();
@@ -247,32 +289,87 @@ public class RTMDiffUtil {
 				
 				if ((asString == false) && (leftRow[leftIndex.get(i)].equals(rightRow[rightIndex.get(i)]) == false)) {
 					markedfail = true;
-					vc.add(i);
+					vc.add(leftIndex.get(i));
 					continue;
 				}
 				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] == null) // can't compare Null
 					continue;
 				if (leftRow[leftIndex.get(i)] == null && rightRow[rightIndex.get(i)] != null) { // one null one not null
 					markedfail = true;
-					vc.add(i);
+					vc.add(leftIndex.get(i));
 					continue;
 				}
 				if (leftRow[leftIndex.get(i)] !=  null && rightRow[rightIndex.get(i)] == null) { // one null one not null
 					markedfail = true;
-					vc.add(i);
+					vc.add(leftIndex.get(i));
 					continue;
 				}
 				if ((asString == true) && (leftRow[leftIndex.get(i)].toString().equalsIgnoreCase(rightRow[rightIndex.get(i)].toString())
 						== false)) {
 					markedfail = true;
-					vc.add(i);
+					vc.add(leftIndex.get(i));
 					continue;
 				}
 			}
-			if (markedfail == true)
-				return false;
+			if (markedfail == true) //markedfail retained for future use of filtering
+				return vc;
 			else
-				return true;
-	}		
+				return vc;
+	}
+	
+	/*
+	* Comparator for comparing diff cells from RTM
+	* as string 
+	*/	
+	public HashMap<Integer, Vector<Integer>> compareDiff(boolean asString)
+	{
+		HashMap<Integer, Vector<Integer>>  diffIndex = new HashMap<Integer,Vector<Integer>>();
+		// return true is comparison is successful
+		if (leftRTM == null || rightRTM == null) {
+			System.out.println("Can not Compare Null Table(s)");
+			return diffIndex;
+		}
+		if ( (leftIndex != null && rightIndex == null) || (leftIndex == null && rightIndex != null) )
+				allColMatch = true; //Default Behavior
 				
+		if (leftIndex != null && rightIndex != null) 
+			if (leftIndex.size() != rightIndex.size() ) {
+				System.out.println("Left and Right Columns are not Mapped");
+				return diffIndex;
+			}
+		
+		int leftRowC = leftRTM.getModel().getRowCount();
+		int rightRowC = rightRTM.getModel().getRowCount();
+		
+		for (int i=0 ; i < leftRowC; i++) {
+			Object[] leftRow = leftRTM.getRow(i);
+			if (leftRow == null ) continue;
+			
+			Vector<Integer> prev_vc = new Vector<Integer>(); // to hold previous values
+			
+			for (int j=0 ; j < rightRowC; j++) { // Iterate thru right RTM
+				Object[] rightRow = rightRTM.getRow(j);
+				if (rightRow == null ) continue;
+				
+				Vector<Integer> vc = new Vector<Integer>();
+				
+				if ( allColMatch == true ) {
+					vc =diffAllColumn(leftRow, rightRow, asString);
+				}
+				else {
+					vc = diffIndexColumn(leftRow,leftIndex, rightRow,rightIndex, asString);
+				}
+				
+				if (vc != null && vc.size() > 0) {
+					
+					// Check with prev value and if size is less than then current value is taken
+					if ( prev_vc.size() == 0  || prev_vc.size() > vc.size()) {
+						prev_vc = vc;
+						diffIndex.put(i, prev_vc);
+					}
+				}
+			} // end of right iteration
+		} 
+		return diffIndex;
+	}			
 } // end of class RTMDiffUtil
