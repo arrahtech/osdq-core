@@ -2,4 +2,4 @@
 @echo Need java 1.8.x or above to run
 @echo: 
 @java -version
-java -Xmx4096M -Xms4096M -jar profiler-ui-6.1.6-SNAPSHOT.jar %1
+java -Xmx4096M -Xms4096M -classpath profiler-ui-${project.version}.jar:lib/rowset.jar:lib/* org.arrah.gui.swing.Profiler %1

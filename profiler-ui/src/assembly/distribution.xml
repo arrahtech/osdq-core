@@ -6,22 +6,9 @@
 	<formats>
 		<format>zip</format>
 	</formats>
-	<!-- Adds the dependencies of our application to the lib directory -->
-	<dependencySets>
-		<dependencySet>
-			<!-- Project artifact is not copied under library directory since it is 
-				added to the root directory of the zip package. -->
-			<useProjectArtifact>false</useProjectArtifact>
-			<outputDirectory>lib</outputDirectory>
-			<unpack>false</unpack>
-		</dependencySet>
-	</dependencySets>
-
-
 	<fileSets>
-
 		<fileSet>
-			<directory>${project.build.directory}/lib</directory>
+			<directory>${project.build.directory}/dependency</directory>
 			<includes>
 				<include>*.jar</include>
 			</includes>
