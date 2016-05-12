@@ -122,7 +122,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 		d_f.setModal(true);
 		d_f.setTitle("Utility Function Dialog");
 		d_f.setLocation(300, 250);
-		d_f.setPreferredSize(new Dimension(720,450));
+		d_f.setPreferredSize(new Dimension(820,450)); // some column names may be long
 		d_f.getContentPane().add(jp);
 		d_f.pack();
 		d_f.setVisible(true);
@@ -381,7 +381,7 @@ public class UtilFunctionPanel implements ActionListener, ItemListener {
 					 String[] colVal = StringCaseFormatUtil.splitColString (colObject.toString(),regexStr) ;
 					 if (leftrd.isSelected() == true)
 						 _rt.getModel().setValueAt(colVal[0], i, _colIndex);
-					 else if ( colVal[1] != null && colVal.length > 1)
+					 else if ( colVal.length > 1 && colVal[1] != null )
 						 _rt.getModel().setValueAt(colVal[1], i, _colIndex);
 				}
 				d_f.dispose(); // in case it is not disposed yet if all the filed null condition

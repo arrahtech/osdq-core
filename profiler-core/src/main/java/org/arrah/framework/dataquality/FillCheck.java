@@ -1,7 +1,7 @@
 package org.arrah.framework.dataquality;
 
 /***************************************************
- *     Copyright to Vivek Kumar Singh 2013         *
+ *     Copyright to Vivek Kumar Singh 2016         *
  *                                                 *
  * Any part of code or file can be changed,        *
  * redistributed, modified with the copyright      *
@@ -78,6 +78,24 @@ public class FillCheck {
 		}
 		
 		return emptyCount;
+	}
+	
+	// This function will return rows matching no of empty columns
+	public static ReportTableModel getEmptyCount(ReportTableModel rtm, int emptyCount) {
+		if (rtm == null || emptyCount >= rtm.getModel().getColumnCount())
+			return rtm;
+		
+		ReportTableModel newRTM = new ReportTableModel(rtm.getAllColName(),true,true);
+		int rowc = rtm.getModel().getRowCount();
+		
+		for (int i=0; i <rowc; i++ ) {
+			Object[] row = rtm.getRow(i);
+			int emptyNo = getEmptyNo(row);
+			if (emptyNo == emptyCount )
+				newRTM.addFillRow(row);
+		}
+		
+		return newRTM;
 	}
 	
 	

@@ -58,6 +58,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import org.arrah.framework.dataquality.FillCheck;
+import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.ndtable.ReportTableSorter;
 import org.arrah.framework.util.KeyValueParser;
 
@@ -82,12 +84,18 @@ public class TableMenuListener implements ActionListener, ItemListener {
 	private boolean stateChanged = true, columnSearch = false;
 	private String replace = null; // replace string
 	private JComboBox<String> c_combo, c_combo1, c_combo2;
+	private ReportTable _rt;
 	
 
 	public TableMenuListener(JTable rt) {
 		table = rt;
 	}; // /Constructor
 	
+	// Need for incomplete test
+	public TableMenuListener(ReportTable reportTable) {
+		_rt = reportTable;
+		table = reportTable.table;
+	}
 
 	public void createDialogPanel() {
 		JPanel dia_p = new JPanel();
@@ -424,9 +432,39 @@ public class TableMenuListener implements ActionListener, ItemListener {
 			int i = selectedColIndex(table);
 			if (i < 0 ) return;
 			table.getColumnModel().getColumn(i).setCellRenderer(new MyCellRenderer(false));
-			table.repaint(); // to make redering work first time
+			table.repaint(); // to make rendering work first time
 			return;
 		}
+		if (source.getText().compareTo("InComplete Records") == 0) {
+			String count = JOptionPane.showInputDialog("Number of Columns Null or Empty?");
+			if (count == null) return;
+			int colcount = -1;
+			try {
+				colcount = Integer.parseInt(count);
+			} catch (Exception exp ) {
+				// do nothing
+			}
+			if (colcount <=0 || colcount >= table.getModel().getColumnCount()) {
+				JOptionPane.showMessageDialog(null, "Invalid input: Input may ne negative or more than column count");
+				return;
+			}
+				
+			ReportTableModel rtm = FillCheck.getEmptyCount(_rt.getRTMModel(), colcount);
+			if (rtm == null || rtm.getModel().getRowCount() <= 0) {
+				JOptionPane.showMessageDialog(null, "Empty Data Returned");
+				return;
+			}
+			ReportTable newRT  = new ReportTable(rtm);
+			JDialog jdn = new JDialog ();
+			jdn.setTitle("Table Incomplete Dialog");
+			jdn.setModal(true);
+			jdn.setLocation(200, 200);
+			jdn.getContentPane().add(newRT);
+			jdn.pack();
+			jdn.setVisible(true);
+			return;
+		}
+		
 
 	}// End of Action Performed
 

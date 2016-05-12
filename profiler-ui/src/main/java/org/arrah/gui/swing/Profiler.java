@@ -810,7 +810,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 				popup.add(menuItem4);
 				popup.addSeparator();
 				
-				JMenuItem menuItem5 = new JMenuItem("Table Fill Info");
+				JMenuItem menuItem5 = new JMenuItem("Table Completeness Info");
 				menuItem5.setActionCommand("fill");
 				menuItem5.addActionListener(al);
 				popup.add(menuItem5);

@@ -608,7 +608,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		option_m.add(formatC_m);
 		option_m.addSeparator();
 		
-		JMenuItem fillInfo_m = new JMenuItem("Table Fill Info");
+		JMenuItem fillInfo_m = new JMenuItem("Table Completeness Info");
 		fillInfo_m.addActionListener(this);
 		fillInfo_m.setActionCommand("fillInfo");
 		option_m.add(fillInfo_m);

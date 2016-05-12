@@ -673,6 +673,11 @@ public class ReportTable extends JPanel implements ItemListener, Serializable,
 			JMenuItem menu7 = new JMenuItem("BlankSpace Rendering");
 			menu7.addActionListener(new TableMenuListener(table));
 			popup.add(menu7);
+			popup.addSeparator();
+			
+			JMenuItem incomplete = new JMenuItem("InComplete Records");
+			incomplete.addActionListener(new TableMenuListener(this));
+			popup.add(incomplete);
 			
 			popup.show(menu, 0, menu.getHeight());
 

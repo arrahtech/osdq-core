@@ -82,11 +82,12 @@ Database_TableType="TABLE"
 */
 
 
-/* MS Access JDBC connection 
+/* MS Access JDBC connection
 Database_Type="MS_ACCESS_JDBC"
 Database_Driver="net.ucanaccess.jdbc.UcanaccessDriver"
 Database_Protocol="jdbc:ucanaccess"
-Database_DSN="//C:\\Users\\vivek\\Downloads\\ProfilerV6.0.9_prep\\ArrahDemo.accdb"
+#Database_DSN="//C:\\Users\\vivek\\Downloads\\ProfilerV6.0.9_prep\\ArrahDemo.accdb"
+Database_DSN="//configuration/ArrahDemo.accdb"
 Database_User=""
 Database_Passwd=""
 Database_Catalog=""
@@ -95,7 +96,6 @@ Database_TablePattern=""
 Database_ColumnPattern=""
 Database_TableType="TABLE"
 */
-
 
 /* SQL Sever ODBC DRIVER 
 Database_Type="SQL_SERVER"
