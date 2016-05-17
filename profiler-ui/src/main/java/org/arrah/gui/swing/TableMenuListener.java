@@ -645,7 +645,7 @@ public class TableMenuListener implements ActionListener, ItemListener {
 					JPopupMenu popup = new JPopupMenu();
 
 					// Create the popup menu From regexString.txt
-					__h = KeyValueParser.parseFile("./configuration/popupmenu.txt");
+					__h = KeyValueParser.parseFile("resource/popupmenu.txt");
 					if (__h == null)
 						return;
 					Enumeration<String> enum1 = __h.keys();

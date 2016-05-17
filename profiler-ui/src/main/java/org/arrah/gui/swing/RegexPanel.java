@@ -170,7 +170,7 @@ public class RegexPanel extends JDialog implements ActionListener {
 						"Regex Save Dialog", JOptionPane.YES_NO_OPTION);
 				if (n == JOptionPane.YES_OPTION) {
 					__h.put(name, format);
-					boolean saved = KeyValueParser.saveTextFile("configuration/popupmenu.txt", __h);
+					boolean saved = KeyValueParser.saveTextFile("resource/popupmenu.txt", __h);
 					if (saved == true) {
 						rt.getRTMModel().addFillRow(new String[] {name,format});
 						JOptionPane.showMessageDialog(null, "Regex Saved.",
@@ -191,7 +191,7 @@ public class RegexPanel extends JDialog implements ActionListener {
 	private ReportTable populateTable() {
 		ReportTableModel rtm = new ReportTableModel(new String[]{"Name","Regex"});
 		// Create the popup menu From regexString.txt
-		__h = KeyValueParser.parseFile("configuration/popupmenu.txt");
+		__h = KeyValueParser.parseFile("resource/popupmenu.txt");
 		if (__h == null) return null;
 			Enumeration<String> enum1 = __h.keys();
 			while (enum1.hasMoreElements()) {

@@ -659,17 +659,17 @@ public class RelationPanel extends JPanel implements MouseMotionListener,
 
 			JPopupMenu popup = new JPopupMenu();
 			JMenuItem sel_a;
+			ImageIcon imageicon;
+        imageicon = new ImageIcon(RelationPanel.class.getClassLoader().getResource("image/Found.jpg"), "Here");
+        int imageLS = imageicon.getImageLoadStatus();
+        if (imageLS == MediaTracker.ABORTED
+            || imageLS == MediaTracker.ERRORED)
+          sel_a = new JMenuItem(s31);
+        else
+          sel_a = new JMenuItem(s31, imageicon);
 
-			ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/Found.jpg"), "Here");
-			int imageLS = imageicon.getImageLoadStatus();
-			if (imageLS == MediaTracker.ABORTED
-					|| imageLS == MediaTracker.ERRORED)
-				sel_a = new JMenuItem(s31);
-			else
-				sel_a = new JMenuItem(s31, imageicon);
-
-			popup.add(sel_a);
-			popup.show(vport.getView(), (int) v_i.getX(), (int) v_i.getY());
+        popup.add(sel_a);
+        popup.show(vport.getView(), (int) v_i.getX(), (int) v_i.getY());
 
 		} else if (command.equals("print")) {
 			PrinterJob printJob = PrinterJob.getPrinterJob();

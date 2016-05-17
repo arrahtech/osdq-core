@@ -22,6 +22,7 @@ import java.awt.GridLayout;
 import java.awt.MediaTracker;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -54,11 +55,15 @@ public class SplitColumnPanel implements ActionListener {
 		_rt = rt;
 		_colIndex = colIndex;
 		_rowC = rt.table.getRowCount();
-		createDialog();
+		try {
+      createDialog();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
 	}; // Constructor
 	
 
-	private void createDialog() {
+	private void createDialog() throws IOException {
 		JPanel jp = new JPanel(new BorderLayout());
 		line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 
@@ -98,7 +103,7 @@ public class SplitColumnPanel implements ActionListener {
 	}
 
 	/* default Split input that will apply to all rows */
-	private JPanel createSplitPanel() {
+	private JPanel createSplitPanel() throws IOException {
 		
 		JPanel splitjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		splitjp.setBorder(line_b);
@@ -112,7 +117,10 @@ public class SplitColumnPanel implements ActionListener {
 		splitjp.add(dummy);
 		
 		JLabel imageIfo;
-		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/SplitColumn_nohd.png"), "Image with no first column split");
+    ImageIcon imageicon = new ImageIcon(SplitColumnPanel.class.getClassLoader()
+            .getResource("image/SplitColumn_nohd.png"),
+        "Image with no first column split");
+
 		int imageLS = imageicon.getImageLoadStatus();
 		if (imageLS == MediaTracker.ABORTED
 				|| imageLS == MediaTracker.ERRORED)
@@ -124,7 +132,7 @@ public class SplitColumnPanel implements ActionListener {
 		return splitjp;
 	}
 	
-	private JPanel createSubSplitPanel1() {
+	private JPanel createSubSplitPanel1() throws IOException {
 		
 		JPanel splitjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		splitjp.add(ch1);
@@ -139,7 +147,10 @@ public class SplitColumnPanel implements ActionListener {
 		rd2 = new JRadioButton("Append First subString to all rows");
 		
 		JLabel imageIfo;
-		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/SplitColumn_ighd.png"), "Image with ignore first column split");
+    ImageIcon imageicon = new ImageIcon(SplitColumnPanel.class.getClassLoader()
+            .getResource("image/SplitColumn_ighd.png"),
+        "Image with ignore first column split");
+
 		int imageLS = imageicon.getImageLoadStatus();
 		if (imageLS == MediaTracker.ABORTED
 				|| imageLS == MediaTracker.ERRORED)
@@ -153,7 +164,7 @@ public class SplitColumnPanel implements ActionListener {
 		
 		return splitjp;
 	}
-	private JPanel createSubSplitPanel2() {
+	private JPanel createSubSplitPanel2() throws IOException {
 		
 		JPanel splitjp = new JPanel(new FlowLayout(FlowLayout.LEADING));
 		JLabel dummy = new JLabel("                                                           ");
@@ -161,7 +172,9 @@ public class SplitColumnPanel implements ActionListener {
 		splitjp.add(rd2);
 		
 		JLabel imageIfo2;
-		ImageIcon imageicon2 = new ImageIcon(getClass().getClassLoader().getResource("images/SplitColumn_apphd.png"), "Image with append first column split");
+    ImageIcon imageicon2 = new ImageIcon(SplitColumnPanel.class.getClassLoader()
+            .getResource("image/SplitColumn_apphd.png"),
+        "Image with append first column split");
 		int imageLS2 = imageicon2.getImageLoadStatus();
 		if (imageLS2 == MediaTracker.ABORTED
 				|| imageLS2 == MediaTracker.ERRORED)

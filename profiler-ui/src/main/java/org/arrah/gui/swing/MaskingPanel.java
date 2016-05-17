@@ -23,6 +23,7 @@ import java.awt.GridLayout;
 import java.awt.MediaTracker;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -66,7 +67,7 @@ public class MaskingPanel implements ActionListener {
 		_rowC = rt.table.getRowCount();
 	}; // Constructor
 
-	public void createDialog() {
+	public void createDialog() throws IOException {
 		JPanel jp = new JPanel(new GridLayout(5, 1));
 		line_b = BorderFactory.createEtchedBorder(EtchedBorder.RAISED);
 
@@ -167,7 +168,7 @@ public class MaskingPanel implements ActionListener {
 		// rownnumjp.setBorder(line_b);
 		return rownnumjp;
 	}
-	private JPanel createShuffleTablePanel() {
+	private JPanel createShuffleTablePanel() throws IOException {
 		
 		JPanel shuffTablejp = new JPanel();
 		SpringLayout layout = new SpringLayout();
@@ -177,7 +178,9 @@ public class MaskingPanel implements ActionListener {
 		JLabel lrange = new JLabel("  Example:", JLabel.LEADING);
 		JLabel showImg;
 		
-		ImageIcon imageicon = new ImageIcon(getClass().getClassLoader().getResource("images/ShuffleTable.jpg"), "Example Image");
+    ImageIcon imageicon = new ImageIcon(MaskingPanel.class
+        .getClassLoader().getResource("image/ShuffleTable.jpg"),
+        "Example Image");
 		int imageLS = imageicon.getImageLoadStatus();
 
 		if (imageLS == MediaTracker.ABORTED

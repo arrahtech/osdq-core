@@ -255,7 +255,7 @@ public class XmlReader {
 		} // End of rowIndex
 	}
 
-	private static final String DTD_ERRORS = "configuration/DTD_Errors.txt";
+	private static final String DTD_ERRORS = "resource/DTD_Errors.txt";
 
 	private String[] headings = null;
     private String[] nodeList = null;

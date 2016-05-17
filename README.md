@@ -14,9 +14,13 @@ It also had Hadoop ( Big data ) support to move files to/from Hadoop Grid, Creat
 
 **Changes**
 
-a) Fuzzy replacement added
-b) Data Normalization added
-c) Date Format Standarization added
+6.1.6 Changes:
+
+a) Training, Validation and Test data preparation added
+b) File Loader added
+c) Rounding methods added for data preparation
+d) Unspecified bug fixes
+
 
 **Features**
 
