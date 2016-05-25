@@ -17,6 +17,7 @@ package org.arrah.framework.dataquality;
  *
  */
 
+
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -29,10 +30,10 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.RAMDirectory;
-
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.Rdbms_conn;
+
 
 public class SimilarityCheckLucene {
 	private ReportTableModel _rt, outputRT;
@@ -42,7 +43,7 @@ public class SimilarityCheckLucene {
 	private IndexWriter writer;
 	private IndexSearcher searcher;
 	private RAMDirectory idx;
-	private Vector<Integer> skipVC;
+	private Vector<Integer> skipVC = null,mrowI = null;
 
 	private Hashtable<Integer, Integer> parentMap;
 	boolean isRowSet = false;
@@ -293,6 +294,100 @@ public class SimilarityCheckLucene {
 	}
 	public void setRowset(JDBCRowset rowset) {
 		_rows= rowset;
+	}
+	
+	// Prepare query for fuzzy search with colname
+	public String prepareLQuery(String rawquery, String colTitle) {
+		rawquery = rawquery.replaceAll(",", " ");
+		rawquery = rawquery.trim().replaceAll("_", " "); // StandardAnalyzer treats _ as new word
+		rawquery = rawquery.replaceAll("\\s+", " ");
+		String[] token = rawquery.split(" ");
+		String newTerm = "";
+		
+	  // prepare query for colName
+		for (int i = 0; i < token.length; i++) {
+			if (token[i] == null || "".equals(token[i]))
+			continue;
+			
+			if (newTerm.equals("") == false )
+				newTerm += " AND ";
+			
+			newTerm += colTitle + ":"
+					+ QueryParser.escape(token[i]) + "~0.6 "; // For Fuzzy Logic
+		}
+		return newTerm;
+	}
+	
+	// This function will an array of objects that matched the query
+	public Object[][]  searchTableObject(String fuzzyQ) {
+		if (openIndex() == false)
+			return null;
+		if (fuzzyQ == null || fuzzyQ.equals("") == true)
+			return null;
+		
+		/*** Not needed
+		
+		if (isRowSet == true) { // Only if this is rowset
+			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			 // for Hive
+					if (_rows != null) _rows.close();
+					try {
+						createNewRowset(queryForRowset);
+					} catch (SQLException e) {
+						System.out.println("New Rowset Exception:"+e.getLocalizedMessage());
+						return;
+					}
+			}
+		}
+		***/
+			
+		Query qry = parseQuery(fuzzyQ);
+		Hits hit = searchIndex(qry);
+		if (hit == null )
+			return null;
+		int hitc = hit.length();
+		Object[][] returnObj = new Object[hitc][];
+		mrowI = new Vector<Integer>();
+		
+		for (int j = 0; j < hitc; j++) {
+			try {
+				Document doc = hit.doc(j);
+				String rowid = doc.get("at__rowid__");
+				
+				Object[] row = null;
+				if (isRowSet == false)
+					row = _rt.getRow(Integer.parseInt(rowid));
+				else {
+					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+						row = _rows.getRow(Integer.parseInt(rowid)); 
+					} else {
+						// will not work for Hive as rowset can not move bothways
+						// Hive the info should be taken from document itself by colname
+						row = new Object[colName.length];
+						for (int k =0; k < colName.length; k++)
+							row[k] = doc.get(colName[k]);
+					}
+				}
+				returnObj[j] = row;
+				mrowI.add(Integer.parseInt(rowid));
+
+			} catch (Exception e) {
+				System.out.println(" Error: Can not open Document:" + e.getLocalizedMessage());
+				return null;
+			}
+		}
+		closeSeachIndex();
+		return returnObj;
+	}
+	
+	/** to get the row ID of matched columnms
+	// It will only return last set of matched columns
+	// If searchTableObject is called in loop 
+	 * then it is calling function responsibility to 
+	 * do sanity check
+	 */
+	public Vector<Integer> getMatchedRowIndex() {
+		return mrowI;
 	}
 
 } // End of Similarity Check

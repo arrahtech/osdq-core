@@ -104,7 +104,7 @@ public class QualityListener implements ActionListener {
 				createDialog();
 				return;
 			}
-			if (source.equals("Standardisation")) {
+			if (source.equals("Standardisation Regex")) {
 				menuSel = 2;
 				createDialog();
 				return;
@@ -225,6 +225,11 @@ public class QualityListener implements ActionListener {
 				createDialog();
 				return;
 			}
+			if (source.equals("Standardisation Fuzzy")) {
+				menuSel = 24;
+				createDialog();
+				return;
+			}
 		}// End of Menu Item
 		else {
 			String command = e.getActionCommand();
@@ -289,6 +294,7 @@ public class QualityListener implements ActionListener {
 						d_f.dispose();
 					break;
 				case 2:
+				{
 					SearchOptionDialog sd = new SearchOptionDialog();
 					File f = sd.getFile();
 					try {
@@ -314,6 +320,7 @@ public class QualityListener implements ActionListener {
 					}
 					d_f.dispose();
 					break;
+				}
 				case 3:
 					incAction(selTP.getTable(), vc, true);
 					d_f.dispose();
@@ -462,6 +469,31 @@ public class QualityListener implements ActionListener {
 								"SQL Exception Dialog",
 								JOptionPane.ERROR_MESSAGE);
 					}
+					break;
+				case 24: // Standardizaton fuzzy
+					SearchOptionDialog sd = new SearchOptionDialog(true); // disable options
+					File f = sd.getFile();
+					try {
+						if (f == null) {
+							d_f.setCursor(java.awt.Cursor
+									.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+							return;
+						}
+						ConsoleFrame.addText("\n Selected File:" + f.toString());
+						Hashtable<String, String> filterHash = KeyValueParser.parseFile(f
+								.toString());
+						searchAction(selTP.getTable(), vc, filterHash,null); // No options
+
+					} catch (SQLException sqle) {
+						JOptionPane.showMessageDialog(null, sqle.getMessage(),
+								"SQL Exception Dialog",
+								JOptionPane.ERROR_MESSAGE);
+					} finally  {
+						d_f.setCursor(java.awt.Cursor
+								.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+						
+					}
+					d_f.dispose();
 					break;
 					
 				default:
@@ -632,8 +664,11 @@ public class QualityListener implements ActionListener {
 		rows = new JDBCRowset(query, -1, false);
 
 		QualityCheck qc = new QualityCheck();
-		rt = new ReportTable(qc.searchReplace(rows, col.get(0).toString(),
-				filter,options));
+		if (options == null)
+			rt = new ReportTable(qc.searchReplaceFuzzy(rows, col.get(0).toString(),filter));
+		else
+			rt = new ReportTable(qc.searchReplace(rows, col.get(0).toString(),filter,options));
+		
 		mrowI = qc.getrowIndex();
 		matchI = qc.getColMatchIndex();
 

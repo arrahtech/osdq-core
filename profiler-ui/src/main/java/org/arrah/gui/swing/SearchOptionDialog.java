@@ -48,10 +48,17 @@ public class SearchOptionDialog implements ActionListener {
 	private JRadioButton fullmatch,find;
 	private JLabel fileLabel;
 	private String selectString=""; // 1 for select and 0 for not select like 0001
+	private boolean optionDisable = false;
 	
 	
 	public SearchOptionDialog() {
 		
+		createDialog();
+		
+	}; // Constructor
+	
+	public SearchOptionDialog(boolean optionDisable) {
+		this.optionDisable = optionDisable;
 		createDialog();
 		
 	}; // Constructor
@@ -177,6 +184,9 @@ public class SearchOptionDialog implements ActionListener {
 		layout.putConstraint(SpringLayout.WEST, cancel, 10, SpringLayout.EAST, ok);
 		layout.putConstraint(SpringLayout.SOUTH, cancel, 0, SpringLayout.SOUTH,ok);
 		
+		if (optionDisable == true )
+			disableOption();
+		
 		jd.setPreferredSize(new Dimension(600,400));
 		jd.setTitle("Search Option Dialog");
 		jd.getContentPane().add(topPanel);
@@ -295,6 +305,12 @@ public class SearchOptionDialog implements ActionListener {
 	}
 	public String getSelectedOption() {
 		return selectString;
+	}
+	
+	//This function will disable check box and radio button
+	private void disableOption () {
+		isCaseinSen.setEnabled(false);isMultiword.setEnabled(false);literals.setEnabled(false);
+		fullmatch.setEnabled(false);find.setEnabled(false);
 	}
 		
 }

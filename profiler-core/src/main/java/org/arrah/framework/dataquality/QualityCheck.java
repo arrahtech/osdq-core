@@ -598,4 +598,95 @@ public class QualityCheck {
 	public int getColMatchIndex() {
 		return matchI;
 	}
+	
+	// This function find a key matching the filter and replaces with
+	// value of the filter (that is in Hashtable
+	// It will do fuzzy matches
+
+	public ReportTableModel searchReplaceFuzzy(JDBCRowset rows, String col,Hashtable<String, String> filter) throws SQLException {
+
+		String[] col_name = rows.getColName();
+		String[] colType = rows.getColType();
+		String[] add_col = new String[col_name.length + 1];
+
+		for (int j = 0; j < col_name.length; j++) {
+			if (col.equals(col_name[j])) {
+				matchI = j;
+				break;
+			}
+		}
+		if (matchI < 0) {
+			System.out.println("Selected Column is Not matching Database Columns");
+			return null;
+
+		}
+		Object replace = null;
+		String metaType = SqlType.getMetaTypeName(colType[matchI]);
+
+		add_col[0] = col_name[matchI] + " Editable";
+		for (int i = 0; i < col_name.length; i++) {
+			add_col[i + 1] = col_name[i];
+		}
+		ReportTableModel rt = new ReportTableModel(add_col);
+		mrowI = new Vector<Integer>();
+		
+		int mrowC = 0;
+
+		/* Build the index here and search in that index */
+		SimilarityCheckLucene _simcheck = new SimilarityCheckLucene(rows);
+		_simcheck.makeIndex();
+		
+		// Now loop the keys
+		Enumeration<String> en = filter.keys();
+		while (en.hasMoreElements()) {
+			String key = en.nextElement().toString();
+			if (key == null || "".equals(key) ) {
+				System.out.println("Key is NULL");
+					continue;
+			}
+			String fuzzyquery =  _simcheck.prepareLQuery(key, col);
+			
+			Object[][] matchedrow = _simcheck.searchTableObject(fuzzyquery);
+			if (matchedrow == null) continue;
+			
+			Vector<Integer> matchedIndex = _simcheck.getMatchedRowIndex(); // matched Index for this set
+			if (matchedIndex == null || matchedIndex.size() == 0) continue;
+			
+			for (int i=0; i < matchedrow.length ; i++) {
+				
+				try {
+					int matchedIndexVal = matchedIndex.get(i);
+					if (mrowI.indexOf(matchedIndexVal) != -1) continue; // This index is already there
+					
+					String newValue = filter.get(key);
+					if (newValue == null) break; // No value to replace
+					
+					try {
+						if (metaType.toUpperCase().contains("NUMBER")) {
+							replace = Double.parseDouble(newValue);
+						} else if (metaType.toUpperCase().contains("DATE")) {
+							replace = new SimpleDateFormat("dd-MM-yyyy").parse(newValue);
+						} else {
+							replace = new String(newValue);
+						}
+					} catch (Exception exp) {
+						System.out.println("\n WANING: Could not Parse Input String:"+ newValue);
+					}
+					
+					Object[] add_obj = new Object[matchedrow[i].length + 1];
+					add_obj[0] = replace;
+					for (int k = 0; k < matchedrow[i].length; k++) {
+						add_obj[k + 1] = matchedrow[i][k];
+					}
+					rt.addFillRow(add_obj);
+					mrowI.add(mrowC++, matchedIndexVal);
+				}  catch (Exception ex) {
+					System.out.println("\n Exception :" + ex.getMessage());
+					continue;
+				}
+			} // if match found	
+		} // end of while
+		return rt;
+	}
+	
 }

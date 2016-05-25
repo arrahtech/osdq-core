@@ -83,6 +83,7 @@ import org.arrah.framework.datagen.AggrCumRTM;
 import org.arrah.framework.datagen.RandomColGen;
 import org.arrah.framework.dataquality.FillCheck;
 import org.arrah.framework.dataquality.FormatCheck;
+import org.arrah.framework.dataquality.SimilarityCheckLucene;
 import org.arrah.framework.hadooputil.HiveQueryBuilder;
 import org.arrah.framework.ndtable.RTMUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -466,10 +467,15 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 		column_m.add(splitC_m);
 		column_m.addSeparator();
 
-		JMenuItem searC_m = new JMenuItem("Standardisation");
+		JMenuItem searC_m = new JMenuItem("Standardisation Regex");
 		searC_m.addActionListener(this);
 		searC_m.setActionCommand("seareplace");
 		column_m.add(searC_m);
+		
+		JMenuItem stdfuzzy_m = new JMenuItem("Standardisation Fuzzy");
+		stdfuzzy_m.addActionListener(this);
+		stdfuzzy_m.setActionCommand("seareplacefuzzy");
+		column_m.add(stdfuzzy_m);
 
 		JMenuItem replaceC_m = new JMenuItem("Replace Null");
 		replaceC_m.addActionListener(this);
@@ -1171,6 +1177,74 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 							_rt.table.addRowSelectionInterval(i, i);
 						}
 					}
+				}
+				return;
+			}
+			if (command.equals("seareplacefuzzy")) {
+				int index = selectedColIndex(_rt);
+				if (index < 0)
+					return;
+				Hashtable<String,String> filterHash = null;
+				SearchOptionDialog sd = new SearchOptionDialog(true);
+				File f = sd.getFile();
+				if (f == null) return;
+				
+				ConsoleFrame.addText("\n Selected File:" + f.toString());
+				filterHash = KeyValueParser.parseFile(f.toString());
+				
+				_rt.cancelSorting();
+				_rt.table.clearSelection();
+				_rt.table.setColumnSelectionInterval(index, index);
+
+				// Take care of class type
+				Object replace = null;
+				Class<?> cclass = _rt.table.getColumnClass(index);
+				String colTitle = _rt.table.getColumnName(index);
+				
+				/* Build the index here and search in that index */
+				SimilarityCheckLucene _simcheck = new SimilarityCheckLucene(_rt.getRTMModel());
+				_simcheck.makeIndex();
+
+				Enumeration<String> en = filterHash.keys();
+				while (en.hasMoreElements()) {
+					String key = en.nextElement().toString();
+					
+					if (key == null || "".equals(key) ) {
+						System.out.println("Key is NULL");
+							continue;
+					}
+					String fuzzyquery =  _simcheck.prepareLQuery(key, colTitle);
+					
+					Object[][] matchedrow = _simcheck.searchTableObject(fuzzyquery);
+					if (matchedrow == null) continue;
+					
+					Vector<Integer> matchedIndex = _simcheck.getMatchedRowIndex(); // matched Index for this set
+					if (matchedIndex == null || matchedIndex.size() == 0) continue;
+					
+					for (int i=0; i < matchedrow.length ; i++) {
+						int matchedIndexVal = matchedIndex.get(i);
+						
+						String newValue = filterHash.get(key);
+						if (newValue == null) break; // No value to replace
+							try {
+								if (cclass.getName().toUpperCase()
+										.contains("DOUBLE")) {
+									replace = Double.parseDouble(newValue);
+								} else if (cclass.getName().toUpperCase()
+										.contains("DATE")) {
+									replace = new SimpleDateFormat("dd-MM-yyyy")
+											.parse(newValue);
+								} else {
+									replace = new String(newValue);
+								}
+							} catch (Exception exp) {
+								ConsoleFrame
+										.addText("\n WANING: Could not Parse Input String:"
+												+ newValue);
+							}
+							_rt.table.setValueAt(replace, matchedIndexVal, index);
+							_rt.table.addRowSelectionInterval(matchedIndexVal, matchedIndexVal);
+						}
 				}
 				return;
 			}
@@ -2053,7 +2127,7 @@ public class DisplayFileTable extends JPanel implements ActionListener {
 			}
 			
 		} catch (Exception e1) {
-      // TODO Auto-generated catch block
+      ConsoleFrame.addText("\n Exception:" + e1.getLocalizedMessage());
       e1.printStackTrace();
     } finally {
 			frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

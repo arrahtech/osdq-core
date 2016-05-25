@@ -618,9 +618,13 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		jmenu7.add(fdedup);
 		jmenu7.addSeparator();
 		
-		JMenuItem jmenuitem25 = new JMenuItem("Standardisation");
+		JMenuItem jmenuitem25 = new JMenuItem("Standardisation Regex");
 		jmenuitem25.addActionListener(new QualityListener());
 		jmenu7.add(jmenuitem25);
+		jmenu7.addSeparator();
+		JMenuItem stdfuzzy = new JMenuItem("Standardisation Fuzzy");
+		stdfuzzy.addActionListener(new QualityListener());
+		jmenu7.add(stdfuzzy);
 		jmenu7.addSeparator();
 		JMenuItem replaceNull = new JMenuItem("Replace Null");
 		replaceNull.addActionListener(new QualityListener());
