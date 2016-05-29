@@ -6,14 +6,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
-
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.xml.FilePaths;
@@ -25,33 +22,18 @@ import org.quartz.JobExecutionException;
 
 public class ScheduleJob implements Job{
 		
-	static String query="";
-	String columnNames ="";
-	 ResultSetMetaData rsmd;
-	 int count = 0;
-	 Hashtable<String, String> hashTable, hashRule;
-	 XmlReader xmlReader;
-	 DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-	String dbConnName;
-	private String jcbRule;
 	
-	// Get the input Query from BusinessRules.xml to schedule the job	
-	File xmlFile=new File(FilePaths.getFilePathRules());
-	
-	
-	public ScheduleJob(String text, Hashtable<String, String> hashValues, String jcbRule){
-		query=text;
-		this.hashTable = hashValues;
-		this.jcbRule = jcbRule;
-	}
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
+	  // Get the input Query from BusinessRules.xml to schedule the job	
+	  File xmlFile=new File(FilePaths.getFilePathRules());
+	  
 		String[] splittedColumns=null;
 		String finalCols = null;
 		String actualCols=null;
 		ArrayList<String> colNames=new ArrayList<String>();
 	    ResultSet rs = null;
-		File file=new File(".\\scheduleoutput.csv");
+		File file=new File("./scheduleoutput.csv");
 		FileWriter fstream;
 		 BufferedWriter out = null;
 		    Date date = new Date();
@@ -75,11 +57,17 @@ public class ScheduleJob implements Job{
         
 		try {
 			
-			Rdbms_NewConn dbConn=new Rdbms_NewConn(hashTable);
+		  //legacy code, converting hashmap into hashtable
+		  Hashtable<String, String> hashtable = new Hashtable<>();
+		  context.getJobDetail().getJobDataMap().entrySet().stream().forEach((e) -> {hashtable.put(e.getKey(), (String)e.getValue());});
+			Rdbms_NewConn dbConn=new Rdbms_NewConn(hashtable);
 			dbConn.openConn();
 			XmlReader xmlReader=new XmlReader();
-			columnNames=xmlReader.getColumnNames(xmlFile, jcbRule);
+			 String columnNames = null;
+
+			columnNames=xmlReader.getColumnNames(xmlFile, context.getJobDetail().getJobDataMap().getString("jcbRule"));
 			
+			String query = context.getJobDetail().getJobDataMap().getString("query");
 			 
 			 if(columnNames != null && "".equals(columnNames) == false)
 					rs = dbConn.execute(query);
@@ -88,7 +76,7 @@ public class ScheduleJob implements Job{
 						throw new JobExecutionException("Column is Empty");
 			}
 			 
-			// Check wether the input Query is null
+			// Check whether the input Query is null
 			 if(query != null )
 				rs = dbConn.execute(query);
 				else {

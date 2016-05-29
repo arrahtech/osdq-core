@@ -13,3 +13,5 @@
 target/
 /bin/
 profiler-ui/configuration/
+
+*scheduleoutput*
