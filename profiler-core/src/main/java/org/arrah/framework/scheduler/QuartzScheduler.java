@@ -12,6 +12,7 @@ import java.util.Hashtable;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
+import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -81,13 +82,13 @@ private final String jcbRule;
 		
 			// Tell quartz to schedule the job using our trigger
 			
-			
-			new ScheduleJob(quer, hashtable, jcbRule);
 			String key="ExecuteJob1", value="Report Generation1";
 			JobKey jobKey = new JobKey(key, value);
+			
+			JobDataMap jobDataMap = new JobDataMap(hashtable);
 							
 			JobDetail job = newJob(ScheduleJob.class)
-			    .withIdentity(jobKey)
+			    .withIdentity(jobKey).usingJobData(jobDataMap).usingJobData("query", quer).usingJobData("jcbRule", jcbRule)
 			    .build();
 			
 			// This logic applies if the user want to schedule on a one-time basis

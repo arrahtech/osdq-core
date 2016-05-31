@@ -48,7 +48,6 @@ public class Rdbms_NewConn {
 
 	public Rdbms_NewConn(Hashtable<String, String> hashtable) throws SQLException {
 		init(hashtable);
-		
 	}
 
 	public boolean openConn() throws SQLException {
