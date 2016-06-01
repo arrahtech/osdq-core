@@ -1,6 +1,5 @@
 package org.arrah.framework.util;
 
-import java.io.BufferedReader;
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
@@ -21,10 +20,9 @@ import java.io.BufferedReader;
  */
 
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -39,10 +37,16 @@ public class KeyValueParser {
 		try {
 
 			// Create the tokenizer to read from a file
-			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(filename));
-		// InputStreamReader inputStreamReader = new InputStreamReader(KeyValueParser.class.getClassLoader().getResourceAsStream(filename));
+			FileReader rd = new FileReader(filename);
+			StreamTokenizer st = new StreamTokenizer(rd);
+			
+			/**** Reverting to OLD code
+			// Create the tokenizer to read from a file
+			//InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(filename));
+		  InputStreamReader inputStreamReader = new InputStreamReader(KeyValueParser.class.getClassLoader().getResourceAsStream(filename));
 		  BufferedReader rd = new BufferedReader(inputStreamReader);
 		  StreamTokenizer st = new StreamTokenizer(rd);
+		  ****/
 
 			// Prepare the tokenizer for Java-style tokenizing rules
 			st.wordChars('_', '_');
