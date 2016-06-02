@@ -835,7 +835,7 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 			// mac os append ctrl-M to file name
 			char last = args[0].charAt(args[0].length() -1);
 			if (Character.isISOControl(last))
-				args[0] = args[0].substring(0, args[0].length() -2);
+				args[0] = args[0].substring(0, args[0].length() - 1);
 			
 			
 			_fileParse = KeyValueParser.parseFile(args[0]);
