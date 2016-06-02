@@ -831,6 +831,13 @@ public class Profiler extends JPanel implements TreeSelectionListener {
 		
 		if ((args.length > 0) && ( args[0] != null && !"".equals(args[0]) 
 		    && !"\r".equals(args[0]) && !"\n".equals(args[0]))) { // open the confileFile.txt
+			
+			// mac os append ctrl-M to file name
+			char last = args[0].charAt(args[0].length() -1);
+			if (Character.isISOControl(last))
+				args[0] = args[0].substring(0, args[0].length() -2);
+			
+			
 			_fileParse = KeyValueParser.parseFile(args[0]);
 			try {
 				Rdbms_conn.init(_fileParse);
