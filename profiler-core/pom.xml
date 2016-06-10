@@ -6,11 +6,11 @@
 	<parent>
 		<groupId>org.arrahtec</groupId>
 		<artifactId>profiler</artifactId>
-		<version>6.1.6-SNAPSHOT</version>
+		<version>6.1.8-SNAPSHOT</version>
 	</parent>
 	<groupId>org.arrahtec</groupId>
 	<artifactId>profiler-core</artifactId>
-	<version>6.1.6-SNAPSHOT</version>
+	<version>6.1.8-SNAPSHOT</version>
 	<name>profiler-core</name>
 	<url>http://www.arrahtec.org</url>
 	<properties>
@@ -141,6 +141,7 @@
 			<artifactId>quartz</artifactId>
 			<version>2.2.1</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>jdmf</groupId>
 			<artifactId>jdmf</artifactId>
@@ -148,11 +149,13 @@
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/jdmf-0.1.jar</systemPath>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>com.toedter</groupId>
 			<artifactId>jcalendar</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>openforecast</groupId>
 			<artifactId>openforecast</artifactId>
@@ -160,6 +163,7 @@
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/openforcast-0.5.0.jar</systemPath>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
@@ -171,5 +175,86 @@
         </exclusion>
 			</exclusions>
 		</dependency>
+		<!--Dependency for jdmf -->
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-xml</artifactId>
+			<version>1.6-1</version>
+		</dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-util</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-swing</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-svggen</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-svg-dom</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-script</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-parser</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-gvt</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-gui-util</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-ext</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-dom</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-css</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-bridge</artifactId>
+            <version>1.6-1</version>
+        </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-awt-util</artifactId>
+            <version>1.6-1</version>
+        </dependency>
 	</dependencies>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>
