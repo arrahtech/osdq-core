@@ -1,0 +1,11 @@
+org.arrah.framework.analytics
+org.arrah.framework.datagen
+org.arrah.framework.dataquality
+org.arrah.framework.hadooputil
+org.arrah.framework.ndtable
+org.arrah.framework.profile
+org.arrah.framework.rdbms
+org.arrah.framework.scheduler
+org.arrah.framework.util
+org.arrah.framework.xls
+org.arrah.framework.xml
