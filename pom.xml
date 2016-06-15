@@ -4,7 +4,7 @@
 
 	<groupId>org.arrahtec</groupId>
 	<artifactId>profiler</artifactId>
-	<version>6.1.6-SNAPSHOT</version>
+	<version>6.1.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>profiler</name>
@@ -64,6 +64,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.1</version>
 				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 			</plugin>
 		</plugins>

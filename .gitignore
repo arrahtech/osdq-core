@@ -9,6 +9,10 @@
 .settings
 .project
 
+# IntelliJ Setting #
+.idea/
+*.iml
+
 # Maven Target #
 target/
 /bin/
