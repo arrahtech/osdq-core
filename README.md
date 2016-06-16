@@ -1,4 +1,4 @@
-Profiler V6.1.6
+Profiler V6.1.7
 ===========
 
 [![Build Status](https://drone.io/github.com/arrahtec/profiler/status.png)](https://drone.io/github.com/arrahtec/profiler/latest)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dm/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)   [![Download Open Source Data Quality and Profiling](https://img.shields.io/sourceforge/dw/dataquality.svg)](https://sourceforge.net/projects/dataquality/files/latest/download)
