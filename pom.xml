@@ -11,7 +11,7 @@
     <scm>
         <connection>scm:git:git@github.com:arrah/osdq-core.git</connection>
         <developerConnection>scm:git:git@github.com:arrah/osdq-core.git</developerConnection>
-        <url>https://github.com/arrah/osdq</url>
+        <url>https://github.com/arrah/osdq-core</url>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
