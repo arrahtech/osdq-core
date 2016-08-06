@@ -113,75 +113,39 @@
             <artifactId>itextpdf</artifactId>
             <version>5.4.0</version>
         </dependency>
-	<!--
-	<dependency>
-            <groupId>javax.sql</groupId>
-            <artifactId>rowset</artifactId>
-            <version>0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/rowset.jar</systemPath>
-        </dependency>
-	-->
-	<dependency>
-            <groupId>saxon</groupId>
-            <artifactId>saxon</artifactId>
-            <version>6.5.3</version>
-        </dependency>
         <!-- JDBC DRIVER -->
         <dependency>
             <groupId>org.jumpmind.symmetric.jdbc</groupId>
             <artifactId>postgresql</artifactId>
             <version>9.2-1002-jdbc4</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.24</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.sf.ucanaccess</groupId>
             <artifactId>ucanaccess</artifactId>
             <version>3.0.4</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
             <version>10.12.1.1</version>
         </dependency>
-	<!-- NON MAVENIZED JDBC JARS 
-	<dependency>
-            <groupId>db2jcc4</groupId>
-            <artifactId>db2jcc4</artifactId>
-            <version>0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/db2jcc4.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>sqljdbc4</groupId>
-            <artifactId>sqljdbc4</artifactId>
-            <version>0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/sqljdbc4.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>ojdbc14</groupId>
-            <artifactId>ojdbc14</artifactId>
-            <version>0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/ojdbc14.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>ifxjdbc</groupId>
-            <artifactId>ifxjdbc</artifactId>
-            <version>0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/ifxjdbc.jar</systemPath>
-        </dependency>
-        END OF JDBC DRIVER -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <version>2.2.0</version>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>5.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+            <version>5.3.1</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>
@@ -200,16 +164,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math</artifactId>
-            <version>2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.23</version>
-        </dependency>
-        <dependency>
             <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
             <version>1.0.19</version>
@@ -219,29 +173,6 @@
             <artifactId>quartz</artifactId>
             <version>2.2.1</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>jdmf</groupId>
-            <artifactId>jdmf</artifactId>
-            <version>0.1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jdmf-0.1.jar</systemPath>
-        </dependency>
-        -->
-        <dependency>
-            <groupId>com.toedter</groupId>
-            <artifactId>jcalendar</artifactId>
-            <version>1.4</version>
-        </dependency>
-        <!--
-        <dependency>
-            <groupId>openforecast</groupId>
-            <artifactId>openforecast</artifactId>
-            <version>0.5.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/openforcast-0.5.0.jar</systemPath>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
@@ -251,79 +182,105 @@
                     <groupId>hsqldb</groupId>
                     <artifactId>hsqldb</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-cli</groupId>
+                    <artifactId>commons-cli</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xmlenc</groupId>
+                    <artifactId>xmlenc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-core-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-jaxrs</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-xc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-httpclient</groupId>
+                    <artifactId>commons-httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp-api-2.1</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp-servlet-2.5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jsp-2.1</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tomcat</groupId>
+                    <artifactId>jasper-runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tomcat</groupId>
+                    <artifactId>jasper-compiler</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.jdt</groupId>
+                    <artifactId>core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.java.dev.jets3t</groupId>
+                    <artifactId>jets3t</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>oro</groupId>
+                    <artifactId>oro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-net</groupId>
+                    <artifactId>commons-net</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-el</groupId>
+                    <artifactId>commons-el</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
-        <!--Dependency for jdmf -->
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-xml</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-util</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-swing</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-svggen</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-svg-dom</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-script</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-parser</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-gvt</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-gui-util</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-ext</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-dom</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-css</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-bridge</artifactId>
-            <version>1.6-1</version>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-awt-util</artifactId>
-            <version>1.6-1</version>
-        </dependency>
+
     </dependencies>
     <profiles>
         <profile>
@@ -416,12 +373,16 @@
         </repository>
     </distributionManagement>
     <repositories>
-       <repository>
-         <id>snapshots-repo</id>
-         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-         <releases><enabled>false</enabled></releases>
-         <snapshots><enabled>true</enabled></snapshots>
-       </repository>
+        <repository>
+            <id>snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
 </project>
