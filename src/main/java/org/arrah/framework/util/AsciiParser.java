@@ -28,7 +28,6 @@ import java.util.Scanner;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 
-import com.google.common.base.Ascii;
 
 public class AsciiParser {
 
