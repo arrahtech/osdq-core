@@ -97,12 +97,6 @@
             <groupId>com.github.mpkorstanje</groupId>
             <artifactId>simmetrics-core</artifactId>
             <version>3.0.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>info.debatty</groupId>
