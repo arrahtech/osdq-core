@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.arrahtec</groupId>
     <artifactId>osdq-core</artifactId>
-    <version>6.1.8-SNAPSHOT</version>
+    <version>6.1.8</version>
     <name>osdq-core</name>
     <url>http://www.arrahtec.org</url>
     <scm>
@@ -17,6 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <github.global.server>github</github.global.server>
     </properties>
+    <description>The open source data quality library</description>
     <build>
         <pluginManagement>
             <plugins>
