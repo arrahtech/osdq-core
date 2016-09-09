@@ -50,7 +50,7 @@ public class SetAnalysis {
 		
 		for (int i=0 ; i < ilen; i++ ) {
 			Object o = smallSet.get(i);
-			if (bigSet.indexOf(o) != -1 ) // it is not found in bigger set
+			if (bigSet.indexOf(o) != -1 ) // it is  found in bigger set
 				resultSet.add(o);
 		}
 		return resultSet;
@@ -69,13 +69,13 @@ public class SetAnalysis {
 		
 		for (int i=0 ; i < ilen; i++ ) {
 			Object o = smallSet.get(i);
-			if (resultSet.indexOf(o) != -1 ) // it is not found in small result set
+			if (resultSet.indexOf(o) == -1 ) // it is not found in result set
 				resultSet.add(o);
 		}
 		int ilenB = bigSet.size();
 		for (int i=0 ; i < ilenB; i++ ) {
 			Object o = bigSet.get(i);
-			if (resultSet.indexOf(o) != -1 ) // it is not found in big result set
+			if (resultSet.indexOf(o) == -1 ) // it is not found in  result set
 				resultSet.add(o);
 		}
 		
