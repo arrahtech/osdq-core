@@ -1,5 +1,6 @@
 package org.arrah.framework.util;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 /***********************************************
