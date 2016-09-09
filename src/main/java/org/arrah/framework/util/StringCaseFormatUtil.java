@@ -1,5 +1,6 @@
 package org.arrah.framework.util;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 /***********************************************
@@ -417,4 +418,20 @@ public class StringCaseFormatUtil {
 		}
 		return onlyDigit;
 	}
+	
+	// This function will return unique char and count from String
+	public static HashMap<Character,Integer> uniqueCharCount (String showUnique) {
+		if (showUnique == null || "".equals(showUnique) ) // nothing to compare
+			return null;
+		HashMap<Character,Integer> uniqMap = new HashMap<Character,Integer>();
+		for (int i=0; i < showUnique.length(); i++  ) {
+			char c = showUnique.charAt(i);
+			if (uniqMap.containsKey(c) == false) // Not found
+				uniqMap.put(c, 1);
+			else
+				uniqMap.put(c, uniqMap.get(c)+1); // increase the counter
+		}
+		return uniqMap;
+	}
+	
 }

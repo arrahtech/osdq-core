@@ -220,6 +220,7 @@ public class RecordMatch
 			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.DiceSimilarity","getSimilarity");
 			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.EuclideanDistance","getSimilarity");
 			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.JaccardSimilarity","getSimilarity");
+			
 			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.Jaro","getSimilarity");
 			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.JaroWinkler","getSimilarity");
 			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.Levenshtein","getSimilarity");
@@ -424,6 +425,7 @@ public class RecordMatch
 							
 							Object ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
 							// System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
+							// System.out.printf(dd.getM_algoName());
 							
 							simMatchVal = (Float)ob; // update the matched or unmatched value
 							if(simMatchVal < matchprob)

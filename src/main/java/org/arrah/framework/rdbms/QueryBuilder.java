@@ -148,6 +148,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("sql_server") == 0
 					|| _dtype.compareToIgnoreCase("mysql") == 0
 					|| _dtype.compareToIgnoreCase("postgres") == 0
+					|| _dtype.compareToIgnoreCase("teiid") == 0
 					|| _dtype.compareToIgnoreCase("splice") == 0)
 				count_query += " ) as AS1";
 			else if (_dtype.compareToIgnoreCase("hive") == 0)
@@ -175,6 +176,7 @@ public class QueryBuilder {
 			if (_dtype.compareToIgnoreCase("sql_server") == 0
 					|| _dtype.compareToIgnoreCase("mysql") == 0
 					|| _dtype.compareToIgnoreCase("postgres") == 0
+					|| _dtype.compareToIgnoreCase("teiid") == 0
 					|| _dtype.compareToIgnoreCase("splice") == 0)
 				count_query += " ) as AS1";
 			else if (_dtype.compareToIgnoreCase("hive") == 0)
@@ -209,6 +211,7 @@ public class QueryBuilder {
 		} else if (_dtype.compareToIgnoreCase("mysql") == 0
 				|| _dtype.compareToIgnoreCase("postgres") == 0
 				|| _dtype.compareToIgnoreCase("ms_access_jdbc") == 0
+				|| _dtype.compareToIgnoreCase("teiid") == 0
 				|| _dtype.compareToIgnoreCase("db2") == 0 ) {
 
 			bottom_sel_query = " SELECT " + distinct_str + " " + _column
@@ -216,8 +219,11 @@ public class QueryBuilder {
 
 			if (isCond)
 				bottom_sel_query = bottom_sel_query + " WHERE " + _cond_q;
-
-			bottom_sel_query += " order by " + _column + " LIMIT "+num+" OFFSET 0";
+			
+			if ( _dtype.compareToIgnoreCase("teiid") == 0)
+				bottom_sel_query += " order by " + _column + " LIMIT "+num;
+			else
+				bottom_sel_query += " order by " + _column + " LIMIT "+num+" OFFSET 0";
 			
 		} else if(_dtype.compareToIgnoreCase("hive") == 0){   // Hive does not support offset
 			
@@ -287,6 +293,7 @@ public class QueryBuilder {
 		} else if (_dtype.compareToIgnoreCase("mysql") == 0
 				 || _dtype.compareToIgnoreCase("postgres") == 0
 				 || _dtype.compareToIgnoreCase("ms_access_jdbc") == 0
+				 || _dtype.compareToIgnoreCase("teiid") == 0
 				 || _dtype.compareToIgnoreCase("db2") == 0) {
 			
 			top_sel_query = " SELECT " + distinct_str + " " + _column + " as "
@@ -294,8 +301,10 @@ public class QueryBuilder {
 
 			if (isCond)
 				top_sel_query = top_sel_query + " WHERE " + _cond_q;
-
-			top_sel_query += " order by " + _column + " desc LIMIT "+num+" OFFSET 0";
+			if (_dtype.compareToIgnoreCase("teiid") == 0)
+				top_sel_query += " order by " + _column + " desc LIMIT "+num;
+			else
+				top_sel_query += " order by " + _column + " desc LIMIT "+num+" OFFSET 0";
 			
 		} else if(_dtype.compareToIgnoreCase("hive") ==0){  // Hive does not support offset
 		 	
@@ -433,6 +442,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| _dtype.compareToIgnoreCase("mysql") == 0
 				|| _dtype.compareToIgnoreCase("postgres") == 0 
+				|| _dtype.compareToIgnoreCase("teiid") == 0
 				|| _dtype.compareToIgnoreCase("splice") == 0)
 			dist_count_query += " ) as AS1";
 		else if (_dtype.compareToIgnoreCase("hive") == 0)
@@ -650,6 +660,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| _dtype.compareToIgnoreCase("mysql") == 0
 				|| _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("teiid") == 0
 				|| _dtype.compareToIgnoreCase("splice") == 0)
 			pattern_query += " ) as AS1";
 		else if (_dtype.compareToIgnoreCase("hive") == 0)
@@ -670,6 +681,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| _dtype.compareToIgnoreCase("mysql") == 0
 				||  _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("teiid") == 0
 				|| _dtype.compareToIgnoreCase("splice") == 0)
 			pattern_query += " ) as AS1";
 		else if (_dtype.compareToIgnoreCase("hive") == 0)
@@ -755,6 +767,7 @@ public class QueryBuilder {
 		if (_dtype.compareToIgnoreCase("sql_server") == 0
 				|| (_dtype.compareToIgnoreCase("mysql") == 0)
 				|| _dtype.compareToIgnoreCase("ms_access") == 0
+				|| _dtype.compareToIgnoreCase("teiid") == 0
 				|| _dtype.compareToIgnoreCase("postgres") == 0 )
 			
 			m_count_query = " SELECT count(*) as row_count,sum(AS1.row_count) as row_sum FROM ( SELECT count("
@@ -786,6 +799,7 @@ public class QueryBuilder {
 				|| (_dtype.compareToIgnoreCase("ms_access") == 0)
 				|| _dtype.compareToIgnoreCase("mysql") == 0
 				||  _dtype.compareToIgnoreCase("postgres") == 0
+				|| _dtype.compareToIgnoreCase("teiid") == 0
 				|| _dtype.compareToIgnoreCase("splice") == 0) {
 			// Splice remove alias 
 			if (_dtype.compareToIgnoreCase("Splice") == 0) 
