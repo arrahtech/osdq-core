@@ -211,31 +211,31 @@ public class RecordMatch
 			biclassmap = new ConcurrentHashMap <String,String>();
 			functor = new ConcurrentHashMap <String,Entry<Method,Object>>();
 			
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.BlockDistance","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.ChapmanLengthDeviation","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.ChapmanMeanLength","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.ChapmanOrderedNameCompoundSimilarity","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.CosineSimilarity","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.BlockDistance","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.ChapmanLengthDeviation","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.ChapmanMeanLength","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.ChapmanOrderedNameCompoundSimilarity","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.CosineSimilarity","getSimilarity");
 
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.DiceSimilarity","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.EuclideanDistance","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.JaccardSimilarity","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.DiceSimilarity","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.EuclideanDistance","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.JaccardSimilarity","getSimilarity");
 			
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.Jaro","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.JaroWinkler","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.Levenshtein","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.Jaro","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.JaroWinkler","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.Levenshtein","getSimilarity");
 
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.MatchingCoefficient","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.MongeElkan","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.NeedlemanWunch","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.OverlapCoefficient","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.QGramsDistance","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.MongeElkan","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.QGramsDistance","getSimilarity");
 
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.SmithWaterman","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.SmithWatermanGotohWindowedAffine","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.Soundex","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLink","getSimilarity");
-			biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLinkToken","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.SmithWaterman","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.SmithWatermanGotohWindowedAffine","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.Soundex","getSimilarity");
+			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLink","getSimilarity");
+			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLinkToken","getSimilarity");
 
 			String methodName, className;
 			
