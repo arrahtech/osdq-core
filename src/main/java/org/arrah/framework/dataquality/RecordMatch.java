@@ -16,7 +16,7 @@ package org.arrah.framework.dataquality;
  * This class is wrapper class on SimMetrics util
  * which is used for matching records using fuzziness
  * it will use following class for similarity test
- * import uk.ac.shef.wit.simmetrics.similaritymetrics.*;
+ * import org.simmetrics.metrics.*;
  *
  */
 
