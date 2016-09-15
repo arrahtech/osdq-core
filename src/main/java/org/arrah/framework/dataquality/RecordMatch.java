@@ -211,31 +211,31 @@ public class RecordMatch
 			biclassmap = new ConcurrentHashMap <String,String>();
 			functor = new ConcurrentHashMap <String,Entry<Method,Object>>();
 			
-			biclassmap.put("org.simmetrics.metrics.BlockDistance","getSimilarity");
-			//biclassmap.put("org.simmetrics.metrics.ChapmanLengthDeviation","getSimilarity");
-			//biclassmap.put("org.simmetrics.metrics.ChapmanMeanLength","getSimilarity");
-			//biclassmap.put("org.simmetrics.metrics.ChapmanOrderedNameCompoundSimilarity","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.CosineSimilarity","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.BlockDistance","compare");
+			//biclassmap.put("org.simmetrics.metrics.ChapmanLengthDeviation","compare");
+			//biclassmap.put("org.simmetrics.metrics.ChapmanMeanLength","compare");
+			//biclassmap.put("org.simmetrics.metrics.ChapmanOrderedNameCompoundSimilarity","compare");
+			//biclassmap.put("org.simmetrics.metrics.CosineSimilarity","compare");
 
-			biclassmap.put("org.simmetrics.metrics.DiceSimilarity","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.EuclideanDistance","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.JaccardSimilarity","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.DiceSimilarity","compare");
+			//biclassmap.put("org.simmetrics.metrics.EuclideanDistance","compare");
+			//biclassmap.put("org.simmetrics.metrics.JaccardSimilarity","compare");
 			
-			biclassmap.put("org.simmetrics.metrics.Jaro","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.JaroWinkler","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.Levenshtein","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.Jaro","compare");
+			biclassmap.put("org.simmetrics.metrics.JaroWinkler","compare");
+			biclassmap.put("org.simmetrics.metrics.Levenshtein","compare");
 
-			biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.MongeElkan","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","getSimilarity");
-			//biclassmap.put("org.simmetrics.metrics.QGramsDistance","getSimilarity");
+			//biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","compare");
+			//biclassmap.put("org.simmetrics.metrics.MongeElkan","compare");
+			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","compare");
+			//biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","compare");
+			//biclassmap.put("org.simmetrics.metrics.QGramsDistance","compare");
 
-			biclassmap.put("org.simmetrics.metrics.SmithWaterman","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.SmithWatermanGotohWindowedAffine","getSimilarity");
-			biclassmap.put("org.simmetrics.metrics.Soundex","getSimilarity");
-			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLink","getSimilarity");
-			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLinkToken","getSimilarity");
+			biclassmap.put("org.simmetrics.metrics.SmithWaterman","compare");
+			biclassmap.put("org.simmetrics.metrics.SmithWatermanGotoh","compare");
+			//biclassmap.put("org.simmetrics.metrics.Soundex","compare");
+			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLink","compare");
+			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLinkToken","compare");
 
 			String methodName, className;
 			
@@ -246,6 +246,7 @@ public class RecordMatch
 					methodName = m.getValue();
 							
 					className = m.getKey();
+					//System.out.println("Algo name is:"+ className);
 					Class<?> cls = Class.forName(className);
 					Object ob = cls.newInstance();
 					// Create functor
@@ -254,7 +255,7 @@ public class RecordMatch
 				catch(ClassNotFoundException cfe)
 				{
 					System.err.println("Class not found "+ cfe.toString());
-					System.err.println("Please make sure simmetrics_jar_v1_6_2_d07_02_07.jar in CLASSPATH");
+					System.err.println("Please make sure simmetrics_core-3.0.0.jar in CLASSPATH");
 					return;
 				}
 				catch(NoSuchMethodException nm)
@@ -424,8 +425,8 @@ public class RecordMatch
 						{
 							
 							Object ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
-							// System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
-							// System.out.printf(dd.getM_algoName());
+							//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
+							//System.out.printf(dd.getM_algoName());
 							
 							simMatchVal = (Float)ob; // update the matched or unmatched value
 							if(simMatchVal < matchprob)
