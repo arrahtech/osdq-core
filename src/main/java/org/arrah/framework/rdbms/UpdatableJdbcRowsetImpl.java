@@ -406,9 +406,11 @@ public class UpdatableJdbcRowsetImpl extends BaseRowSet
       if (localMap != null) {
         this.conn.setTypeMap(localMap);
       }
-      
-      // Only change here for updatable rowset - Arrah
-      this.ps = this.conn.prepareStatement(getCommand(), ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
+      // Only change here for updatable rowset - Arrah for teiid
+      if ( Rdbms_conn.getHValue("Database_Type") != null && Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("teiid") == 0)
+        	this.ps = this.conn.prepareStatement(getCommand(), ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+  		else
+  			this.ps = this.conn.prepareStatement(getCommand(), ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
     } catch (SQLException localSQLException) {
     	
     	System.err.println(String.valueOf(this.resBundle.handleGetObject("jdbcrowsetimpl.prepare")) + localSQLException.getLocalizedMessage());
