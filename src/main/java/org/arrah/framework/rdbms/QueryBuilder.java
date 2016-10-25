@@ -1727,7 +1727,7 @@ public class QueryBuilder {
         try {
         	dbmsConn = new Rdbms_NewConn(dbDetails);
             dbmsConn.openConn();
-            System.out.println("Connected to " + dbDetails.get("Database_ConnectionName"));
+            System.out.println("Connected to " + dbDetails.get("Database_ConnName"));
             DatabaseMetaData md = dbmsConn.getMetaData();
             rs = md.getTables(null, null, "%", null);
 

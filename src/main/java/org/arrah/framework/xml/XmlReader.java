@@ -106,14 +106,33 @@ public class XmlReader {
                         Element eElement = (Element) nNode;
                         if( eElement.getElementsByTagName("rule_Name").item(0).getTextContent().trim().equals(ruleName) ) {
                             hashRule = new Hashtable<String, String>();
-                            hashRule.put("rule_Name", eElement.getElementsByTagName("rule_Name").item(0).getTextContent().trim());
-                            hashRule.put("database_ConnectionName", eElement.getElementsByTagName("database_ConnectionName").item(0).getTextContent().trim());
-                            hashRule.put("rule_Type", eElement.getElementsByTagName("rule_Type").item(0).getTextContent().trim());
-                            hashRule.put("table_Names", eElement.getElementsByTagName("table_Names").item(0).getTextContent().trim());
-                            hashRule.put("column_Names", eElement.getElementsByTagName("column_Names").item(0).getTextContent().trim());
-                            hashRule.put("condition_Names", eElement.getElementsByTagName("condition_Names").item(0).getTextContent().trim());
-                            hashRule.put("join_Name", eElement.getElementsByTagName("join_Name").item(0).getTextContent().trim());
-                            //hashRule.put("rule_Description", eElement.getElementsByTagName("rule_Description").item(0).getTextContent().trim());
+                            try{
+                            	hashRule.put("rule_Name", eElement.getElementsByTagName("rule_Name").item(0).getTextContent().trim());
+                            } catch (Exception e) {}
+                            try{
+                            	hashRule.put("database_ConnectionName", eElement.getElementsByTagName("database_ConnectionName").item(0).getTextContent().trim());
+                        	} catch (Exception e) {}
+                            try{
+                            	hashRule.put("rule_Type", eElement.getElementsByTagName("rule_Type").item(0).getTextContent().trim());
+                    		} catch (Exception e) {}
+                            try{
+                            	hashRule.put("table_Names", eElement.getElementsByTagName("table_Names").item(0).getTextContent().trim());
+                			} catch (Exception e) {}
+                            try{
+                            	hashRule.put("column_Names", eElement.getElementsByTagName("column_Names").item(0).getTextContent().trim());
+            				} catch (Exception e) {}
+                            try{
+                            	hashRule.put("condition_Names", eElement.getElementsByTagName("condition_Names").item(0).getTextContent().trim());
+        					} catch (Exception e) {}
+                            try{
+                            	hashRule.put("join_Name", eElement.getElementsByTagName("join_Name").item(0).getTextContent().trim());
+							} catch (Exception e) {}
+                            try{
+                            	hashRule.put("rule_Description", eElement.getElementsByTagName("rule_Description").item(0).getTextContent().trim());
+                        	} catch (Exception e) {}
+                            try{
+                            	hashRule.put("query_Text", eElement.getElementsByTagName("query_Text").item(0).getTextContent().trim());
+                        	} catch (Exception e) {}		
                         }
                     }
                 }
@@ -122,36 +141,32 @@ public class XmlReader {
         }
      
         public String getColumnNames( File file, String ruleName) {
-        	 parseDocument(file);
-        	
-        	 NodeList nodes = document.getElementsByTagName("rule");
-        	
-        	 for (int i = 0; i < nodes.getLength(); i++) {
-        	 Node node = nodes.item(i);
+        	parseDocument(file);
+    	 	NodeList nodes = document.getElementsByTagName("rule");
+    	
+    	 	for (int i = 0; i < nodes.getLength(); i++) {
+    		 	Node node = nodes.item(i);
 
-        	// if (node.getNodeType() == Node.ELEMENT_NODE) {
-        	 Element element = (Element) node;
-        	 if(ruleName.equals(getValue("rule_Name", element))){
-        	 colNames=getValue("column_Names", element);
-        	 }
-        	 else{
-        		 
-        	 }
-        	
-        	 }
-        	// }
-        	 return colNames;
-        	 }
+		    	// if (node.getNodeType() == Node.ELEMENT_NODE) {
+		    	 Element element = (Element) node;
+		    	 if(ruleName.equals(getValue("rule_Name", element))){
+		    		 colNames=getValue("column_Names", element);
+		    	 }
+		    	 else {
+		    		// do nothing 
+		    	 }
+	    	
+    	 	}
+    	 	return colNames;
+    	 }
         
-        	 private static String getValue(String tag, Element element) {
-        		 NodeList nodes = element.getElementsByTagName(tag).item(0).getChildNodes();
-        		 Node node = (Node) nodes.item(0);
-        		 if (node == null) return "";
-        		 return node.getNodeValue();
-        		 }
-
-
-        		
+	 private static String getValue(String tag, Element element) {
+		 NodeList nodes = element.getElementsByTagName(tag).item(0).getChildNodes();
+		 Node node = (Node) nodes.item(0);
+		 if (node == null) return "";
+		 return node.getNodeValue();
+	}
+ 		
 	public ReportTableModel read(final File file) {
 		final DOMValidator domValidator = new DOMValidator();
 		domValidator.setErrorFile(new File(DTD_ERRORS));

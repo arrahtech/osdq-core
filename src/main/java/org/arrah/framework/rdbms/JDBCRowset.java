@@ -473,6 +473,17 @@ public class JDBCRowset {
 	}
 
 	public String[] getColName() {
+		/* Hive appends table names to column name some time
+		 * which will make some col name check to fail
+		 */
+		if (Rdbms_conn.getHValue("Database_Type") != null && 
+					Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			for (int i=0; i < col_name.length; i++) {
+				int li = col_name[i].lastIndexOf('.'); //Table.colname
+				if ( li != -1)
+					col_name[i] = col_name[i].substring(li+1);
+			}
+		}
 		return col_name;
 	}
 
