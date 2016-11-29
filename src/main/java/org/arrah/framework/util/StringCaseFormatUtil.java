@@ -434,4 +434,19 @@ public class StringCaseFormatUtil {
 		return uniqMap;
 	}
 	
+	// This function will return index of whitespace
+	public static int whitespaceIndex(String val) {
+		int retval = -1;
+		if (val == null || val.length() == 0) return retval;
+		int length=val.length();
+		for (int i=0; i < length; i++) {
+			char c = val.charAt(i);
+			if (Character.isWhitespace(c) == true)
+				return i;
+		}
+		
+		return retval;
+		
+	}
+	
 }
