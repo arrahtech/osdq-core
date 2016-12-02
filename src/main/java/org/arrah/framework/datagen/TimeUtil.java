@@ -423,8 +423,17 @@ public class TimeUtil {
 		return cal.getTimeInMillis();
 	}
 	
+	/* This is a utility function which will take date and timezone and give output as millisecond */
+	public static long dateIntoSecond(java.util.Date date,  TimeZone tz) {
+		if (date == null ) return 0;
+		Calendar cal = Calendar.getInstance(tz);
+		cal.setLenient(true);
+		cal.setTime(date);
+		return cal.getTimeInMillis();
+	}
+	
 	/* This is a utility function which will take two dates and give diff output as millisecond */
-	public static long diffIntoSecond(java.util.Date date, java.util.Date date1) {
+	public static long diffIntoMilliSecond(java.util.Date date, java.util.Date date1) {
 		if (date == null  || date1 == null) return 0;
 		Calendar cal = Calendar.getInstance();
 		cal.setLenient(true);

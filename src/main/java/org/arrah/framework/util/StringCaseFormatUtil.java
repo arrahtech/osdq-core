@@ -1,5 +1,6 @@
 package org.arrah.framework.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -447,6 +448,20 @@ public class StringCaseFormatUtil {
 		
 		return retval;
 		
+	}
+	// This function will return List for String
+	// to be used by similarity 
+	public static ArrayList<Character> toArrayListChar (String showUnique) {
+		ArrayList<Character> charList = new ArrayList<Character>();
+		
+		if (showUnique == null || "".equals(showUnique) ) // nothing to compare
+			return charList;
+		
+		for (int i=0; i < showUnique.length(); i++  ) {
+			char c = showUnique.charAt(i);
+			charList.add(i, c);
+		}
+		return charList;
 	}
 	
 }
