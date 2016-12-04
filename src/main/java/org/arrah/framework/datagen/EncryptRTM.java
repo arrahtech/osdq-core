@@ -70,6 +70,81 @@ public class EncryptRTM {
 		
 	}
 	
+	public  String[] encryptStrArray(String[] vals, String encrptkey) {
+		if (vals == null || vals.length ==0 )
+			return vals;
+		String[] newcolVals = new String[vals.length];
+	
+	try{
+		IvParameterSpec ivspec = new IvParameterSpec(iv);
+		// Make sure we have 16 byte string
+		byte[] keyval = padkey(encrptkey);
+		// initialize the cipher for encrypt mode
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		SecretKey keyValue = new SecretKeySpec(keyval,"AES");
+		cipher.init(Cipher.ENCRYPT_MODE, keyValue, ivspec);
+	
+		int i=0; //Initilaise
+		for (String colVal:vals ) {
+			if (colVal == null || colVal.length() == 0) {
+				newcolVals[i] = colVal; i++;
+				continue;
+			}
+			
+			byte[] encryptedByte = cipher.doFinal(colVal.getBytes("UTF-8"));
+			Base64.Encoder encoder = Base64.getEncoder();
+			newcolVals[i] = encoder.encodeToString(encryptedByte);
+			i++;
+		
+		} // Encryption done
+	} catch (Exception e) {
+		System.out.println("Exception:" +e.getLocalizedMessage());
+	} finally {
+		
+	}
+	return newcolVals;
+	
+}
+	
+	public  String[] decryptStrArray(String[] vals, String encrptkey) {
+		if (vals == null || vals.length ==0 )
+			return vals;
+		String[] newcolVals = new String[vals.length];
+	
+	try{
+		IvParameterSpec ivspec = new IvParameterSpec(iv);
+		// Make sure we have 16 byte string
+		byte[] keyval = padkey(encrptkey);
+
+		// initialize the cipher for decrytion mode
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+		SecretKey keyValue = new SecretKeySpec(keyval,"AES");
+		cipher.init(Cipher.DECRYPT_MODE, keyValue, ivspec);
+	
+		int i=0; //Initilaise
+		for (String colVal:vals ) {
+			if (colVal == null || colVal.length() == 0) {
+				newcolVals[i] = colVal; i++;
+				continue;
+			}
+			
+			//Decode
+			Base64.Decoder decoder = Base64.getDecoder();
+			byte[] encryptedTextByte = decoder.decode(colVal);
+			
+			byte[] decryptedByte = cipher.doFinal(encryptedTextByte);
+			newcolVals[i]  = new String(decryptedByte);
+			i++;
+		
+		} // decryption done
+		} catch (Exception e) {
+			System.out.println("Exception:" +e.getLocalizedMessage());
+		} finally {
+			
+		}
+		return newcolVals;
+	
+	}
 	public  ReportTableModel decryptColumn(ReportTableModel rtm, int colIndex, 
 			int beginRow, int endRow, String encrptkey) {
 	
@@ -78,7 +153,7 @@ public class EncryptRTM {
 		// Make sure we have 16 byte string
 		byte[] keyval = padkey(encrptkey);
 
-		// initialize the cipher for encrypt mode
+		// initialize the cipher for decrypt mode
 		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKey keyValue = new SecretKeySpec(keyval,"AES");
 		cipher.init(Cipher.DECRYPT_MODE, keyValue, ivspec);
@@ -96,15 +171,16 @@ public class EncryptRTM {
 			newcolVal = new String(decryptedByte);
 			rtm.setValueAt(newcolVal,i,colIndex);
 		
-		} // Encryption done
-	} catch (Exception e) {
-		System.out.println("Exception:" +e.getLocalizedMessage());
-	} finally {
-		
-	}
-	return rtm;
+		} // decryption done
+		} catch (Exception e) {
+			System.out.println("Exception:" +e.getLocalizedMessage());
+		} finally {
+			
+		}
+		return rtm;
 	
-}
+	}
+	
 	private byte[] padkey (String key) {
 		byte padding[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 		if (key == null || "".equals(key)) return padding;

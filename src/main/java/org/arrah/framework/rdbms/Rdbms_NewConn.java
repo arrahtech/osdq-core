@@ -245,6 +245,10 @@ public class Rdbms_NewConn {
 
 	private void init(Hashtable<String, String> hashtable)
 			throws SQLException {
+		if (hashtable == null || hashtable.isEmpty() == true) {
+			System.err.println("Database information can not be filled");
+			return;
+		}
 		_d_type = (String) hashtable.get("Database_Type");
 		_d_dsn = (String) hashtable.get("Database_DSN");
 		__d_protocol = (String) hashtable.get("Database_Protocol");

@@ -161,6 +161,19 @@ public class StatisticalAnalysis {
 	public double getSDev() {
 		return Math.sqrt(variance);
 	}
+	public Object getMinObject() {
+		return _colObj[0];
+	}
+	public Object getMaxObject() {
+		return _colObj[_colObj.length -1 ]; //max object
+	}
+	public double rangeObject () {
+		if (_colObj[0] instanceof Number && _colObj[_colObj.length -1 ] instanceof Number) {
+			return ((Number)(_colObj[_colObj.length -1 ])).doubleValue() - ((Number)(_colObj[0])).doubleValue();
+		}
+		return 0D;
+		
+	}
 
 	private void fillDataIntoTable() {
 

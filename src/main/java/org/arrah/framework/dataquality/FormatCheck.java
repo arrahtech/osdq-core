@@ -18,6 +18,7 @@ package org.arrah.framework.dataquality;
  */
 
 import java.text.DecimalFormat;
+import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -347,7 +348,19 @@ public class FormatCheck {
 		}
 		
 	}
-
 	
+	public static String toFormatDate(java.util.Date a, String format) {
+		String nformat="";
+		if (a == null) return nformat;
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat(format);
+			StringBuffer sb= sdf.format(a, new StringBuffer(), new FieldPosition(0));
+			return sb.toString();
+		} catch(Exception e) {
+			System.out.println("Exception:"+e.getLocalizedMessage());
+			return nformat;
+		}
+		
+	}
 	
 }

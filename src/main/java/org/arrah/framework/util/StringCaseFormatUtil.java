@@ -1,5 +1,6 @@
 package org.arrah.framework.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -432,6 +433,35 @@ public class StringCaseFormatUtil {
 				uniqMap.put(c, uniqMap.get(c)+1); // increase the counter
 		}
 		return uniqMap;
+	}
+	
+	// This function will return index of whitespace
+	public static int whitespaceIndex(String val) {
+		int retval = -1;
+		if (val == null || val.length() == 0) return retval;
+		int length=val.length();
+		for (int i=0; i < length; i++) {
+			char c = val.charAt(i);
+			if (Character.isWhitespace(c) == true)
+				return i;
+		}
+		
+		return retval;
+		
+	}
+	// This function will return List for String
+	// to be used by similarity 
+	public static ArrayList<Character> toArrayListChar (String showUnique) {
+		ArrayList<Character> charList = new ArrayList<Character>();
+		
+		if (showUnique == null || "".equals(showUnique) ) // nothing to compare
+			return charList;
+		
+		for (int i=0; i < showUnique.length(); i++  ) {
+			char c = showUnique.charAt(i);
+			charList.add(i, c);
+		}
+		return charList;
 	}
 	
 }

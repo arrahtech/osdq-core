@@ -121,6 +121,7 @@ public class PIIValidator {
 			errdef = "No of digits not matching";
 			return false;
 		}
+		if (phonenum.startsWith("0000") ) return false; //can't start with all zero
 		errdef = "Phone Validation Successful";
 		return true;
 		

@@ -382,6 +382,7 @@ public class QualityCheck {
 		String[] add_col = new String[col_name.length + 1];
 
 		for (int j = 0; j < col_name.length; j++) {
+			// System.out.println(col+ " "+col_name[j]);
 			if (col.equals(col_name[j])) {
 				matchI = j;
 				break;
