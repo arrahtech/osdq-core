@@ -381,6 +381,32 @@ public class RTMUtil {
         return result_v;
     }
 
+    /* This function will filter report table model with the row Indexes given in rowI vector
+     * 
+     */
+    public static ReportTableModel  showFilteredRTM (ReportTableModel _rt,Vector<Integer> rowI) {
+		if (_rt == null ) {
+			System.out.println("\n ERROR:Table not Set for Filtering");
+			return null;
+		}
+		if (rowI == null ) {
+			System.out.println("\n ERROR:Nothing to fileter");
+			return _rt;
+		}
+		
+    	ReportTableModel newRTM = new ReportTableModel(_rt.getAllColNameStr(),_rt.isRTEditable(),_rt.isRTShowClass());
+    	if (rowI.isEmpty() == true)
+    		return newRTM;
+
+		int rowC = _rt.getModel().getRowCount();
+		for (int i=0; i < rowC; i++ ) {
+			if(rowI.contains(i))
+				newRTM.addFillRow(_rt.getRow(i));
+		}
+		
+		return newRTM;
+		
+    }
 
     public static PdfPTable createPDFTable (ReportTableModel rtm) {
         if (rtm == null ) return null;
