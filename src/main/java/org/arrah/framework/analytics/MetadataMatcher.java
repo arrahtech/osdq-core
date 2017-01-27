@@ -179,8 +179,12 @@ public class MetadataMatcher {
 				isMatch = piiv.isEmail(s.toString());
 				break;
 			// if Phone Number
-			case "PhoneNum":		
+			case "PhoneNumber":		
 				isMatch = piiv.isPhone(onlyd);	
+				break;
+			// if Phone Number
+			case "Salary":		
+				isMatch = piiv.isAccountingNumber(onlyd);	
 				break;
 			
 			default:
