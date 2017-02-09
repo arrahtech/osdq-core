@@ -30,6 +30,7 @@ public class RTMDiffUtil {
 	private Vector<Integer> leftIndex = null, rightIndex = null;
 	private ReportTableModel matchRTM = null, leftNoMatchRTM= null, rightNoMatchRTM = null;
 	private HashMap<Integer, Integer> matchedIndex;
+	private HashMap<Integer, Integer> matchedDiffIndex;
 	
 	public RTMDiffUtil() {
 		// Default Constructor
@@ -324,6 +325,7 @@ public class RTMDiffUtil {
 	public HashMap<Integer, Vector<Integer>> compareDiff(boolean asString)
 	{
 		HashMap<Integer, Vector<Integer>>  diffIndex = new HashMap<Integer,Vector<Integer>>();
+		matchedDiffIndex = new HashMap<Integer,Integer>();
 		// return true is comparison is successful
 		if (leftRTM == null || rightRTM == null) {
 			System.out.println("Can not Compare Null Table(s)");
@@ -366,10 +368,16 @@ public class RTMDiffUtil {
 					if ( prev_vc.size() == 0  || prev_vc.size() > vc.size()) {
 						prev_vc = vc;
 						diffIndex.put(i, prev_vc);
+						matchedDiffIndex.put(i, j);
 					}
 				}
 			} // end of right iteration
 		} 
 		return diffIndex;
-	}			
+	}
+	
+	public HashMap<Integer,Integer> getDiffMatchedIndex() {
+		return matchedDiffIndex;
+		
+	}
 } // end of class RTMDiffUtil
