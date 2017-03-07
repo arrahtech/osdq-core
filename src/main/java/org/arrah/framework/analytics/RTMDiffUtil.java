@@ -151,7 +151,8 @@ public class RTMDiffUtil {
 						// Keys have matched now match full record
 						boolean allCmatch =matchAllColumn(leftRow, rightRow, asString);
 						if (allCmatch == true) { // all cols Matched
-							int leftColC = leftRow.length;
+							//int leftColC = leftRow.length;
+							int leftColC = matchRTM.getAllColName().length -2 ;
 							Object[] newRow = new Object[leftColC+2];
 							newRow[0] = i; newRow[1] = j;  // Index
 							for (int lc =0; lc  < leftColC ; lc++)
@@ -159,7 +160,7 @@ public class RTMDiffUtil {
 							matchRTM.addFillRow(newRow);
 							
 						} else { // Key matched but all cols did not match
-							int leftColC = leftRow.length;
+							int leftColC = matchFailedRTM.getAllColName().length - 1;
 							Object[] newRow = new Object[leftColC+1];
 							newRow[0] = i; 
 							for (int lc =0; lc  < leftColC ; lc++)
