@@ -19,6 +19,8 @@ package org.arrah.framework.dataquality;
 
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -38,6 +40,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.BaseDirectory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
@@ -51,7 +55,8 @@ public class SimilarityCheckLucene {
     private int rowC;
     private IndexWriter writer;
     private IndexSearcher searcher;
-    private RAMDirectory idx;
+    //private RAMDirectory idx; // now it will be generic
+    private BaseDirectory idx;
     private Vector<Integer> skipVC = null,mrowI = null;
     private IndexReader reader;
 
@@ -87,7 +92,7 @@ public class SimilarityCheckLucene {
         return colName;
     }
 
-    public Document createDocument(int rowId, Object[] row) {
+    private Document createDocument(int rowId, Object[] row) {
         Document doc = new Document();
         if (row == null)
             return doc;
@@ -127,8 +132,37 @@ public class SimilarityCheckLucene {
         addDocument();
         closeIndex();
     }
+    
+    // This function will create lucene index on file with indexname
+    public void makeIndex(String indexname) {
+        if (createIndex(indexname) == false)
+            return;
+        addDocument();
+        closeIndex();
+    }
 
-    public boolean createIndex() {
+ // This function will create lucene index on file with indexname or return true if it already exists
+    private boolean createIndex(String indexname ) {
+        Path indexPath = Paths.get("./luceneIndex/"+indexname+"/");
+        try {
+        	idx =  FSDirectory.open(indexPath);
+        	if ( idx.listAll().length > 0) {
+        		System.out.println("Index:"+indexPath+" exists.");
+        		return false;
+        	}
+            IndexWriterConfig conf = new IndexWriterConfig(new StandardAnalyzer());
+            conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+            writer = new IndexWriter(idx,conf);
+        } catch (Exception e) {
+            System.out.println("\n " + e.getMessage());
+            System.out.println("\n ERROR: Index Open Exception");
+            return false;
+        }
+        return true;
+
+    }
+
+    private boolean createIndex() {
         // Construct a RAMDirectory to hold the in-memory representation
         // of the index.
         idx = new RAMDirectory();
