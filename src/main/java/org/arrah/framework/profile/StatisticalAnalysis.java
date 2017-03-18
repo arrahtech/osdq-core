@@ -48,7 +48,7 @@ public class StatisticalAnalysis {
 		Vector<Object> vc = new Vector<Object>();
 		int index = 0;
 		while (index < colC) {
-			if (colValue[index] != null) {
+			if (colValue[index] != null && colValue[index].toString().isEmpty() == false) {
 				vc.add(colValue[index]);
 				if (isNumber == true && colValue[index] instanceof Number)
 					sum += ((Number) colValue[index]).doubleValue();

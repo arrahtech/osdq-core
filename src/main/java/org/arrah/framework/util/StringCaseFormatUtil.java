@@ -2,6 +2,7 @@ package org.arrah.framework.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 
 /***********************************************
@@ -464,4 +465,12 @@ public class StringCaseFormatUtil {
 		return charList;
 	}
 	
+	// This function will return Set of charcters for String
+	// to be used by similarity 
+	public static HashSet<Character> toSetChar (String showUnique) {
+		ArrayList<Character> charList = toArrayListChar(showUnique);
+		HashSet<Character> setc = new HashSet<Character>(charList);
+		return setc;
+	}
+
 }

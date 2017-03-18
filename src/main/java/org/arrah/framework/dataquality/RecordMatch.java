@@ -26,6 +26,8 @@ import java.util.concurrent.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.arrah.framework.util.StringCaseFormatUtil;
+
 public class RecordMatch 
 {
 	/*
@@ -211,24 +213,25 @@ public class RecordMatch
 			biclassmap = new ConcurrentHashMap <String,String>();
 			functor = new ConcurrentHashMap <String,Entry<Method,Object>>();
 			
-			//biclassmap.put("org.simmetrics.metrics.BlockDistance","compare");
+			biclassmap.put("org.simmetrics.metrics.BlockDistance","compare");
 			//biclassmap.put("org.simmetrics.metrics.ChapmanLengthDeviation","compare");
 			//biclassmap.put("org.simmetrics.metrics.ChapmanMeanLength","compare");
 			//biclassmap.put("org.simmetrics.metrics.ChapmanOrderedNameCompoundSimilarity","compare");
-			//biclassmap.put("org.simmetrics.metrics.CosineSimilarity","compare");
+			biclassmap.put("org.simmetrics.metrics.CosineSimilarity","compare");
 
-			//biclassmap.put("org.simmetrics.metrics.DiceSimilarity","compare");
-			//biclassmap.put("org.simmetrics.metrics.EuclideanDistance","compare");
-			//biclassmap.put("org.simmetrics.metrics.JaccardSimilarity","compare");
+			biclassmap.put("org.simmetrics.metrics.DiceSimilarity","compare");
+			biclassmap.put("org.simmetrics.metrics.EuclideanDistance","compare");
+			biclassmap.put("org.simmetrics.metrics.JaccardSimilarity","compare");
 			
 			biclassmap.put("org.simmetrics.metrics.Jaro","compare");
 			biclassmap.put("org.simmetrics.metrics.JaroWinkler","compare");
 			biclassmap.put("org.simmetrics.metrics.Levenshtein","compare");
 
-			//biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","compare");
+			biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","compare");
 			//biclassmap.put("org.simmetrics.metrics.MongeElkan","compare");
+			biclassmap.put("org.simmetrics.metrics.SimonWhite","compare");
 			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","compare");
-			//biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","compare");
+			biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","compare");
 			//biclassmap.put("org.simmetrics.metrics.QGramsDistance","compare");
 
 			biclassmap.put("org.simmetrics.metrics.SmithWaterman","compare");
@@ -250,7 +253,20 @@ public class RecordMatch
 					Class<?> cls = Class.forName(className);
 					Object ob = cls.newInstance();
 					// Create functor
-					functor.put(new String(className.substring(className.lastIndexOf('.') +1, className.length()).toUpperCase()), new AbstractMap.SimpleEntry<Method,Object>(cls.getDeclaredMethod(methodName, new Class[]{String.class,String.class}),ob));
+					if (className.equals("org.simmetrics.metrics.CosineSimilarity") ||
+							className.equals("org.simmetrics.metrics.DiceSimilarity") ||
+							className.equals("org.simmetrics.metrics.JaccardSimilarity") ||
+							className.equals("org.simmetrics.metrics.OverlapCoefficient")) {
+						functor.put(new String(className.substring(className.lastIndexOf('.') +1, className.length()).toUpperCase()), new AbstractMap.SimpleEntry<Method,Object>(cls.getDeclaredMethod(methodName, new Class[]{Set.class,Set.class}),ob));
+					} else if(className.equals("org.simmetrics.metrics.BlockDistance") || 
+							className.equals("org.simmetrics.metrics.EuclideanDistance") ||
+							className.equals("org.simmetrics.metrics.MatchingCoefficient") ||
+							className.equals("org.simmetrics.metrics.MongeElkan") ||
+							className.equals("org.simmetrics.metrics.SimonWhite")) {
+						functor.put(new String(className.substring(className.lastIndexOf('.') +1, className.length()).toUpperCase()), new AbstractMap.SimpleEntry<Method,Object>(cls.getDeclaredMethod(methodName, new Class[]{List.class,List.class}),ob));
+					}
+					else //String Type
+						functor.put(new String(className.substring(className.lastIndexOf('.') +1, className.length()).toUpperCase()), new AbstractMap.SimpleEntry<Method,Object>(cls.getDeclaredMethod(methodName, new Class[]{String.class,String.class}),ob));
 				}
 				catch(ClassNotFoundException cfe)
 				{
@@ -423,8 +439,21 @@ public class RecordMatch
 						en = functor.get(dd.getM_algoName());
 						if((matchprob = dd.getM_matchIndex() )!= 1.0)
 						{
-							
-							Object ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
+							Object ob;
+							if (dd.getM_algoName().compareToIgnoreCase("CosineSimilarity") == 0 ||
+									dd.getM_algoName().compareToIgnoreCase("DiceSimilarity") == 0 ||
+									dd.getM_algoName().compareToIgnoreCase("JaccardSimilarity") == 0 ||
+									dd.getM_algoName().compareToIgnoreCase("OverlapCoefficient") == 0 ) {
+								ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toSetChar(o1.get(dd.getM_colIndexA())),
+										StringCaseFormatUtil.toSetChar(o2.get(dd.getM_colIndexB())));
+							} else if (dd.getM_algoName().compareToIgnoreCase("BlockDistance") == 0 ||
+									dd.getM_algoName().compareToIgnoreCase("EuclideanDistance") == 0 ||
+									dd.getM_algoName().compareToIgnoreCase("MatchingCoefficient") == 0 ||
+									dd.getM_algoName().compareToIgnoreCase("SimonWhite") == 0 ) {
+								ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toArrayListChar(o1.get(dd.getM_colIndexA())),
+										StringCaseFormatUtil.toArrayListChar(o2.get(dd.getM_colIndexB())));
+							} else
+								ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
 							//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
 							//System.out.printf(dd.getM_algoName());
 							

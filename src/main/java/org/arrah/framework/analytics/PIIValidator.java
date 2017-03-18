@@ -22,7 +22,8 @@ import java.util.regex.Pattern;
 
 public class PIIValidator {
 	
-	private String errdef =""; 
+	private String errdef ="";
+	private String acc_Number_validChar=".,-()\u0024\u00A2\u00A3\u00A4\u00A5\u20AC\u20B9\uFE69\uFF04\uFFE0\uFFE1\uFFE5";
 
 	public PIIValidator() {
 		
@@ -172,6 +173,21 @@ public class PIIValidator {
 		}
 
 		errdef = "Date of Birth Validation successful";
+		return true;
+		
+	}
+	// Validating accounting number or salary
+	public boolean isAccountingNumber(String salary) {
+		
+		for (int i=0; i < salary.length(); i++) {
+			char c = salary.charAt(i);
+			if (Character.isDigit(c) || acc_Number_validChar.indexOf(c) != -1)
+				continue;
+			
+			return false;
+		}
+
+		errdef = "Accounting Validation successful";
 		return true;
 		
 	}

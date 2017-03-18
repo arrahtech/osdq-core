@@ -18,7 +18,9 @@ package org.arrah.framework.analytics;
 *
 */
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -28,8 +30,10 @@ public class RTMDiffUtil {
 	private ReportTableModel leftRTM = null, rightRTM = null;
 	private boolean allColMatch = false;
 	private Vector<Integer> leftIndex = null, rightIndex = null;
-	private ReportTableModel matchRTM = null, leftNoMatchRTM= null, rightNoMatchRTM = null;
+	private ReportTableModel matchRTM = null, leftNoMatchRTM= null, rightNoMatchRTM = null, matchFailedRTM=null;
 	private HashMap<Integer, Integer> matchedIndex;
+	private HashMap<Integer, Integer> matchedDiffIndex;
+	private int duplicateC = 0;
 	
 	public RTMDiffUtil() {
 		// Default Constructor
@@ -60,8 +64,10 @@ public class RTMDiffUtil {
 		matchedH[0] = "Left Index";matchedH[1] = "Right Index";
 		String[] leftNoMatchH = new String[leftColC + 1]; // left Index
 		leftNoMatchH[0]= "Index";
-		String[] rightNoMatchH = new String[rightColC + 1];
+		String[] rightNoMatchH = new String[rightColC + 1]; // right Index
 		rightNoMatchH[0] = "index";
+		String[] nonmatchedH = new String[rightC +1]; // key match data no match
+		nonmatchedH[0] = "Index";
 		
 		for (int i=0; i < leftColC ; i++)
 			leftNoMatchH[i+1] = leftRTM.getModel().getColumnName(i);
@@ -69,18 +75,20 @@ public class RTMDiffUtil {
 			rightNoMatchH[i+1] = rightRTM.getModel().getColumnName(i);
 		for (int i=0; i < rightC ; i++)
 			matchedH[i+2] = leftRTM.getModel().getColumnName(i);
+		for (int i=0; i < rightC ; i++)
+			nonmatchedH[i+1] = leftRTM.getModel().getColumnName(i);
 			
 		matchRTM = new ReportTableModel(matchedH, true,true);
 		leftNoMatchRTM = new ReportTableModel(leftNoMatchH, true,true);
 		rightNoMatchRTM = new ReportTableModel(rightNoMatchH, true,true);
-		
+		matchFailedRTM = new ReportTableModel(nonmatchedH, true,true);
 	}
 		
 	/*
 	* Comparator for comparing rows from RTM
 	* as string and whether to make cell listing or not
 	*/	
-	public boolean compare(boolean asString, boolean showCelldiff)
+	public boolean compare(boolean asString, boolean isKey)
 	{
 		// return true is comparison is successful
 		if (leftRTM == null || rightRTM == null) {
@@ -119,19 +127,56 @@ public class RTMDiffUtil {
 				}
 				
 				if (ismatch == true) {
+					if(isKey == false) { // cell matching
 					
-					if (matchedIndex.containsKey(j))
-						continue; // this record is already counted. Key is rightIndex
-					
-					int leftColC = leftRow.length;
-					Object[] newRow = new Object[leftColC+2];
-					newRow[0] = i; newRow[1] = j;  // Index
-					for (int lc =0; lc  < leftColC ; lc++)
-						newRow[lc+2] = leftRow[lc];
-					matchRTM.addFillRow(newRow);
-					matchedIndex.put(j, i);
-					break; // break inner loop to maintain 1:1 relationship
-				}
+						if (matchedIndex.containsKey(j))
+							continue; // this record is already counted. Key is rightIndex
+						
+						int leftColC = leftRow.length;
+						Object[] newRow = new Object[leftColC+2];
+						newRow[0] = i; newRow[1] = j;  // Index
+						for (int lc =0; lc  < leftColC ; lc++)
+							newRow[lc+2] = leftRow[lc];
+						matchRTM.addFillRow(newRow);
+						matchedIndex.put(j, i);
+						break; // break inner loop to maintain 1:1 relationship
+					} else { //key matching
+						
+						if (matchedIndex.containsKey(j)) {
+							duplicateC++;
+							continue; // this record is already counted. Key is rightIndex
+						}
+						matchedIndex.put(j, i); // matched key
+						
+						// Keys have matched now match full record
+						boolean allCmatch =matchAllColumn(leftRow, rightRow, asString);
+						if (allCmatch == true) { // all cols Matched
+							//int leftColC = leftRow.length;
+							int leftColC = matchRTM.getAllColName().length -2 ;
+							Object[] newRow = new Object[leftColC+2];
+							newRow[0] = i; newRow[1] = j;  // Index
+							for (int lc =0; lc  < leftColC ; lc++)
+								newRow[lc+2] = leftRow[lc];
+							matchRTM.addFillRow(newRow);
+							
+						} else { // Key matched but all cols did not match
+							int leftColC = matchFailedRTM.getAllColName().length - 1;
+							Object[] newRow = new Object[leftColC+1];
+							newRow[0] = i; 
+							for (int lc =0; lc  < leftColC ; lc++)
+								newRow[lc+1] = leftRow[lc];
+							matchFailedRTM.addFillRow(newRow);
+							
+							newRow[0] = j;  // Index
+							for (int lc =0; lc  < leftColC ; lc++)
+								newRow[lc+1] = rightRow[lc];
+							matchFailedRTM.addFillRow(newRow);
+							
+							matchFailedRTM.addRow(); // a new row after i , j
+							
+						}
+					} // Key Matching
+				} //end of isMatch
 				
 			} // end of right iteration
 		} // matched records have been filled by now
@@ -183,6 +228,10 @@ public class RTMDiffUtil {
 	// This function should be called after compare
 	public ReportTableModel rightNoMatchRTM() {
 		return rightNoMatchRTM;
+	}
+	// This function should be called after compare
+	public ReportTableModel getMatchFailedRTM() {
+			return matchFailedRTM;
 	}
 	
 	/* Utility functions */
@@ -324,6 +373,7 @@ public class RTMDiffUtil {
 	public HashMap<Integer, Vector<Integer>> compareDiff(boolean asString)
 	{
 		HashMap<Integer, Vector<Integer>>  diffIndex = new HashMap<Integer,Vector<Integer>>();
+		matchedDiffIndex = new HashMap<Integer,Integer>();
 		// return true is comparison is successful
 		if (leftRTM == null || rightRTM == null) {
 			System.out.println("Can not Compare Null Table(s)");
@@ -366,10 +416,37 @@ public class RTMDiffUtil {
 					if ( prev_vc.size() == 0  || prev_vc.size() > vc.size()) {
 						prev_vc = vc;
 						diffIndex.put(i, prev_vc);
+						matchedDiffIndex.put(i, j);
 					}
 				}
 			} // end of right iteration
 		} 
 		return diffIndex;
-	}			
+	}
+	
+	public HashMap<Integer,Integer> getDiffMatchedIndex() {
+		return matchedDiffIndex;
+		
+	}
+	
+	public int getDuplicateCount() {
+		return duplicateC;
+	}
+	
+	public Map<Integer, ArrayList<Integer>> reverseMap () {
+		
+		Map<Integer, ArrayList<Integer>> reverseMap = new HashMap<>();;
+	
+		for (Map.Entry<Integer,Integer> entry : matchedIndex.entrySet()) {
+		    if (!reverseMap.containsKey(entry.getValue())) {
+		        reverseMap.put(entry.getValue(), new ArrayList<>());
+		    }
+		    ArrayList<Integer> keys = reverseMap.get(entry.getValue());
+		    keys.add(entry.getKey());
+		    reverseMap.put(entry.getValue(), keys);
+		}
+		
+		return reverseMap;
+	}
+	
 } // end of class RTMDiffUtil
