@@ -88,6 +88,10 @@ public class XmlReader {
                             hashTable.put("Database_Passwd", eElement.getElementsByTagName("database_Passwd").item(0).getTextContent().trim());
                             hashTable.put("Database_JDBC", eElement.getElementsByTagName("database_JDBC").item(0).getTextContent().trim());
                             hashTable.put("Database_ConnName", eElement.getElementsByTagName("database_ConnectionName").item(0).getTextContent().trim());
+                            hashTable.put("Database_TablePattern", eElement.getElementsByTagName("database_TablePattern").item(0).getTextContent().trim());
+                            hashTable.put("Database_TableType", eElement.getElementsByTagName("database_TableType").item(0).getTextContent().trim());
+                            hashTable.put("Database_SchemaPattern", eElement.getElementsByTagName("database_SchemaPattern").item(0).getTextContent().trim());
+                            hashTable.put("Database_Catalog", eElement.getElementsByTagName("database_Catalog").item(0).getTextContent().trim());
                         }
                     }
                 }
