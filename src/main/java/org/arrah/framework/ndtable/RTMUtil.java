@@ -28,6 +28,8 @@ import java.util.Hashtable;
 import java.util.Random;
 import java.util.Vector;
 
+import net.sourceforge.openforecast.DataSet;
+
 import org.apache.lucene.document.Document;
 // import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
@@ -787,5 +789,38 @@ public class RTMUtil {
         return newrtm;
     }
 
+    // This function will return a dataset which will be used for Multi Linear regression
+    public static net.sourceforge.openforecast.DataSet getDataSetfromRTM(ReportTableModel rtm, String dependentCol, String[] independentCols)
+    	throws Exception {
+		
+        int rowC= rtm.getModel().getRowCount();
+        int dindex = rtm.getColumnIndex(dependentCol);
+        int iindex[] = new int[independentCols.length];
+        for (int i=0; i <iindex.length; i++) 
+        	iindex[i] = rtm.getColumnIndex(independentCols[i]);
+        
+        net.sourceforge.openforecast.DataSet ds = new DataSet();
+        
+        for (int i=0; i < rowC; i++) {
+            try {
+            	
+            	// set the dependent variable
+                Object depv = rtm.getModel().getValueAt(i, dindex);
+                net.sourceforge.openforecast.Observation obs = new net.sourceforge.openforecast.Observation(
+                			new Double(depv.toString()) );
+                
+                for (int j=0; j <iindex.length; j++) {
+                	Object indepv = rtm.getModel().getValueAt(i, iindex[j]);
+                	obs.setIndependentValue(independentCols[j], new Double(indepv.toString()) );
+                }
+                ds.add(obs);
+
+            } catch (Exception e) {
+                throw new Exception("\n Exception for row :" +i, e);
+            }
+        }
+    	return ds;
+    	
+    }
 
 } // End of Class RTMUtil
