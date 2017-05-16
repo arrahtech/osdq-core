@@ -580,7 +580,7 @@ public class RTMUtil {
                     default:
                 }
             } catch (Exception e) {
-               // throw new Exception("\n Exception for row :" +i, e);
+              System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
             }
         }
         return dataset;
@@ -601,7 +601,7 @@ public class RTMUtil {
                 dataset.add(new Double(xcell.toString()) ,new Double(ycell.toString()));
 
             } catch (Exception e) {
-                // throw new Exception("\n Exception for row :" +i, e);
+            	 System.out.println("Row :"+i+ "Exception:"+e.getLocalizedMessage());
             	
             }
         }
@@ -634,7 +634,7 @@ public class RTMUtil {
                 rtm.setValueAt(ycell, i,comIndex);
 
             } catch (Exception e) {
-               // throw new Exception("\n Exception for row :" +i, e);
+            	 System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
             }
         }
         return rtm;
@@ -650,7 +650,9 @@ public class RTMUtil {
                 if (! (ycell == null  || ycell.toString().equals("") == true)) continue;
                 // y - a+bx+cy+dz...
                 double intercept = coeff.get(depcol).doubleValue();
+                
                 for (String key : coeff.keySet() ) {
+                	if (key.equalsIgnoreCase(depcol)) continue;
                 	double coeffv = coeff.get(key).doubleValue();
                 	int indepindex = rtm.getColumnIndex(key);
                 	double val = Double.parseDouble(rtm.getModel().getValueAt(i, indepindex).toString());
@@ -661,7 +663,7 @@ public class RTMUtil {
                 rtm.setValueAt(intercept, i,depindex);
 
             } catch (Exception e) {
-                //throw new Exception("\n Exception for row :" +i, e);
+            	 System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
             }
         }
         return rtm;
@@ -844,9 +846,8 @@ public class RTMUtil {
                 	obs.setIndependentValue(independentCols[j], new Double(indepv.toString()) );
                 }
                 ds.add(obs);
-
             } catch (Exception e) {
-                //throw new Exception("\n Exception for row :" +i, e);
+            	 System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
             }
         }
     	return ds;

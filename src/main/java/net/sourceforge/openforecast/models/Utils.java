@@ -78,6 +78,7 @@ final class Utils
             for ( int j=0; j<n+1; j++ )
                 System.out.println( "After forward elimination, a["+i+"]["+j+"]="+a[i][j] );
         */
+        
 
         double x[] = new double[n];
 
@@ -97,7 +98,7 @@ final class Utils
         for ( int k=0; k<n; k++ )
             System.out.println( "After back-substitution, x["+k+"]="+x[k] );
         */
-
+        
         return x;
     }
 
