@@ -25,8 +25,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
+
+import net.sourceforge.openforecast.DataSet;
 
 import org.apache.lucene.document.Document;
 // import org.apache.lucene.search.Hits;
@@ -534,7 +537,7 @@ public class RTMUtil {
 
     // For time series data
 // Ignore null value
-    public static TimeSeries addRTMDataSet(TimeSeries dataset, ReportTableModel rtm, String datecol1, String numcol2, int timed) throws Exception {
+    public static TimeSeries addRTMDataSet(TimeSeries dataset, ReportTableModel rtm, String datecol1, String numcol2, int timed)  {
         int rowC= rtm.getModel().getRowCount();
         int index = rtm.getColumnIndex(datecol1);
         int comIndex = rtm.getColumnIndex(numcol2);
@@ -577,7 +580,7 @@ public class RTMUtil {
                     default:
                 }
             } catch (Exception e) {
-                throw new Exception("\n Exception for row :" +i, e);
+              System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
             }
         }
         return dataset;
@@ -585,7 +588,7 @@ public class RTMUtil {
 
     // For Number series data
 // Ignore Null values
-    public static XYSeries addRTMDataSet(XYSeries dataset,ReportTableModel rtm, String xcol1, String ycol2) throws Exception {
+    public static XYSeries addRTMDataSet(XYSeries dataset,ReportTableModel rtm, String xcol1, String ycol2)  {
         int rowC= rtm.getModel().getRowCount();
         int index = rtm.getColumnIndex(xcol1);
         int comIndex = rtm.getColumnIndex(ycol2);
@@ -598,14 +601,15 @@ public class RTMUtil {
                 dataset.add(new Double(xcell.toString()) ,new Double(ycell.toString()));
 
             } catch (Exception e) {
-                throw new Exception("\n Exception for row :" +i, e);
+            	 System.out.println("Row :"+i+ "Exception:"+e.getLocalizedMessage());
+            	
             }
         }
         return dataset;
     }
 
     // Regression Data Enrichment
-    public static ReportTableModel addEnrichment(ReportTableModel rtm, String xcol1, String ycol2, double[] val, int rtype) throws Exception {
+    public static ReportTableModel addEnrichment(ReportTableModel rtm, String xcol1, String ycol2, double[] val, int rtype) {
         int rowC= rtm.getModel().getRowCount();
         int index = rtm.getColumnIndex(xcol1);
         int comIndex = rtm.getColumnIndex(ycol2);
@@ -616,7 +620,8 @@ public class RTMUtil {
                 if (! (ycell == null  || ycell.toString().equals("") == true)) continue;
                 Object xcell = rtm.getModel().getValueAt(i, index);
                 if (xcell == null ) {
-                    System.out.println("Can not create regression data. Domain data is also null");
+                    System.out.println("Can not create regression data for Row:"+i+" Domain data is also null");
+                    continue;
                 }
                 if (rtype == 0) // Linear  a +bx
                     ycell = new Double(val[0] + val[1]*(Double)xcell);
@@ -629,7 +634,36 @@ public class RTMUtil {
                 rtm.setValueAt(ycell, i,comIndex);
 
             } catch (Exception e) {
-                throw new Exception("\n Exception for row :" +i, e);
+            	 System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
+            }
+        }
+        return rtm;
+    }
+    // Multi Linear Regression Data Enrichment
+    public static ReportTableModel addEnrichment(ReportTableModel rtm, String depcol, String indep, List<String> extracol,
+    		Hashtable<String,Double> coeff) {
+        int rowC= rtm.getModel().getRowCount();
+        int depindex = rtm.getColumnIndex(depcol);
+        for (int i=0; i < rowC; i++) {
+            try {
+                Object ycell = rtm.getModel().getValueAt(i, depindex);
+                if (! (ycell == null  || ycell.toString().equals("") == true)) continue;
+                // y - a+bx+cy+dz...
+                double intercept = coeff.get(depcol).doubleValue();
+                
+                for (String key : coeff.keySet() ) {
+                	if (key.equalsIgnoreCase(depcol)) continue;
+                	double coeffv = coeff.get(key).doubleValue();
+                	int indepindex = rtm.getColumnIndex(key);
+                	double val = Double.parseDouble(rtm.getModel().getValueAt(i, indepindex).toString());
+                	coeffv += coeffv * val; // multiply value from coefficient
+                	intercept += coeffv;
+                }
+                
+                rtm.setValueAt(intercept, i,depindex);
+
+            } catch (Exception e) {
+            	 System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
             }
         }
         return rtm;
@@ -787,5 +821,37 @@ public class RTMUtil {
         return newrtm;
     }
 
+    // This function will return a dataset which will be used for Multi Linear regression
+    public static net.sourceforge.openforecast.DataSet getDataSetfromRTM(ReportTableModel rtm, String dependentCol, String[] independentCols)
+    	 {
+		
+        int rowC= rtm.getModel().getRowCount();
+        int dindex = rtm.getColumnIndex(dependentCol);
+        int iindex[] = new int[independentCols.length];
+        for (int i=0; i <iindex.length; i++) 
+        	iindex[i] = rtm.getColumnIndex(independentCols[i]);
+        
+        net.sourceforge.openforecast.DataSet ds = new DataSet();
+        
+        for (int i=0; i < rowC; i++) {
+            try {
+            	
+            	// set the dependent variable
+                Object depv = rtm.getModel().getValueAt(i, dindex);
+                net.sourceforge.openforecast.Observation obs = new net.sourceforge.openforecast.Observation(
+                			new Double(depv.toString()) );
+                
+                for (int j=0; j <iindex.length; j++) {
+                	Object indepv = rtm.getModel().getValueAt(i, iindex[j]);
+                	obs.setIndependentValue(independentCols[j], new Double(indepv.toString()) );
+                }
+                ds.add(obs);
+            } catch (Exception e) {
+            	 System.out.println("Row :"+i+" Exception:"+e.getLocalizedMessage());
+            }
+        }
+    	return ds;
+    	
+    }
 
 } // End of Class RTMUtil
