@@ -33,8 +33,11 @@ import net.sf.jdmf.data.output.clustering.Cluster;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -55,6 +58,7 @@ public class ChartGenerator {
      * @param secondAttributeName the name of the 2nd dimension to visualize
      * @return a 2D XY chart visualizing the clusters found
      */
+	private Vector<String> _attrName;
     public JFreeChart generateXYChart( List<Cluster> clusters, 
             Integer firstAttributeIndex, String firstAttributeName,
             Integer secondAttributeIndex, String secondAttributeName ) {
@@ -71,9 +75,40 @@ public class ChartGenerator {
             dataset.addSeries( series );
         }
         
+        XYToolTipGenerator xyToolTipGenerator = new XYToolTipGenerator()
+        {
+            public String generateToolTip(XYDataset dataset, int series, int item)
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(String.format("<html><p style='color:#0000ff;'>Series: '%s'</p>", dataset.getSeriesKey(series)));
+                Cluster cl = clusters.get(series);
+                Vector<Double> point = cl.getPoints().get(item);
+                for ( int i=0; i < point.size(); i++ ) {
+                    //stringBuilder.append(String.format("Attr:'%d'<br/>", d));
+                	try {
+                	String attr = _attrName.get(i);
+                	stringBuilder.append(attr+" "+point.get(i)+"<br/>");
+                	} catch (Exception e) {
+                		// Do nothing 
+                	}
+                }
+                stringBuilder.append("</html>");
+                return stringBuilder.toString();
+            }
+        };
+        
+        /***
         return ChartFactory.createScatterPlot( "Cluster Analysis", 
             firstAttributeName, secondAttributeName, dataset, 
             PlotOrientation.VERTICAL, true, true, false );
+        ***/
+        JFreeChart jfc = ChartFactory.createScatterPlot( "Cluster Analysis", 
+                firstAttributeName, secondAttributeName, dataset, 
+                PlotOrientation.VERTICAL, true, true, false );
+        
+        XYItemRenderer render = jfc.getXYPlot().getRenderer();
+        render.setBaseToolTipGenerator(xyToolTipGenerator);
+        return jfc;
     }
     
     /**
@@ -93,4 +128,9 @@ public class ChartGenerator {
         return ChartFactory.createPieChart3D( "Cluster Analysis", dataset, 
             true, true, false );
     }
+    
+	public void setAttributes (Vector<String> attrName ) {
+    	_attrName = (Vector<String>) attrName;
+    }
+
 }
