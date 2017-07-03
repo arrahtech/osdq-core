@@ -21,22 +21,26 @@ package org.arrah.framework.dataquality;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 // import org.apache.lucene.search.Hits; Deprecated
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -46,6 +50,8 @@ import org.apache.lucene.store.RAMDirectory;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.Rdbms_conn;
+
+import org.apache.lucene.search.NumericRangeQuery;
 
 
 public class SimilarityCheckLucene {
@@ -97,25 +103,33 @@ public class SimilarityCheckLucene {
         if (row == null)
             return doc;
         try {
-            FieldType crosscol = new FieldType();
-            crosscol.setStored(true);
-            crosscol.setTokenized(false);
+        	
+            //FieldType crosscol = new FieldType();
+            //crosscol.setStored(true);
+            //crosscol.setTokenized(false);
 
             //doc.add(new Field("at__rowid__", Integer.toString(rowId),
             //Field.Store.YES, Field.Index.UN_TOKENIZED)); // for cross column search
             doc.add(new StringField("at__rowid__", Integer.toString(rowId),Field.Store.YES) );
             // crosscol));
 
-            FieldType forhive = new FieldType();
-            forhive.setStored(true);
-            forhive.setTokenized(true);
+            //FieldType forhive = new FieldType();
+            //forhive.setStored(true);
+            //forhive.setTokenized(true);
 
             for (int i = 0; i < row.length; i++) {
                 if (row[i] != null && colName[i] != null)
                     //doc.add(new Field(colName[i], row[i].toString(),
                     // Field.Store.NO, Field.Index.TOKENIZED)); we have to do hive query
                     // Field.Store.YES, Field.Index.TOKENIZED));
-                    doc.add(new TextField(colName[i], row[i].toString(),Field.Store.YES));
+                	if(row[i] instanceof java.lang.Number ) {
+                		System.out.println(row[i].toString());
+                		doc.add(new DoubleField(colName[i], new Double(row[i].toString()),Field.Store.YES));
+                	}
+                	else if (row[i] instanceof java.util.Date)
+                		doc.add(new TextField(colName[i], DateTools.dateToString((Date) row[i],DateTools.Resolution.SECOND),Field.Store.YES));
+                	else
+                		doc.add(new TextField(colName[i], row[i].toString(),Field.Store.YES));
                 //forhive));
             }
         } catch (Exception e) {
@@ -320,9 +334,33 @@ public class SimilarityCheckLucene {
         return true;
     }
 
+    // This class is overwritten for range query. Now for numerical data type it should do number range
     public Query parseQuery(String query) {
         try {
-            QueryParser qp = new QueryParser(colName[0], new StandardAnalyzer());
+        	
+            QueryParser qp = new QueryParser(colName[0], new StandardAnalyzer()) {
+            	public Query parse(String query) throws ParseException {
+            		return super.parse(query);
+            		
+            	}
+            	
+            	protected Query getRangeQuery(String field,
+                        String part1,
+                        String part2,
+                        boolean startInclusive,
+                        boolean endInclusive)
+                             throws ParseException {
+            		try {
+            			if ( reader.document(1).getField(field).numericValue() != null ) {
+            				return NumericRangeQuery.newDoubleRange(field, new Double(part1), new Double(part2), startInclusive, endInclusive);
+            			} else
+            				return super.getRangeQuery(field,part1,part2,startInclusive,endInclusive);
+            		} catch (Exception e) {
+            			return super.getRangeQuery(field,part1,part2,startInclusive,endInclusive);
+            		}
+            		
+            	}
+            };
             qp.setAllowLeadingWildcard(true);
             return qp.parse(query);
         } catch (Exception e) {
