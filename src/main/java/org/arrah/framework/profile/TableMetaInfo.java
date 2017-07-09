@@ -25,7 +25,7 @@ import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.SqlType;
 import org.arrah.framework.rdbms.TableRelationInfo;
 
@@ -38,8 +38,8 @@ public class TableMetaInfo {
 	public static ReportTableModel populateTable(int i, int j, int k,
 			ReportTableModel reporttable) {
 		try {
-			Rdbms_conn.openConn();
-			dbmd = Rdbms_conn.getMetaData();
+			Rdbms_NewConn.get().openConn();
+			dbmd = Rdbms_NewConn.get().getMetaData();
 			switch (i) {
 			case 1: // '\001'
 				reporttable = IndexQuery(j, k, reporttable);
@@ -57,7 +57,7 @@ public class TableMetaInfo {
 				reporttable = DataQuery(j, k,reporttable);
 				break;
 			}
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException sqlexception) {
 			System.out.println(sqlexception.getMessage());
 			System.out.println("\n WARNING: Exception in Variable Query Panel ");
@@ -71,15 +71,15 @@ public class TableMetaInfo {
 
 	{
 		try {
-			Rdbms_conn.openConn();
-			dbmd = Rdbms_conn.getMetaData();
+			Rdbms_NewConn.get().openConn();
+			dbmd = Rdbms_NewConn.get().getMetaData();
 			switch (i) {
 			case 5: // '\005'
 				avector = ColumnDataQuery(j, k, avector);
 				// fall through
 
 			default:
-				Rdbms_conn.closeConn();
+				Rdbms_NewConn.get().closeConn();
 				break;
 			}
 		} catch (SQLException sqlexception) {
@@ -94,12 +94,12 @@ public class TableMetaInfo {
 
 	private static ReportTableModel IndexQuery(int i, int j,
 			ReportTableModel reporttable) throws SQLException {
-		String s = Rdbms_conn.getHValue("Database_Catalog");
+		String s = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s = "";
-		String s1 = Rdbms_conn.getHValue("Database_SchemaPattern");
+		String s1 = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
 		s = s.compareTo("") != 0 ? s : null;
 		s1 = s1.compareTo("") != 0 ? s1 : null;
-		Vector<String> vector = Rdbms_conn.getTable();
+		Vector<String> vector = Rdbms_NewConn.get().getTable();
 		if (reporttable == null)
 			reporttable = new ReportTableModel(new String[] { "Table",
 					"Column", "Index", "Type", "Qualifier", "IsUnique",
@@ -157,12 +157,12 @@ public class TableMetaInfo {
 
 	private static ReportTableModel MetaDataQuery(int i, int j,
 			ReportTableModel reporttable) throws SQLException {
-		String s = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s1 = Rdbms_conn.getHValue("Database_Catalog");
+		String s = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s1 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s1 = "";
 		s1 = s1.compareTo("") != 0 ? s1 : null;
 		s = s.compareTo("") != 0 ? s : null;
-		Vector<String> vector = Rdbms_conn.getTable();
+		Vector<String> vector = Rdbms_NewConn.get().getTable();
 		ResultSet resultset = null;
 		if (reporttable == null)
 			reporttable = new ReportTableModel(new String[] { "Table",
@@ -202,13 +202,13 @@ public class TableMetaInfo {
 
 	private static ReportTableModel PrivilegeQuery(int i, int j,
 			ReportTableModel reporttable) throws SQLException {
-		String s = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s1 = Rdbms_conn.getHValue("Database_Catalog");
+		String s = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s1 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s1 = "";
 		s1 = s1.compareTo("") != 0 ? s1 : null;
 		s = s.compareTo("") != 0 ? s : null;
 		int k = 0;
-		Vector<String> vector = Rdbms_conn.getTable();
+		Vector<String> vector = Rdbms_NewConn.get().getTable();
 		ResultSet resultset = null;
 		if (reporttable == null)
 			reporttable = new ReportTableModel(new String[] { "Table",
@@ -239,14 +239,14 @@ public class TableMetaInfo {
 
 	private static ReportTableModel DataQuery(int i, int j,ReportTableModel reporttable
 			) throws SQLException {
-		String s = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s1 = Rdbms_conn.getHValue("Database_Catalog");
+		String s = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s1 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s1 = "";
-		String s2 = Rdbms_conn.getHValue("Database_DSN");
+		String s2 = Rdbms_NewConn.get().getHValue("Database_DSN");
 		s1 = s1.compareTo("") != 0 ? s1 : null;
 		s = s.compareTo("") != 0 ? s : null;
-		Vector<String> vector = Rdbms_conn.getTable();
-		String s3 = Rdbms_conn.getDBType();
+		Vector<String> vector = Rdbms_NewConn.get().getTable();
+		String s3 = Rdbms_NewConn.get().getDBType();
 		if (reporttable == null)
 		 reporttable  = new ReportTableModel(new String[] { "Table",
 					"Column", "Record", "Unique", "Pattern", "Null", "Zero",
@@ -254,13 +254,13 @@ public class TableMetaInfo {
 		else
 			reporttable.cleanallRow();
 		
-		synchronized (Rdbms_conn.class){
+		synchronized (Rdbms_NewConn.class){
 		for (int k = i; k < j; k++) {
 			// for ORA:1000 error maximum number of open cursor
 			try {
 			if (s3.compareToIgnoreCase("oracle_native") == 0) {
-				Rdbms_conn.openConn();
-				dbmd = Rdbms_conn.getMetaData();
+				Rdbms_NewConn.get().openConn();
+				dbmd = Rdbms_NewConn.get().getMetaData();
 			} 
 			String s17 = (String) vector.elementAt(k);
 			Vector<String> vector1 = new Vector<String>();
@@ -276,7 +276,7 @@ public class TableMetaInfo {
 			} while (true);
 			resultset.close();
 			if (s3.compareToIgnoreCase("oracle_native") == 0) {
-				Rdbms_conn.closeConn();
+				Rdbms_NewConn.get().closeConn();
 			} 
 			String as[];
 			for (Enumeration<String> enumeration = vector1.elements(); enumeration
@@ -296,9 +296,9 @@ public class TableMetaInfo {
 				String s8 = querybuilder.get_zeroCount_query_w("''");
 				String s9 = querybuilder.get_pattern_query();
 				if (s3.compareToIgnoreCase("oracle_native") == 0)
-					Rdbms_conn.openConn();
+					Rdbms_NewConn.get().openConn();
 				try {
-					for (resultset = Rdbms_conn.runQuery(s4); resultset.next();)
+					for (resultset = Rdbms_NewConn.get().runQuery(s4); resultset.next();)
 						s10 = resultset.getString("row_count");
 
 					resultset.close();
@@ -306,7 +306,7 @@ public class TableMetaInfo {
 					s10 = "N/A";
 				}
 				try {
-					for (resultset = Rdbms_conn.runQuery(s5); resultset.next();)
+					for (resultset = Rdbms_NewConn.get().runQuery(s5); resultset.next();)
 						s11 = resultset.getString("row_count");
 
 					resultset.close();
@@ -314,7 +314,7 @@ public class TableMetaInfo {
 					s11 = "N/A";
 				}
 				try {
-					for (resultset = Rdbms_conn.runQuery(s6); resultset.next();)
+					for (resultset = Rdbms_NewConn.get().runQuery(s6); resultset.next();)
 						s12 = resultset.getString("equal_count");
 
 					resultset.close();
@@ -322,7 +322,7 @@ public class TableMetaInfo {
 					s12 = "N/A";
 				}
 				try {
-					for (resultset = Rdbms_conn.runQuery(s7); resultset.next();)
+					for (resultset = Rdbms_NewConn.get().runQuery(s7); resultset.next();)
 						s13 = resultset.getString("equal_count");
 
 					resultset.close();
@@ -330,7 +330,7 @@ public class TableMetaInfo {
 					s13 = "N/A";
 				}
 				try {
-					for (resultset = Rdbms_conn.runQuery(s8); resultset.next();)
+					for (resultset = Rdbms_NewConn.get().runQuery(s8); resultset.next();)
 						s14 = resultset.getString("equal_count");
 
 					resultset.close();
@@ -338,7 +338,7 @@ public class TableMetaInfo {
 					s14 = "N/A";
 				}
 				try {
-					for (resultset = Rdbms_conn.runQuery(s9); resultset.next();)
+					for (resultset = Rdbms_NewConn.get().runQuery(s9); resultset.next();)
 						s15 = resultset.getString("row_count");
 
 					resultset.close();
@@ -348,7 +348,7 @@ public class TableMetaInfo {
 				as = (new String[] { s17, s20, s10, s11, s15, s12, s13, s14 });
 				
 				if (s3.compareToIgnoreCase("oracle_native") == 0)
-					Rdbms_conn.closeConn(); 
+					Rdbms_NewConn.get().closeConn(); 
 			} } catch (SQLException ee) {
 				return reporttable;
 			}
@@ -359,12 +359,12 @@ public class TableMetaInfo {
 
 	private static Vector<?>[] ColumnDataQuery(int i, int j, Vector avector[])
 			throws SQLException {
-		String s = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s1 = Rdbms_conn.getHValue("Database_Catalog");
+		String s = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s1 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s1 = "";
 		s1 = s1.compareTo("") != 0 ? s1 : null;
 		s = s.compareTo("") != 0 ? s : null;
-		Vector<String> vector = Rdbms_conn.getTable();
+		Vector<String> vector = Rdbms_NewConn.get().getTable();
 		avector = new Vector<?>[2];
 		avector[0] = new Vector<String>();
 		avector[1] = new Vector<Integer>();
@@ -391,9 +391,9 @@ public class TableMetaInfo {
 	public static TableRelationInfo getTableRelationInfo(String cat,
 			String sch, String table) throws SQLException {
 		TableRelationInfo TableRelationInfo = new TableRelationInfo(table);
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
-		if (Rdbms_conn.getDBType().compareToIgnoreCase("ms_access") == 0) {
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
+		if (Rdbms_NewConn.get().getDBType().compareToIgnoreCase("ms_access") == 0) {
 			ResultSet resultset9 = dbmd.getIndexInfo(cat, sch, table, false,
 					true);
 			do {
@@ -472,15 +472,15 @@ public class TableMetaInfo {
 			}
 			resultset10.close();
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return TableRelationInfo;
 	}
 	
 	//Give info in RTM
 	public static ReportTableModel tableKeyInfo(String table) 
 			throws SQLException {
-		String sch = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String sch = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		cat="";
 		cat = cat.compareTo("") != 0 ? cat : null;
 		sch = sch.compareTo("") != 0 ? sch : null;
@@ -524,8 +524,8 @@ public class TableMetaInfo {
 
 		ReportTableModel _rt = new ReportTableModel(new String[] { "Table",
 				"Super Table" });
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 
 		ResultSet rs = dbmd.getSuperTables(cat, sch, _table);
 		while (rs.next()) {
@@ -536,7 +536,7 @@ public class TableMetaInfo {
 			}
 		}
 		rs.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return _rt;
 	}
 
@@ -544,8 +544,8 @@ public class TableMetaInfo {
 			String sch, String _table) throws SQLException {
 		ReportTableModel _rt = new ReportTableModel(new String[] { "Column",
 				"Default Value" });
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 
 		ResultSet rs = dbmd.getColumns(cat, sch, _table, null);
 		while (rs.next()) {
@@ -558,7 +558,7 @@ public class TableMetaInfo {
 			}
 		}
 		rs.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return _rt;
 	}
 	/* Do like query on given table and specified columns */
@@ -567,29 +567,29 @@ public class TableMetaInfo {
 		
 		ReportTableModel _rt = new ReportTableModel(new String[] { "Count","Table" });
 			QueryBuilder qb = new QueryBuilder(
-					Rdbms_conn.getHValue("Database_DSN"), tableName, Rdbms_conn.getDBType());
+					Rdbms_NewConn.get().getHValue("Database_DSN"), tableName, Rdbms_NewConn.get().getDBType());
 			
 			String toQuery = qb.get_like_table_cols(query,colName, true);
 			int matcount =0;
 			if (toQuery == null || "".equals(toQuery)) return _rt;
 			
 			try {	
-				synchronized (Rdbms_conn.class) {
-				Rdbms_conn.openConn();
-				ResultSet rs = Rdbms_conn.runQuery(toQuery);
+				synchronized (Rdbms_NewConn.class) {
+				Rdbms_NewConn.get().openConn();
+				ResultSet rs = Rdbms_NewConn.get().runQuery(toQuery);
 				
 					while (rs.next())
 						 matcount = rs.getInt(1);
 					
 				 rs.close();
-				 Rdbms_conn.closeConn();  
+				 Rdbms_NewConn.get().closeConn();  
 				}
 			} catch (SQLException ee) {
 				System.out.println("\n ResultSet SQL Error :" + ee.getMessage());
 			}	finally {
 			}
 			try {
-				Rdbms_conn.closeConn();
+				Rdbms_NewConn.get().closeConn();
 			} catch (SQLException ee) {
 				System.out.println("\n SQL Error:" + ee.getMessage());
 			}

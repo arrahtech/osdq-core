@@ -29,7 +29,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.rdbms.SqlType;
 import org.arrah.framework.util.StringCaseFormatUtil;
 
@@ -114,7 +114,7 @@ public class QualityCheck {
 			Object obj = null;
 			Object[] objA = null;
 			
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 				objA = rows.getRow(i + 1);
 				obj=objA[matchI];
 				if (obj == null)  {
@@ -189,7 +189,7 @@ public class QualityCheck {
 									.println("\n WANING: Could not Parse Input String:"
 											+ newValue);
 						}
-						if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) 
+						if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) 
 							objA = rows.getRow(i + 1); // For Hive it already filled.
 						
 						Object[] add_obj = new Object[objA.length + 1];
@@ -259,7 +259,7 @@ public class QualityCheck {
 			Object obj = null;
 			Object[] objA = null;
 			
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 				objA = rows.getRow(i + 1);
 				obj=objA[matchI];
 			} else { // RDBMS
@@ -267,7 +267,7 @@ public class QualityCheck {
 			}
 			if (obj == null || "".equals(obj.toString())) {
 				try {
-					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+					if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 						objA = rows.getRow(i + 1);
 					}
 					Object[] add_obj = new Object[objA.length + 1];
@@ -318,7 +318,7 @@ public class QualityCheck {
 			Object obj = null;
 			Object[] objA = null;
 			
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 				objA = rows.getRow(i + 1);
 				obj=objA[matchI];
 				if (obj == null)  {
@@ -353,7 +353,7 @@ public class QualityCheck {
 			}
 			if (isObjMatch == true) {
 				try {
-					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+					if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 						objA = rows.getRow(i + 1);
 					}
 					Object[] add_obj = new Object[objA.length + 1];
@@ -409,7 +409,7 @@ public class QualityCheck {
 			Object obj = null;
 			Object[] objA = null;
 			
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 				objA = rows.getRow(i + 1);
 				obj=objA[matchI];
 				if (obj == null)  {
@@ -461,7 +461,7 @@ public class QualityCheck {
 			if (isObjMatch == false) {
 				try {
 					String value = valueFormat;
-					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+					if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 						objA = rows.getRow(i + 1); // Already selected for Hive
 					}
 					Object[] add_obj = new Object[objA.length + 1];
@@ -520,7 +520,7 @@ public class QualityCheck {
 			Object obj = null;
 			Object[] objA = null;
 			
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 				objA = rows.getRow(i + 1);
 				obj=objA[matchI];
 				if (obj == null)  {
@@ -565,7 +565,7 @@ public class QualityCheck {
 								.println("\n WANING: Could not Parse Input String:"
 										+ newValue);
 					}
-					if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+					if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 					 objA = rows.getRow(i + 1);
 					}
 					Object[] add_obj = new Object[objA.length + 1];

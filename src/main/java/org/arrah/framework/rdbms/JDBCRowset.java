@@ -39,31 +39,31 @@ public class JDBCRowset {
 	private int rowPPage = 100; // Default rows per page
 
 	/*
-	 * Constructor for simple query Rdbms_conn - connection on which rowset is
+	 * Constructor for simple query Rdbms_NewConn.get() - connection on which rowset is
 	 * required query - query to be run maxRow - maxrow to be fetched if > 0
 	 * editable - if you want rowset to be editable for insert
 	 */
 	public JDBCRowset(String query, int maxRow, boolean editable)
 			throws SQLException {
 		try {
-			String protocol = Rdbms_conn.getProtocol();
-			String url = Rdbms_conn.get_JDBC_URL();
+			String protocol = Rdbms_NewConn.get().getProtocol();
+			String url = Rdbms_NewConn.get().get_JDBC_URL();
 			if (url == null || "".equals(url)) {
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase(
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase(
 					"oracle_native") == 0)
 				rows = new UpdatableJdbcRowsetImpl(protocol + ":@"
-						+ Rdbms_conn.getHValue("Database_DSN"),
-						Rdbms_conn.getHValue("Database_User"),
-						Rdbms_conn.getHValue("Database_Passwd"));
+						+ Rdbms_NewConn.get().getHValue("Database_DSN"),
+						Rdbms_NewConn.get().getHValue("Database_User"),
+						Rdbms_NewConn.get().getHValue("Database_Passwd"));
 			else
 				rows = new UpdatableJdbcRowsetImpl(protocol + ":"
-						+ Rdbms_conn.getHValue("Database_DSN"),
-						Rdbms_conn.getHValue("Database_User"),
-						Rdbms_conn.getHValue("Database_Passwd"));
+						+ Rdbms_NewConn.get().getHValue("Database_DSN"),
+						Rdbms_NewConn.get().getHValue("Database_User"),
+						Rdbms_NewConn.get().getHValue("Database_Passwd"));
 			} else {
 				rows = new UpdatableJdbcRowsetImpl(url,
-						Rdbms_conn.getHValue("Database_User"),
-						Rdbms_conn.getHValue("Database_Passwd"));
+						Rdbms_NewConn.get().getHValue("Database_User"),
+						Rdbms_NewConn.get().getHValue("Database_Passwd"));
 						
 				
 			}
@@ -88,18 +88,18 @@ public class JDBCRowset {
 				}
 			}
 			rows.execute();
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 				if (rows.last() == true)
 					rowC = rows.getRow();
 			} else { // call count function explicitly 
-				Rdbms_conn.openConn();
+				Rdbms_NewConn.get().openConn();
 				String orgQuery = QueryBuilder.hive_count_query(query);
-				ResultSet rs = Rdbms_conn.runQuery(orgQuery);
+				ResultSet rs = Rdbms_NewConn.get().runQuery(orgQuery);
 				while (rs.next()) {
 					rowC = rs.getInt("total_count");
 				}
 				rs.close();
-				Rdbms_conn.closeConn();
+				Rdbms_NewConn.get().closeConn();
 			}
 			createMD();
 			
@@ -107,7 +107,7 @@ public class JDBCRowset {
 			System.err.println("Error in JDBCRowset Constructor:"+e.getLocalizedMessage());
 			throw e;
 		}
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 			rows.setAutoCommit(true);
 		}
 	}
@@ -117,24 +117,24 @@ public class JDBCRowset {
 	public JDBCRowset(String query, boolean editable, Vector<Integer> vc_t,
 			Vector<Object> vc_v) throws SQLException {
 		try {
-			String protocol = Rdbms_conn.getProtocol();
-			String url = Rdbms_conn.get_JDBC_URL();
+			String protocol = Rdbms_NewConn.get().getProtocol();
+			String url = Rdbms_NewConn.get().get_JDBC_URL();
 			if (url == null || "".equals(url)) {
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase(
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase(
 					"oracle_native") == 0)
 				rows = new UpdatableJdbcRowsetImpl(protocol + ":@"
-						+ Rdbms_conn.getHValue("Database_DSN"),
-						Rdbms_conn.getHValue("Database_User"),
-						Rdbms_conn.getHValue("Database_Passwd"));
+						+ Rdbms_NewConn.get().getHValue("Database_DSN"),
+						Rdbms_NewConn.get().getHValue("Database_User"),
+						Rdbms_NewConn.get().getHValue("Database_Passwd"));
 			else
 				rows = new UpdatableJdbcRowsetImpl(protocol + ":"
-						+ Rdbms_conn.getHValue("Database_DSN"),
-						Rdbms_conn.getHValue("Database_User"),
-						Rdbms_conn.getHValue("Database_Passwd"));
+						+ Rdbms_NewConn.get().getHValue("Database_DSN"),
+						Rdbms_NewConn.get().getHValue("Database_User"),
+						Rdbms_NewConn.get().getHValue("Database_Passwd"));
 			} else {
 				rows = new UpdatableJdbcRowsetImpl(url,
-						Rdbms_conn.getHValue("Database_User"),
-						Rdbms_conn.getHValue("Database_Passwd"));
+						Rdbms_NewConn.get().getHValue("Database_User"),
+						Rdbms_NewConn.get().getHValue("Database_Passwd"));
 			}
 			rows.setReadOnly(editable);
 			rows.setCommand(query);
@@ -170,24 +170,24 @@ public class JDBCRowset {
 				}
 			}
 			rows.execute();
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 				if (rows.last() == true)
 					rowC = rows.getRow();
 			} else {
-				Rdbms_conn.openConn();
+				Rdbms_NewConn.get().openConn();
 				String orgQuery = QueryBuilder.hive_count_query(query);
-				ResultSet rs = Rdbms_conn.runQuery(orgQuery);
+				ResultSet rs = Rdbms_NewConn.get().runQuery(orgQuery);
 				while (rs.next()) {
 					rowC = rs.getInt("total_count");
 				}
 				rs.close();
-				Rdbms_conn.closeConn();
+				Rdbms_NewConn.get().closeConn();
 			}
 		} catch (SQLException e) {
 			System.err.println("Error in Prepared JDBCRowset Constructor:"+e.getLocalizedMessage());
 			throw e;
 		}
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 			rows.setAutoCommit(true);
 		}
 	}
@@ -465,7 +465,7 @@ public class JDBCRowset {
 		for (int i = 1; i < numberOfColumns + 1; i++) {
 			col_name[i - 1] = rsmd.getColumnName(i);
 			// Hive no support
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 				tbl_name[i - 1] = rsmd.getTableName(i);
 			}
 			col_type[i - 1] = rsmd.getColumnType(i);
@@ -476,8 +476,8 @@ public class JDBCRowset {
 		/* Hive appends table names to column name some time
 		 * which will make some col name check to fail
 		 */
-		if (Rdbms_conn.getHValue("Database_Type") != null && 
-					Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type") != null && 
+					Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 			for (int i=0; i < col_name.length; i++) {
 				int li = col_name[i].lastIndexOf('.'); //Table.colname
 				if ( li != -1)
@@ -518,7 +518,7 @@ public class JDBCRowset {
 		if (row > rowC)
 			return null;
 		// Hive does not support moving cursors
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 			rows.absolute(row);
 		} else {
 			if (rows.next() == false)
@@ -559,11 +559,11 @@ public class JDBCRowset {
 
 	synchronized public Object[] getRow(int rowId) throws SQLException {
 		Object[] objA = new Object[numberOfColumns];
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 			if (rows.next() == false) return null;
 		}
 		for (int i = 0; i < numberOfColumns; i++) {
-			if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+			if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 				objA[i] = getObject(rowId, i + 1);
 			} else { // for hive
 				// Hive does not support absolute function so we have 

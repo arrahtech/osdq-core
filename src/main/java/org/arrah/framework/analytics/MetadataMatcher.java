@@ -8,7 +8,7 @@ import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 import org.arrah.framework.util.StringCaseFormatUtil;
 import org.simmetrics.metrics.JaroWinkler;
 
@@ -212,12 +212,12 @@ public class MetadataMatcher {
 	
 	public Object[] getDataforCol(String table, String col) {
 		Object[] coldata = new Object[10];
-		QueryBuilder querybuilder = new QueryBuilder(Rdbms_conn.getHValue("Database_DSN"), 
-				table, col, Rdbms_conn.getDBType());
+		QueryBuilder querybuilder = new QueryBuilder(Rdbms_NewConn.get().getHValue("Database_DSN"), 
+				table, col, Rdbms_NewConn.get().getDBType());
 		String top_sel_query = querybuilder.top_query(true,"top_count", "10");
 		try {
-			Rdbms_conn.openConn();
-			ResultSet rs = Rdbms_conn.runQuery(top_sel_query);
+			Rdbms_NewConn.get().openConn();
+			ResultSet rs = Rdbms_NewConn.get().runQuery(top_sel_query);
 			int counter = 0;
 			while (rs.next() && counter < 10) {
 				//String top_val = rs.getString("top_count");
@@ -226,7 +226,7 @@ public class MetadataMatcher {
 				coldata[counter++] = top_val;
 			}
 			rs.close();
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException exp) {
 			System.out.println("Column fetch error:"+ exp.getLocalizedMessage());
 			return coldata;

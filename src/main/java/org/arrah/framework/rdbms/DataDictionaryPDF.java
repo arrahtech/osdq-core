@@ -40,7 +40,7 @@ public class DataDictionaryPDF {
 	private Vector<String> _tableN = new Vector<String>();
 	
 	public DataDictionaryPDF() {
-		_tableN = Rdbms_conn.getTable();
+		_tableN = Rdbms_NewConn.get().getTable();
 	}
 	
 	public PdfPTable getTableMetaData(int tabIndex) {

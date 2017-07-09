@@ -53,7 +53,8 @@ public class ScheduleJob implements Job{
 		  //legacy code, converting hashmap into hashtable
 		  Hashtable<String, String> hashtable = new Hashtable<>();
 		  context.getJobDetail().getJobDataMap().entrySet().stream().forEach((e) -> {hashtable.put(e.getKey(), (String)e.getValue());});
-			Rdbms_NewConn dbConn=new Rdbms_NewConn(hashtable);
+		  Rdbms_NewConn.init(hashtable);
+		  Rdbms_NewConn dbConn=Rdbms_NewConn.get();
 			dbConn.openConn();
 			
 			String query = context.getJobDetail().getJobDataMap().getString("query");

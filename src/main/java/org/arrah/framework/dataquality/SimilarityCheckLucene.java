@@ -45,7 +45,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 
 
 public class SimilarityCheckLucene {
@@ -280,7 +280,7 @@ public class SimilarityCheckLucene {
                     row = _rt.getRow(Integer.parseInt(rowid));
                 else {
 
-                    if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+                    if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
                         row = _rows.getRow(Integer.parseInt(rowid));
                     } else {
                         // will not work for Hive as rowset can not move bothway
@@ -394,7 +394,7 @@ public class SimilarityCheckLucene {
         /*** Not needed
 
          if (isRowSet == true) { // Only if this is rowset
-         if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+         if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
          // for Hive
          if (_rows != null) _rows.close();
          try {
@@ -424,7 +424,7 @@ public class SimilarityCheckLucene {
                 if (isRowSet == false)
                     row = _rt.getRow(Integer.parseInt(rowid));
                 else {
-                    if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+                    if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
                         row = _rows.getRow(Integer.parseInt(rowid));
                     } else {
                         // will not work for Hive as rowset can not move bothways
