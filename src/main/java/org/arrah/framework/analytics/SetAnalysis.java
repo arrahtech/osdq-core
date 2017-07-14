@@ -1,9 +1,10 @@
 package org.arrah.framework.analytics;
 
 import java.util.Vector;
+import org.arrah.framework.analytics.FuzzyVector;
 
 /**************************************************
-*     Copyright to Vivek Singh        2016        *
+*     Copyright to Vivek Singh        2017        *
 *                                                 *
 * Any part of code or file can be changed,        *
 * redistributed, modified with the copyright      *
@@ -22,6 +23,7 @@ import java.util.Vector;
 public class SetAnalysis {
 	private String errstr="";
 	private Vector<Object> smallSet, bigSet;
+	
 	
 	public SetAnalysis (Vector<Object> setA, Vector<Object> setB) throws NullPointerException { //Default Constructor
 		if (setA == null || setB == null ) {
@@ -56,6 +58,26 @@ public class SetAnalysis {
 		return resultSet;
 	}
 	
+	// This function will return intersection set
+	public Vector<Object> getIntersection (float distance) {
+		Vector<Object> resultSet = null;
+		int ilen = smallSet.size();
+		if (ilen == 0 || bigSet.size() == 0 ) { // no intersection
+			errstr = "Not Valid sets for Intersection";
+			return resultSet;
+		}
+		resultSet = new Vector<Object>();
+		FuzzyVector fz = new FuzzyVector(bigSet);
+		
+		for (int i=0 ; i < ilen; i++ ) {
+			Object o = smallSet.get(i);
+			if (fz.indexOf(o,distance) != -1 ) // it is  found in bigger set
+				if (resultSet.indexOf(o) == -1 ) // if it not already added
+					resultSet.add(o);
+		}
+		return resultSet;
+	}
+	
 	// This function will return Union set
 	public Vector<Object> getUnion () {
 		Vector<Object> resultSet = null;
@@ -77,6 +99,37 @@ public class SetAnalysis {
 			Object o = bigSet.get(i);
 			if (resultSet.indexOf(o) == -1 ) // it is not found in  result set
 				resultSet.add(o);
+		}
+		
+		return resultSet;
+	}
+	
+	// This function will return Union set with distance as input
+	public Vector<Object> getUnion (float distance) {
+		Vector<Object> resultSet = null;
+		int ilen = smallSet.size();
+		if (ilen == 0 ) {
+			errstr = "Not Valid sets for Union";
+			return bigSet;
+		}
+		
+		resultSet = new Vector<Object>();
+		
+		for (int i=0 ; i < ilen; i++ ) {
+			Object o = smallSet.get(i);
+			if (resultSet.indexOf(o) == -1 ) // it is not found in result set
+				resultSet.add(o);
+		}
+		int ilenB = bigSet.size();
+		FuzzyVector fz = new FuzzyVector(resultSet);
+		
+		for (int i=0 ; i < ilenB; i++ ) {
+			Object o = bigSet.get(i);
+			if (fz.indexOf(o,distance) == -1 ) // it is not found in  fuzzyvector set
+				if (resultSet.indexOf(o) == -1 )  {// it is not found in  result set
+					resultSet.add(o);
+					fz.add(o);
+				}
 		}
 		
 		return resultSet;
@@ -119,6 +172,21 @@ public class SetAnalysis {
 		return resultSet;
 	}
 	
+	// This function will return A- B set with cosine distance
+		public Vector<Object> getDifference (Vector<Object> first, Vector<Object> second, float distance) {
+			Vector<Object> resultSet = new Vector<Object>();
+			int ilen = first.size();
+			FuzzyVector fz = new FuzzyVector(second);
+			for (int i=0; i < ilen; i++ ) {
+				Object o = first.get(i);
+				if (fz.indexOf(o,distance) == -1 ) // it is not found in second
+					resultSet.add(o);
+			}
+			
+			errstr = "Difference Successful";
+			return resultSet;
+		}
+	
 	// This function will return true if A is subset of B
 	public boolean isSubset(Vector<Object> first, Vector<Object> second) {
 		int ilen = first.size();
@@ -134,6 +202,25 @@ public class SetAnalysis {
 	
 	public String getErrstr() {
 		return errstr;
+	}
+	
+	// for testing
+	public static void main(String[] args) {
+		Vector<Object> first = new Vector<Object>();
+		first.add("vivek");first.add("vivek16");first.add("abcd");first.add("vivek44");
+		
+		Vector<Object> second = new Vector<Object>();
+		second.add("vivek36");second.add("vivekkk");second.add("abcd");second.add("vivek445");
+		
+		SetAnalysis seta = new SetAnalysis(first,second);
+		//Vector<Object> finaltse  = seta.getIntersection(0.9f);
+		//Vector<Object> finaltse  = seta.getUnion(0.7f);
+		Vector<Object> finaltse  = seta.getDifference(first, second,0.6f);
+
+		for (Object a:finaltse)
+			System.out.println(a.toString());
+		
+		
 	}
 
 	} // end of SetAnalysis

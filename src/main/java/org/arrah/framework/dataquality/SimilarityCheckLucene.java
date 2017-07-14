@@ -51,8 +51,6 @@ import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.Rdbms_conn;
 
-import org.apache.lucene.search.NumericRangeQuery;
-
 
 public class SimilarityCheckLucene {
     private ReportTableModel _rt, outputRT;
