@@ -39,6 +39,10 @@ public class SetAnalysis {
 		}
 		
 	}
+	//default constructor
+	public SetAnalysis () throws NullPointerException { //Default Constructor
+		
+	}
 	
 	// This function will return intersection set
 	public Vector<Object> getIntersection () {
@@ -214,8 +218,8 @@ public class SetAnalysis {
 		
 		SetAnalysis seta = new SetAnalysis(first,second);
 		//Vector<Object> finaltse  = seta.getIntersection(0.9f);
-		//Vector<Object> finaltse  = seta.getUnion(0.7f);
-		Vector<Object> finaltse  = seta.getDifference(first, second,0.6f);
+		Vector<Object> finaltse  = seta.getUnion();
+		//Vector<Object> finaltse  = seta.getDifference(first, second,0.6f);
 
 		for (Object a:finaltse)
 			System.out.println(a.toString());

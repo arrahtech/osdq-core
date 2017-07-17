@@ -34,7 +34,7 @@ public class StatisticalAnalysis {
 	private ReportTableModel perc_t = new ReportTableModel(new String[] { "Percentile %",
 			"Record Upper Value", "Samples Below" });;
 
-	private double count, sum, avg;
+	private double count, sum, avg, uniqCount =0;
 	private double variance = 0, aad = 0, skew = 0, kurt = 0;
 	private double[] perv_a = new double[21]; // To store value
 	private long[] perc_a = new long[21];
@@ -105,6 +105,7 @@ public class StatisticalAnalysis {
 							new Double(freq_c / count * 100) });
 				freq_c = 1;
 				prev_obj = curr_obj;
+				uniqCount++;
 			}
 			// Advance Analysis goes here if is a Number
 			if (isNumber == true) {
@@ -167,6 +168,12 @@ public class StatisticalAnalysis {
 	public Object getMaxObject() {
 		return _colObj[_colObj.length -1 ]; //max object
 	}
+	public double getCount() {
+		return count; 
+	}
+	public double getUniqCount() {
+		return uniqCount; 
+	}
 	public double rangeObject () {
 		if (_colObj[0] instanceof Number && _colObj[_colObj.length -1 ] instanceof Number) {
 			return ((Number)(_colObj[_colObj.length -1 ])).doubleValue() - ((Number)(_colObj[0])).doubleValue();
@@ -178,6 +185,7 @@ public class StatisticalAnalysis {
 	private void fillDataIntoTable() {
 
 		range_t.addFillRow(new String[] { "Total Record Count", String.valueOf(count) });
+		range_t.addFillRow(new String[] { "Unique Record Count", String.valueOf(uniqCount) });
 		range_t.addFillRow(new String[] { "Maximum Value ",
 				String.valueOf(_colObj[_colObj.length - 1]) });
 		range_t.addFillRow(new String[] { "Minimum Value ",

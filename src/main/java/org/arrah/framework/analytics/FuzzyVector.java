@@ -28,7 +28,7 @@ public class FuzzyVector extends java.util.Vector<Object> {
 		 * @param <T>
 		 * 
 		 */
-	<T> FuzzyVector (Vector<T> parentC) {
+	public <T> FuzzyVector (Vector<T> parentC) {
 			super(parentC);
 			
 	}
