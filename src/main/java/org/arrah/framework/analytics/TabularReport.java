@@ -140,11 +140,8 @@ public class TabularReport  {
 						} else {
 							System.out.println("\n Value is not Number");
 						}
-					}		
-						
+					}			
 				}
-				
-				
 			} // End of updating existing row
 
 		} // End of For loop
