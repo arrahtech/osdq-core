@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.Vector;
 
 import org.arrah.framework.rdbms.QueryBuilder;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 
 public class FirstInformation {
 	private static String minVal = "";
@@ -44,14 +44,14 @@ public class FirstInformation {
 		double d5 = 0.0D;
 		Object obj = null;
 		try {
-			Rdbms_conn.openConn();
+			Rdbms_NewConn.get().openConn();
 		} catch (SQLException sqlexception) {
 			System.out.println("\n Error: Could not open Connection");
 			return null;
 		}
 		try {
 			ResultSet resultset;
-			for (resultset = Rdbms_conn.runQuery(s); resultset.next();)
+			for (resultset = Rdbms_NewConn.get().runQuery(s); resultset.next();)
 				d = resultset.getDouble("row_count");
 
 			resultset.close();
@@ -60,7 +60,7 @@ public class FirstInformation {
 		}
 		try {
 			ResultSet resultset1;
-			for (resultset1 = Rdbms_conn.runQuery(s1); resultset1.next();)
+			for (resultset1 = Rdbms_NewConn.get().runQuery(s1); resultset1.next();)
 				d1 = resultset1.getDouble("row_count");
 
 			resultset1.close();
@@ -69,7 +69,7 @@ public class FirstInformation {
 		}
 		try {
 			ResultSet resultset2;
-			for (resultset2 = Rdbms_conn.runQuery(s2); resultset2.next();)
+			for (resultset2 = Rdbms_NewConn.get().runQuery(s2); resultset2.next();)
 				d2 = resultset2.getDouble("equal_count");
 
 			resultset2.close();
@@ -78,7 +78,7 @@ public class FirstInformation {
 		}
 		try {
 			ResultSet resultset3;
-			for (resultset3 = Rdbms_conn.runQuery(s5); resultset3.next();)
+			for (resultset3 = Rdbms_NewConn.get().runQuery(s5); resultset3.next();)
 				d5 = resultset3.getDouble("row_count");
 
 			resultset3.close();
@@ -86,7 +86,7 @@ public class FirstInformation {
 			d5 = -1D;
 		}
 		try {
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException sqlexception5) {
 			System.out.println("\n Warning: Could not close Connection");
 		}
@@ -100,9 +100,9 @@ public class FirstInformation {
 		avector[0] = new Vector<String>();
 		avector[1] = new Vector<Double>();
 		try {
-			Rdbms_conn.openConn();
+			Rdbms_NewConn.get().openConn();
 			ResultSet resultset;
-			resultset = Rdbms_conn.runQuery(s);
+			resultset = Rdbms_NewConn.get().runQuery(s);
 			if (resultset == null)
 				return null;
 			while (resultset.next()) {
@@ -116,7 +116,7 @@ public class FirstInformation {
 			}
 			if (resultset != null)
 				resultset.close();
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException sqlexception) {
 		  System.out.println("Warning:"+sqlexception.getMessage());
 			throw new Exception("\n Warning: Could not Get Pattern Information");
@@ -138,9 +138,9 @@ public class FirstInformation {
 		double d;
 		d = 0.0D;
 		try {
-			Rdbms_conn.openConn();
+			Rdbms_NewConn.get().openConn();
 			ResultSet resultset;
-			for (resultset = Rdbms_conn.runQuery(s1); resultset.next();)
+			for (resultset = Rdbms_NewConn.get().runQuery(s1); resultset.next();)
 				d = resultset.getDouble("row_count");
 
 			resultset.close();
@@ -151,7 +151,7 @@ public class FirstInformation {
 			double d2 = 0.0D;
 			double d3 = 0.0D;
 			ResultSet resultset1;
-			for (resultset1 = Rdbms_conn.runQuery(s); resultset1.next();) {
+			for (resultset1 = Rdbms_NewConn.get().runQuery(s); resultset1.next();) {
 				d--;
 				if (d1 < 1.0D) {
 					double d4 = resultset1.getDouble("row_count");
@@ -184,7 +184,7 @@ public class FirstInformation {
 			}
 
 			resultset1.close();
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException sqlexception) {
 			System.out
 					.println("\n Error: Could not Get Distribution Information");

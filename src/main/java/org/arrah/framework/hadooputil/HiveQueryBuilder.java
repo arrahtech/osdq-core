@@ -24,7 +24,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.arrah.framework.rdbms.QueryBuilder;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 
 
 public class HiveQueryBuilder extends QueryBuilder {
@@ -118,7 +118,7 @@ public class HiveQueryBuilder extends QueryBuilder {
 				s1C = s1C.replace(";",","); // (Col1;Col2) (Col1,Col2)
 				// for Informix CONSTRAINT KEY WORD IS not needed for primary key and the 
 				// options in GUI
-				if(Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("Informix") == 0 ){
+				if(Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("Informix") == 0 ){
 					if (strrC == null || "".equals(strrC)) 
 						strrC = s1C;
 					else 
@@ -225,7 +225,7 @@ public class HiveQueryBuilder extends QueryBuilder {
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& _dtype.compareToIgnoreCase("informix") != 0 
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) 
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) 
 			{
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";

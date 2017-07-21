@@ -35,7 +35,6 @@ import java.util.Vector;
 
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_NewConn;
-import org.arrah.framework.rdbms.Rdbms_conn;
 
 public class ResultsetToRTM {
 
@@ -369,32 +368,32 @@ public class ResultsetToRTM {
 					boolean match) throws SQLException  {
 		
 		ReportTableModel rtm = null;
-		Vector<?> avector[] = Rdbms_conn.populateColumn(lTable,null);
+		Vector<?> avector[] = Rdbms_NewConn.get().populateColumn(lTable,null);
 		QueryBuilder qb = new QueryBuilder(
-				Rdbms_conn.getHValue("Database_DSN"), lTable,
-				Rdbms_conn.getDBType());
+				Rdbms_NewConn.get().getHValue("Database_DSN"), lTable,
+				Rdbms_NewConn.get().getDBType());
 		String s1 = qb.get_selCol_query(avector[0].toArray(),"");
 		
-		Rdbms_conn.openConn();
-		ResultSet resultset = Rdbms_conn.runQuery(s1); 
+		Rdbms_NewConn.get().openConn();
+		ResultSet resultset = Rdbms_NewConn.get().runQuery(s1); 
 		Vector<BigInteger> hashNumber = ResultsetToRTM.getMD5Value(resultset);
 		resultset.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		
 		// Query to another table
 
-		Rdbms_NewConn newConn = new Rdbms_NewConn(newDBParam);
+		Rdbms_NewConn.init(newDBParam);
 		qb = new QueryBuilder(
-				newConn.getHValue("Database_DSN"), rtable,
-				newConn.getDBType());
-		Vector<?> avectorR[] = newConn.populateColumn(rtable,null);
+		    Rdbms_NewConn.get().getHValue("Database_DSN"), rtable,
+		    Rdbms_NewConn.get().getDBType());
+		Vector<?> avectorR[] = Rdbms_NewConn.get().populateColumn(rtable,null);
 		s1 = qb.get_selCol_query(avectorR[0].toArray(),"");
 		
-		if ( newConn.openConn() == true ) {
-			ResultSet resultset_new = newConn.runQuery(s1);
+		if (Rdbms_NewConn.get().openConn()) {
+			ResultSet resultset_new = Rdbms_NewConn.get().runQuery(s1);
 			rtm = ResultsetToRTM.matchMD5Value(resultset_new,hashNumber,match);
 			resultset_new.close();
-			newConn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 			
 		}
 		return rtm;

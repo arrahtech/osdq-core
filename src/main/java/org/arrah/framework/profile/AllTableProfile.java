@@ -25,7 +25,7 @@ import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 
 public class AllTableProfile {
 	private ReportTableModel __rt = new ReportTableModel(new String[] {
@@ -46,16 +46,16 @@ public class AllTableProfile {
 		Vector<String> vc = new Vector<String>(); // For table
 
 		// Open the connection
-		Rdbms_conn.openConn();
-		DatabaseMetaData dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		DatabaseMetaData dbmd = Rdbms_NewConn.get().getMetaData();
 
 		// Get the metaDataSet
-		String s_pattern = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String t_pattern = Rdbms_conn.getHValue("Database_TablePattern");
-		String t_type = Rdbms_conn.getHValue("Database_TableType");
-		String n_catalog = Rdbms_conn.getHValue("Database_Catalog");
+		String s_pattern = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String t_pattern = Rdbms_NewConn.get().getHValue("Database_TablePattern");
+		String t_type = Rdbms_NewConn.get().getHValue("Database_TableType");
+		String n_catalog = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		n_catalog = ""; // Oracle ODBC does not support
-		String d_dsn = Rdbms_conn.getHValue("Database_DSN");
+		String d_dsn = Rdbms_NewConn.get().getHValue("Database_DSN");
 
 		// Add table names here
 		// TODO - need to make it multi threaded
@@ -74,7 +74,7 @@ public class AllTableProfile {
 		} // MS SQL Does not support multiple query
 		rs.close();
 		// Add count to top
-		String dbType = Rdbms_conn.getDBType();
+		String dbType = Rdbms_NewConn.get().getDBType();
 
 		ResultSet rs_col;
 		Vector<String> vc_c;
@@ -114,7 +114,7 @@ public class AllTableProfile {
 				pattern_c = c_prof.get_pattern_query();
 
 				try {
-					rs_col = Rdbms_conn.runQuery(all_c);
+					rs_col = Rdbms_NewConn.get().runQuery(all_c);
 					while (rs_col.next()) {
 						all_v = rs_col.getString("row_count");
 					}
@@ -124,7 +124,7 @@ public class AllTableProfile {
 				}
 
 				try {
-					rs_col = Rdbms_conn.runQuery(dist_c);
+					rs_col = Rdbms_NewConn.get().runQuery(dist_c);
 					while (rs_col.next()) {
 						dist_v = rs_col.getString("row_count");
 					}
@@ -133,7 +133,7 @@ public class AllTableProfile {
 					dist_v = "N/A";
 				}
 				try {
-					rs_col = Rdbms_conn.runQuery(null_c);
+					rs_col = Rdbms_NewConn.get().runQuery(null_c);
 					while (rs_col.next()) {
 						null_v = rs_col.getString("equal_count");
 					}
@@ -142,7 +142,7 @@ public class AllTableProfile {
 					null_v = "N/A";
 				}
 				try {
-					rs_col = Rdbms_conn.runQuery(zero_c);
+					rs_col = Rdbms_NewConn.get().runQuery(zero_c);
 					while (rs_col.next()) {
 						zero_v = rs_col.getString("equal_count");
 					}
@@ -151,7 +151,7 @@ public class AllTableProfile {
 					zero_v = "N/A";
 				}
 				try {
-					rs_col = Rdbms_conn.runQuery(empty_c);
+					rs_col = Rdbms_NewConn.get().runQuery(empty_c);
 					while (rs_col.next()) {
 						empty_v = rs_col.getString("equal_count");
 					}
@@ -160,7 +160,7 @@ public class AllTableProfile {
 					empty_v = "N/A";
 				}
 				try {
-					rs_col = Rdbms_conn.runQuery(pattern_c);
+					rs_col = Rdbms_NewConn.get().runQuery(pattern_c);
 					while (rs_col.next()) {
 						pattern_v = rs_col.getString("row_count");
 					}
@@ -174,7 +174,7 @@ public class AllTableProfile {
 				__rt.addFillRow(row);
 			} // Close column
 		} // Close table
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 	}
 
 	public ReportTableModel getTable() {

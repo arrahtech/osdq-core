@@ -53,14 +53,14 @@ public class QueryBuilder {
 				&& _dtype.compareToIgnoreCase("informix") != 0 
 				&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 				&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
+						Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
 		{
 			if (!_table.startsWith("\""))
 				_table = "\"" + _table + "\"";
 			if (!_column.startsWith("\""))
 				_column = "\"" + _column + "\"";
 		}
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		if (!(cat == null || "".equals(cat)))
 			_table = cat + "." + _table;
 	}
@@ -76,12 +76,12 @@ public class QueryBuilder {
 			    && _dtype.compareToIgnoreCase("Informix") != 0 
 				&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 			    && !(_dtype.compareToIgnoreCase("Others") == 0 && 
-						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
+						Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) )
 		{
 			if (!_table.startsWith("\""))
 				_table = "\"" + _table + "\"";
 		}
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		if (!(cat == null || "".equals(cat)))
 			_table = cat + "." + _table;
 	}
@@ -101,14 +101,14 @@ public class QueryBuilder {
 				&& _dtype.compareToIgnoreCase("informix") != 0
 				&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 				&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) ) 
+						Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ) ) 
 		{
 			if (!_table1.startsWith("\""))
 				_table1 = "\"" + _table1 + "\"";
 			if (!_column1.startsWith("\""))
 				_column1 = "\"" + _column1 + "\"";
 		}
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		if (!(cat == null || "".equals(cat)))
 			_table1 = cat + "." + _table1;
 	}
@@ -981,7 +981,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(j) + "\" LIKE \'%"
 						+ searchS + "%\' OR ";
 			else
@@ -1004,7 +1004,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
 						+ "\" LIKE \'%" + searchS + "%\'";
 			else
@@ -1043,7 +1043,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector.elementAt(j) + "\" LIKE \'%"
 						+ searchS + "%\' OR ";
 			else
@@ -1066,7 +1066,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector.elementAt(avector.size() - 1)
 						+ "\" LIKE \'%" + searchS + "%\'";
 			else
@@ -1087,7 +1087,7 @@ public class QueryBuilder {
 	public String get_tb_value(boolean isOrd) {
 		String table = _table.charAt(0) == '"' ? _table.replaceAll("\"", "")
 				: _table;
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 					
 		if (!(cat == null || "".equals(cat)) && cat.charAt(0)=='"') {
 				table = table.substring(cat.length()-1); //strip cat
@@ -1096,7 +1096,7 @@ public class QueryBuilder {
 				table = table.charAt(0) == '"' ? table.replaceAll("\"", "") : table;
 		}
 		
-		Vector<String> vector = Rdbms_conn.getTable(); // this will be without catalog append.
+		Vector<String> vector = Rdbms_NewConn.get().getTable(); // this will be without catalog append.
 		int i = vector.indexOf(table);
 
 		Vector<?> avector[] = null;
@@ -1110,7 +1110,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(j) + "\"" + ",";
 			else
 				columns += avector[0].elementAt(j) + ",";
@@ -1121,7 +1121,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
 				columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
 						+ "\"";
 			else
@@ -1140,7 +1140,7 @@ public class QueryBuilder {
 	public String[] get_mapping_query(Hashtable<String, Vector<String>> tb,
 			Vector<String> tableV) {
 		String[] map_query = new String[tb.size()];
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		int index = 0;
 
 		for (Enumeration<String> e = tb.keys(); e.hasMoreElements(); index++) {
@@ -1157,7 +1157,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!table.startsWith("\""))
 					table = "\"" + table + "\"";
 			}
@@ -1171,7 +1171,7 @@ public class QueryBuilder {
 						&& _dtype.compareToIgnoreCase("informix") != 0
 						&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 						&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-								Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+								Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 					if (!col.startsWith("\""))
 						col = "\"" + col + "\"";
 				}
@@ -1189,7 +1189,7 @@ public class QueryBuilder {
 	public Vector<String> get_synch_mapping_query(Vector<String> table_s,
 			Vector<String> column_s) {
 		Vector<String> synch_map_query = new Vector<String>();
-		String cat = Rdbms_conn.getHValue("Database_Catalog");
+		String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
 
 		for (int index = 0; index < table_s.size(); index++) {
 			String table = table_s.get(index);
@@ -1200,7 +1200,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!table.startsWith("\""))
 					table = "\"" + table + "\"";
 			}
@@ -1212,7 +1212,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!col.startsWith("\""))
 					col = "\"" + col + "\"";
 			}
@@ -1235,7 +1235,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";
 			}
@@ -1266,7 +1266,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";
 			}
@@ -1303,7 +1303,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!column.startsWith("\""))
 					column = "\"" + column + "\"";
 			}
@@ -1328,7 +1328,7 @@ public class QueryBuilder {
 					&& _dtype.compareToIgnoreCase("informix") != 0
 					&& _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
 					&& !(_dtype.compareToIgnoreCase("Others") == 0 && 
-							Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
+							Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 )) {
 				if (!colN.startsWith("\""))
 					colN = "\"" + colN + "\"";
 			}
@@ -1348,7 +1348,7 @@ public class QueryBuilder {
                   boolean isLeft) {
            
            String table =" ";
-           String cat = Rdbms_conn.getHValue("Database_Catalog");
+           String cat = Rdbms_NewConn.get().getHValue("Database_Catalog");
            
            if (_table.equals(_table1) == false && isLeft == false){
            table = _table1.charAt(0) == '"' ? _table1.replaceAll("\"", "")
@@ -1367,7 +1367,7 @@ public class QueryBuilder {
                         table = table.charAt(0) == '"' ? table.replaceAll("\"", "") : table;
            }
            
-           Vector<String> vector = Rdbms_conn.getTable(); // this will be without catalog append.
+           Vector<String> vector = Rdbms_NewConn.get().getTable(); // this will be without catalog append.
            int i = vector.indexOf(table);
 
            Vector<?> avector[] = null;
@@ -1381,7 +1381,7 @@ public class QueryBuilder {
                 		  && _dtype.compareToIgnoreCase("informix") != 0
                 		  && _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
                 		  && !(_dtype.compareToIgnoreCase("Others") == 0 && 
-          						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+          						Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
                         columns += "\"" + avector[0].elementAt(j) + "\"" + ",";
                   else
                         columns += avector[0].elementAt(j) + ",";
@@ -1392,7 +1392,7 @@ public class QueryBuilder {
                 		  && _dtype.compareToIgnoreCase("informix") != 0
                 		  && _dtype.compareToIgnoreCase("ms_access_jdbc") != 0
                 		  && !(_dtype.compareToIgnoreCase("Others") == 0 && 
-          						Rdbms_conn.getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
+          						Rdbms_NewConn.get().getHValue("Database_SupportQuote").compareToIgnoreCase("NO") ==0 ))
                         columns += "\"" + avector[0].elementAt(avector[0].size() - 1)
                                       + "\"";
                   else
@@ -1725,8 +1725,8 @@ public class QueryBuilder {
     	ResultSet rs = null;
     	
         try {
-        	dbmsConn = new Rdbms_NewConn(dbDetails);
-            dbmsConn.openConn();
+        	  Rdbms_NewConn.init(dbDetails);
+        	  Rdbms_NewConn.get().openConn();
             System.out.println("Connected to " + dbDetails.get("Database_ConnName"));
             DatabaseMetaData md = dbmsConn.getMetaData();
             rs = md.getTables(null, null, "%", null);
@@ -1749,7 +1749,8 @@ public class QueryBuilder {
     	ResultSet rsCol = null;
     	
         try {
-        	dbmsConn = new Rdbms_NewConn(dbDetails);
+        	  Rdbms_NewConn.init(dbDetails);
+        	  dbmsConn = Rdbms_NewConn.get();
 
             dbmsConn.openConn();
 

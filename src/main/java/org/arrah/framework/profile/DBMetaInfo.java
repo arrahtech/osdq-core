@@ -24,7 +24,6 @@ import java.util.Vector;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_NewConn;
-import org.arrah.framework.rdbms.Rdbms_conn;
 import org.arrah.framework.rdbms.SqlType;
 import org.arrah.framework.rdbms.TableRelationInfo;
 
@@ -45,8 +44,8 @@ public class DBMetaInfo {
 	}
 	
 	public ReportTableModel getGeneralInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 
 		rtm__ = new ReportTableModel(new String[] { "Property", "Value" });
 		try {
@@ -209,13 +208,13 @@ public class DBMetaInfo {
 					!flag13 ? "NO" : "YES" });
 		} catch (UnsupportedOperationException unsupportedoperationexception26) {
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getSupportInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 		rtm__ = new ReportTableModel(new String[] { "Property", "Support" });
 		try {
 			boolean flag14 = dbmd.supportsAlterTableWithAddColumn();
@@ -506,13 +505,13 @@ public class DBMetaInfo {
 					!flag55 ? "NO" : "YES" });
 		} catch (UnsupportedOperationException unsupportedoperationexception68) {
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getLimitationInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 		rtm__ = new ReportTableModel(new String[] { "Property", "Value" });
 		rtm__.addFillRow(new String[] { "",
 				"Value of \"0\" means Undefined or Unlimited" });
@@ -575,13 +574,13 @@ public class DBMetaInfo {
 		int i8 = dbmd.getMaxUserNameLength();
 		rtm__.addFillRow(new String[] { "Maximum User Name Length",
 				String.valueOf(i8) });
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getFunctionInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 
 		String as[] = null;
 		String as1[] = null;
@@ -643,13 +642,13 @@ public class DBMetaInfo {
 			if (as4[j6].compareTo("") != 0)
 				rtm__.setValueAt(as4[j6], j6, 4);
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getCatalogInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 		rtm__ = new ReportTableModel(new String[] { "Index", "Catalog" });
 		ResultSet resultset = dbmd.getCatalogs();
 		int k = 0;
@@ -661,13 +660,13 @@ public class DBMetaInfo {
 				rtm__.addFillRow(new String[] { "" + ++k, s21 });
 		} while (true);
 		resultset.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getStandardSQLInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 		rtm__ = new ReportTableModel(
 				new String[] { "Name", "Data_Type", "Precision", "Prefix",
 						"Suffix", "Param", "Nullable", "Case Sensitive",
@@ -731,13 +730,13 @@ public class DBMetaInfo {
 					s82, s86 });
 		}
 		resultset1.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getUserSQLInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 		rtm__ = new ReportTableModel(new String[] { "Name", "Class",
 				"Data_Type", "Base_Type", "Remark", "Category", "Schema" });
 		ResultSet resultset2;
@@ -772,13 +771,13 @@ public class DBMetaInfo {
 			as6 = (new String[] { s28, s33, s44, s56, s49, s16, s23 });
 		}
 		resultset2.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getSchemaInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 		rtm__ = new ReportTableModel(new String[] { "Index", "Schema" });
 		ResultSet resultset3 = dbmd.getSchemas();
 		int l = 0;
@@ -790,15 +789,15 @@ public class DBMetaInfo {
 				rtm__.addFillRow(new String[] { "" + ++l, s24 });
 		} while (true);
 		resultset3.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getParameterInfo() throws SQLException {
 		
 		if (_newConn == null ) {
-			Rdbms_conn.openConn();
-			dbmd = Rdbms_conn.getMetaData();
+			Rdbms_NewConn.get().openConn();
+			dbmd = Rdbms_NewConn.get().getMetaData();
 		} else {
 			_newConn.openConn();
 			dbmd = _newConn.getMetaData();
@@ -870,7 +869,7 @@ public class DBMetaInfo {
 		if (resultset5 != null)
 			resultset5.close();
 		if (_newConn == null ) 
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		else 
 			_newConn.closeConn();
 		return rtm__;
@@ -878,8 +877,8 @@ public class DBMetaInfo {
 
 	public ReportTableModel getProcedureInfo() throws SQLException {
 		if (_newConn == null ) {
-			Rdbms_conn.openConn();
-			dbmd = Rdbms_conn.getMetaData();
+			Rdbms_NewConn.get().openConn();
+			dbmd = Rdbms_NewConn.get().getMetaData();
 		} else {
 			_newConn.openConn();
 			dbmd = _newConn.getMetaData();
@@ -918,31 +917,31 @@ public class DBMetaInfo {
 		}
 		resultset4.close();
 		if (_newConn == null ) 
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		else 
 			_newConn.closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getTableModelInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 
 		hashtable = new Hashtable<String, TableRelationInfo>();
 		hashtable1 = new Hashtable<String, TableRelationInfo>();
 		hashtable2 = new Hashtable<String, TableRelationInfo>();
-		String s13 = Rdbms_conn.getHValue("Database_Catalog");
+		String s13 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s13 = "";
-		String s19 = Rdbms_conn.getHValue("Database_SchemaPattern");
+		String s19 = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
 		s13 = s13.compareTo("") != 0 ? s13 : null;
 		s19 = s19.compareTo("") != 0 ? s19 : null;
-		Vector<String> vector = Rdbms_conn.getTable();
+		Vector<String> vector = Rdbms_NewConn.get().getTable();
 		int l1 = vector.size();
 		for (int j2 = 0; j2 < l1; j2++) {
 			String s39 = (String) vector.elementAt(j2);
 			try {
 				TableRelationInfo TableRelationInfo = new TableRelationInfo(s39);
-				if (Rdbms_conn.getDBType().compareToIgnoreCase("ms_access") == 0) {
+				if (Rdbms_NewConn.get().getDBType().compareToIgnoreCase("ms_access") == 0) {
 					ResultSet resultset9 = dbmd.getIndexInfo(s13, s19, s39,
 							false, true);
 					do {
@@ -1040,16 +1039,16 @@ public class DBMetaInfo {
 				continue;
 			}
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getTableMetaData(String tb_pattern)
 			throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
-		String s14 = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s20 = Rdbms_conn.getHValue("Database_Catalog");
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
+		String s14 = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s20 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s20 = "";
 		int j1 = 0;
 		String s31 = tb_pattern;
@@ -1089,17 +1088,17 @@ public class DBMetaInfo {
 					.println("Table does not Exist \n Or You might not have permission to run query on this table");
 			return rtm__;
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getTablePrivilege(String tb_pattern)
 			throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
 
-		String s14 = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s20 = Rdbms_conn.getHValue("Database_Catalog");
+		String s14 = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s20 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s20 = "";
 		int j1 = 0;
 		String s31 = tb_pattern;
@@ -1130,16 +1129,16 @@ public class DBMetaInfo {
 					.println("Table does not Exist \n Or You might not have permisson to run query on this table");
 			return rtm__;
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
 	public ReportTableModel getColumnPrivilege(String tb_pattern)
 			throws SQLException {
-		Rdbms_conn.openConn();
-		dbmd = Rdbms_conn.getMetaData();
-		String s14 = Rdbms_conn.getHValue("Database_SchemaPattern");
-		String s20 = Rdbms_conn.getHValue("Database_Catalog");
+		Rdbms_NewConn.get().openConn();
+		dbmd = Rdbms_NewConn.get().getMetaData();
+		String s14 = Rdbms_NewConn.get().getHValue("Database_SchemaPattern");
+		String s20 = Rdbms_NewConn.get().getHValue("Database_Catalog");
 		s20 = "";
 		int j1 = 0;
 		rtm__ = new ReportTableModel(new String[] { "Table", "Column",
@@ -1168,7 +1167,7 @@ public class DBMetaInfo {
 					.println("Table does not Exist \n Or You might not have permission to run query on this Table's column");
 			return rtm__;
 		}
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return rtm__;
 	}
 
@@ -1186,7 +1185,7 @@ public class DBMetaInfo {
 
 	synchronized public static ReportTableModel queryDB(final String query) {
 		
-		final Vector<String> table = Rdbms_conn.getTable();
+		final Vector<String> table = Rdbms_NewConn.get().getTable();
 		
 		final int[] vc = new int[table.size()];
 		ReportTableModel _rt = new ReportTableModel(new String[] { "Count",
@@ -1194,22 +1193,22 @@ public class DBMetaInfo {
 		for (int i = 0; i < table.size(); i++) {
 			final int index = i;
 			QueryBuilder qb = new QueryBuilder(
-					Rdbms_conn.getHValue("Database_DSN"), table.get(index)
-							.toString(), Rdbms_conn.getDBType());
+					Rdbms_NewConn.get().getHValue("Database_DSN"), table.get(index)
+							.toString(), Rdbms_NewConn.get().getDBType());
 			final String toQuery = qb.get_like_table(query, index, true);
 			if (toQuery == null || "".equals(toQuery)) continue;
 			
 			try {	
-				synchronized (Rdbms_conn.class) {
-				Rdbms_conn.openConn();
-				ResultSet rs = Rdbms_conn.runQuery(toQuery);
+				synchronized (Rdbms_NewConn.class) {
+				Rdbms_NewConn.get().openConn();
+				ResultSet rs = Rdbms_NewConn.get().runQuery(toQuery);
 				
 				while (rs.next()) {
 					int c = rs.getInt(1);
 					vc[index] = c;
 				}
 				 rs.close();
-				 Rdbms_conn.closeConn();  //  Other thread might have closed it
+				 Rdbms_NewConn.get().closeConn();  //  Other thread might have closed it
 				}
 			} catch (SQLException ee) {
 				System.out.println("\n ResultSet SQL Error :" + ee.getMessage());
@@ -1217,7 +1216,7 @@ public class DBMetaInfo {
 			}
 		}
 		try {
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException ee) {
 			System.out.println("\n SQL Error:" + ee.getMessage());
 		}
@@ -1230,8 +1229,8 @@ public class DBMetaInfo {
 		return _rt;
 	}
 	public static Vector<String> getDataTypeInfo() throws SQLException {
-		Rdbms_conn.openConn();
-		DatabaseMetaData dbmd = Rdbms_conn.getMetaData();
+		Rdbms_NewConn.get().openConn();
+		DatabaseMetaData dbmd = Rdbms_NewConn.get().getMetaData();
 		
 		Vector<String> dataTypeName = new Vector<String>();
 		ResultSet resultset1;
@@ -1240,7 +1239,7 @@ public class DBMetaInfo {
 			dataTypeName.add(s15);
 		}
 		resultset1.close();
-		Rdbms_conn.closeConn();
+		Rdbms_NewConn.get().closeConn();
 		return dataTypeName;
 	}
 }

@@ -34,6 +34,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class Rdbms_NewConn {
+  
 	private  Connection conn;
 	private  String _d_type = "";
 	private  String _d_dsn = "";
@@ -46,8 +47,31 @@ public class Rdbms_NewConn {
 	private  Vector<String> table_v;
 	private  Vector<String> tableDesc_v;
 
-	public Rdbms_NewConn(Hashtable<String, String> hashtable) throws SQLException {
-		init(hashtable);
+	private Rdbms_NewConn(Hashtable<String, String> hashtable) throws SQLException {
+		load(hashtable);
+	}
+	
+	private static Rdbms_NewConn rdbms_NewConn;
+	
+	/**
+	 * This function should be called first before using connection object
+	 * 
+	 * @param hashtable
+	 * @throws SQLException
+	 */
+	public static void init(Hashtable<String, String> hashtable) throws SQLException {
+	  if (rdbms_NewConn == null) {
+	    rdbms_NewConn = new Rdbms_NewConn(hashtable);
+	  }
+	}
+ 	
+	public static Rdbms_NewConn get() {
+	    if (rdbms_NewConn != null) {
+	      return rdbms_NewConn;
+	    } else {
+	      System.out.println("It seems rdbms connection is not initialized, call init() first");
+	      throw new RuntimeException("Rdbms object not initialized");
+	    }
 	}
 
 	public boolean openConn() throws SQLException {
@@ -92,6 +116,10 @@ public class Rdbms_NewConn {
 			return false;
 		}
 		return true;
+	}
+	
+	public Connection getConnection() {
+	  return conn;
 	}
 
 	public  DatabaseMetaData getMetaData() throws SQLException {
@@ -243,7 +271,7 @@ public class Rdbms_NewConn {
 			return null;
 	}
 
-	private void init(Hashtable<String, String> hashtable)
+	private void load(Hashtable<String, String> hashtable)
 			throws SQLException {
 		if (hashtable == null || hashtable.isEmpty() == true) {
 			System.err.println("Database information can not be filled");

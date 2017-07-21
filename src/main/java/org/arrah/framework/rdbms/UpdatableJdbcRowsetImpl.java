@@ -407,7 +407,7 @@ public class UpdatableJdbcRowsetImpl extends BaseRowSet
         this.conn.setTypeMap(localMap);
       }
       // Only change here for updatable rowset - Arrah for teiid
-      if ( Rdbms_conn.getHValue("Database_Type") != null && Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("teiid") == 0)
+      if ( Rdbms_NewConn.get().getHValue("Database_Type") != null && Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("teiid") == 0)
         	this.ps = this.conn.prepareStatement(getCommand(), ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
   		else
   			this.ps = this.conn.prepareStatement(getCommand(), ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);

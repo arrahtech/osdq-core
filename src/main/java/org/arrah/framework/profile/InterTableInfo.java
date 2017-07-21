@@ -25,7 +25,7 @@ import java.util.Vector;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.JDBCRowset;
 import org.arrah.framework.rdbms.QueryBuilder;
-import org.arrah.framework.rdbms.Rdbms_conn;
+import org.arrah.framework.rdbms.Rdbms_NewConn;
 
 public class InterTableInfo {
 
@@ -33,16 +33,16 @@ public class InterTableInfo {
 			String table2, String col2, byte multiple, int mX) {
 
 		QueryBuilder qb = new QueryBuilder(
-				Rdbms_conn.getHValue("Database_DSN"), table1, col1,
-				Rdbms_conn.getDBType());
+				Rdbms_NewConn.get().getHValue("Database_DSN"), table1, col1,
+				Rdbms_NewConn.get().getDBType());
 		qb.setCTableCol(table2, col2);
 		String q1 = qb.get_match_count(multiple, mX);
 		String st[] = new String[6];
 
 		try {
-			Rdbms_conn.openConn();
+			Rdbms_NewConn.get().openConn();
 
-			ResultSet rs = Rdbms_conn.runQuery(q1);
+			ResultSet rs = Rdbms_NewConn.get().runQuery(q1);
 			while (rs.next()) {
 				String row_count = rs.getString("row_count");
 				st[0] = row_count;
@@ -53,7 +53,7 @@ public class InterTableInfo {
 			rs.close();
 
 			q1 = qb.get_nullCount_query_w("Null");
-			rs = Rdbms_conn.runQuery(q1);
+			rs = Rdbms_NewConn.get().runQuery(q1);
 			while (rs.next()) {
 				String null_count = rs.getString("equal_count");
 				st[1] = null_count;
@@ -61,18 +61,18 @@ public class InterTableInfo {
 			rs.close();
 
 			q1 = qb.count_query_w(true, "row_count");
-			rs = Rdbms_conn.runQuery(q1);
+			rs = Rdbms_NewConn.get().runQuery(q1);
 			while (rs.next()) {
 				String row_count = rs.getString("row_count");
 				st[2] = row_count;
 			}
 			rs.close();
 
-			qb = new QueryBuilder(Rdbms_conn.getHValue("Database_DSN"), table2,
-					col2, Rdbms_conn.getDBType());
+			qb = new QueryBuilder(Rdbms_NewConn.get().getHValue("Database_DSN"), table2,
+					col2, Rdbms_NewConn.get().getDBType());
 
 			q1 = qb.get_nullCount_query_w("Null");
-			rs = Rdbms_conn.runQuery(q1);
+			rs = Rdbms_NewConn.get().runQuery(q1);
 			while (rs.next()) {
 				String null_count = rs.getString("equal_count");
 				st[4] = null_count;
@@ -80,14 +80,14 @@ public class InterTableInfo {
 			rs.close();
 
 			q1 = qb.count_query_w(false, "row_count");
-			rs = Rdbms_conn.runQuery(q1);
+			rs = Rdbms_NewConn.get().runQuery(q1);
 			while (rs.next()) {
 				String row_count = rs.getString("row_count");
 				st[5] = row_count;
 			}
 			rs.close();
 
-			Rdbms_conn.closeConn();
+			Rdbms_NewConn.get().closeConn();
 		} catch (SQLException e) {
 			System.out.println("\n match count execution failed");
 			System.out.println(e.getMessage());
@@ -106,7 +106,7 @@ public class InterTableInfo {
 		final int count = _rt.getModel().getRowCount();
 		
 		// This method is not supported for hive
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") == 0 ) {
 			throw new Exception("\n Load Query is not supported for Hive Data Storage");
 		} else {
 
@@ -200,7 +200,7 @@ public class InterTableInfo {
 		Thread[] tid = new Thread[query.length];
 		
 		// Hive Thrift server has issues with Multi-threaded programme
-		if (Rdbms_conn.getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
+		if (Rdbms_NewConn.get().getHValue("Database_Type").compareToIgnoreCase("hive") != 0 ) {
 
 		for (int qindex = 0; qindex < query.length; qindex++) {
 			final int cIndex = qindex;
