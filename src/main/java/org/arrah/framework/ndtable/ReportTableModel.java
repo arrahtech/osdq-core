@@ -491,7 +491,8 @@ public class ReportTableModel implements Serializable, Cloneable {
 			Object colv = this.getModel().getValueAt(i, index);
 			if (colv == null || "".equals(colv.toString())) continue; // Null, empty skipped
 			if (colv instanceof Number)
-				vc.add(((Double) colv).doubleValue());
+				//vc.add(((Double) colv).doubleValue());
+				vc.add(((Number)colv).doubleValue());
 			else if (colv instanceof String) {
 				try {
 					double newv = Double.parseDouble(colv.toString());
