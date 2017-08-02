@@ -1,4 +1,8 @@
-OSDQ Core v6.2.0
+<<<<<<< HEAD
+OSDQ Core v6.2.2
+=======
+OSDQ Core v6.2.1
+>>>>>>> cb8beda98438b3d419041cd4c2fe50a6009f84fe
 =========================
 
 This is the core osdq library, the OSDQ-Desktop and OSDQ-Web is built on top of it. 

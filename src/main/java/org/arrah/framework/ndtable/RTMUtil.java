@@ -34,6 +34,7 @@ import net.sourceforge.openforecast.DataSet;
 import org.apache.lucene.document.Document;
 // import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
+import org.arrah.framework.analytics.FuzzyVector;
 import org.arrah.framework.dataquality.SimilarityCheckLucene;
 import org.arrah.framework.dataquality.SimilarityCheckLucene.Hits;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
@@ -61,7 +62,7 @@ public class RTMUtil {
      * It will join two tables based on two column Indexes
      */
     public static ReportTableModel joinTables(ReportTableModel leftT,
-                                              int indexL, ReportTableModel rightT, int indexR, int joinType) {
+                                              int indexL, ReportTableModel rightT, int indexR, int joinType, float distance) {
 
         Vector<Object> lvc = new Vector<Object>();
         Vector<Object> rvc = new Vector<Object>();
@@ -81,13 +82,21 @@ public class RTMUtil {
                 continue;
             leftT.addColumn(rightT.getModel().getColumnName(i));
         }
-
-
-        switch (joinType) {
-            case 0: // Left Outer Join with Cardinality 1:1 is default
+        
+        // Need Fuzzy Vector
+        FuzzyVector fz = null;
+        if (joinType == 4 || joinType == 5 || joinType == 6) {
+        	fz = new FuzzyVector(rvc);
+        }
+        switch (joinType) { 
+            case 0: case 4: // (Fuzzy) Left Outer Join with Cardinality 1:1 is default
 
                 for (int i = 0; i < lrow_c; i++) {
-                    int i_find = rvc.indexOf(lvc.get(i));
+                	int i_find = -1; //initialized
+                	if (joinType == 4)
+                		i_find = fz.indexOf(lvc.get(i),distance);
+                	else
+                		 i_find = rvc.indexOf(lvc.get(i));
                     if (i_find != -1) {
                         int curC = lcolc;
                         for (int j = 0; (j < rcolc); j++) {
@@ -101,12 +110,16 @@ public class RTMUtil {
                 }
                 return leftT;
 
-            case 1: // Inner Join with Cardinality 1:1 is default
+            case 1: case 5:// (Fuzzy) Inner Join with Cardinality 1:1 is default
                 Vector<Integer> markdel = new Vector<Integer>();
 
                 for (int i = 0; i < lrow_c; i++) {
-                    int i_find = rvc.indexOf(lvc.get(i));
-
+                	int i_find = -1; //initialized
+                	if (joinType == 5)
+                		i_find = fz.indexOf(lvc.get(i),distance);
+                	else
+                		 i_find = rvc.indexOf(lvc.get(i));
+                	
                     if (i_find != -1) {
                         int curC = lcolc;
                         for (int j = 0; (j < rcolc); j++) {
@@ -125,11 +138,15 @@ public class RTMUtil {
                 leftT.removeMarkedRows(markdel);
                 return leftT;
 
-            case 2: // Diff Join
+            case 2: case 6:// (Fuzzy) Diff Join
                 Vector<Integer> markdel_d = new Vector<Integer>();
 
                 for (int i = 0; i < lrow_c; i++) {
-                    int i_find = rvc.indexOf(lvc.get(i));
+                	int i_find = -1; //initialized
+                	if (joinType == 6)
+                		i_find = fz.indexOf(lvc.get(i),distance);
+                	else
+                		 i_find = rvc.indexOf(lvc.get(i));
 
                     if (i_find != -1) {
                         markdel_d.add(i); // should be deleted for diff join

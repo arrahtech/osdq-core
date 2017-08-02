@@ -60,13 +60,18 @@ public class TabularReport  {
 		int measureSize = measureV.size();
 		Object[] measureObj = new Object[measureSize];
 		
-		// A Hashtable to contain group by value and rowid
+		// A Hashtable to contain groupby dimensionid and rowid
 		Hashtable<String,Integer> rptContent = new Hashtable<String, Integer>();
 		int newRowIndex = 0;
 		
-		// A Hashtable to contain group by value and count
+		// A Hashtable to contain groupby dimensionid and count
 		Hashtable<String,Integer> dimCount = new Hashtable<String, Integer>();
 		Integer existingCount = null;
+		
+		// A Hashtable to contain groupby dimensionid and Uniqcount objects
+		Hashtable<String,Vector<Object>> uniqCountTable = new Hashtable<String, Vector<Object>>();
+		Integer uniqCount = null;
+		
 		int _rowC = _rt.getModel().getRowCount();
 		for (int i=0; i< _rowC; i++) { //scan the table and create new tables
 			
@@ -97,7 +102,9 @@ public class TabularReport  {
 			for ( int j=0; j<measureSize ; j++) {
 				measureObj[j] = _rt.getModel().getValueAt(i,measureV.get(j));
 			}
+			
 			// prepare new Record
+			Vector<Object> uniqV = uniqCountTable.get(dimensionId); // for uniq count
 			for ( int j=0; j<newColC ; j++) {
 				int fieldVal = newColT[j];
 				if ( fieldVal == 2) {  // Absolute Sum
@@ -106,22 +113,39 @@ public class TabularReport  {
 					} catch (Exception e) {
 						System.out.println("\n Can not cast table value as Number");
 					}
-				} else if ( fieldVal == 3) { // Count
+				} else if ( fieldVal == 3) { // Count 
 					row[j] = (Double)existingCount.doubleValue();
-				} else {
+				} else if (fieldVal == 5) { // Uniq Count
+					if (uniqV == null) { // new entry
+						uniqV = new Vector<Object>();
+						uniqV.add(_rt.getModel().getValueAt(i,_reportColV.get(j)));
+						uniqCountTable.put(dimensionId, uniqV);
+						row[j] = (double)uniqV.size();
+					} else {
+						Object o1 = _rt.getModel().getValueAt(i,_reportColV.get(j));
+						if (uniqV.indexOf(o1) == -1) { // Element not found
+							uniqV.add(o1);
+							uniqCountTable.put(dimensionId, uniqV);
+							row[j] = (double)uniqV.size();
+						} else {
+							// do nothing it is already counted
+						}
+					}
+				}
+				else {
 					row[j] = _rt.getModel().getValueAt(i,_reportColV.get(j));
 				}
 			}
 			
 			if (newrecord == true) {
 				newRT.addFillRow(row);
-			} else { // add sum, abs sum, count, avg
+			} else { // add sum, abs sum, count, avg, uniq count
 				Object[] existMeasureObj = new Object[measureSize];
 				int k=0;
 				for (int j = 0; j < newColC; j++) {
 					int fieldVal = newColT[j];
 					if (fieldVal == 1 || fieldVal == 2 // Sum // Absolute Sum
-							||  fieldVal == 3 ||  fieldVal == 4 ) {  // Count // Avg
+							||  fieldVal == 3 ||  fieldVal == 4  ||  fieldVal == 5) {  // Count // Avg //Uniq Count
 						existMeasureObj[k] = newRT.getModel().getValueAt(existingrowid.intValue(),j);
 						Double newVal =0D;
 						if (newRT.getModel().getColumnClass(j).getName().toString().toUpperCase().contains("DOUBLE")) {
@@ -133,6 +157,8 @@ public class TabularReport  {
 								newVal = existingCount.doubleValue();
 							} else if (fieldVal == 4) {
 								newVal = (((Double)(existMeasureObj[k])*(existingCount-1)) + (Double)measureObj[k])/existingCount;
+							} else if (fieldVal == 5) { //Uniq Count
+								newVal = (double)uniqV.size();
 							}
 							
 							newRT.getModel().setValueAt(newVal, existingrowid.intValue(), j);
@@ -140,11 +166,8 @@ public class TabularReport  {
 						} else {
 							System.out.println("\n Value is not Number");
 						}
-					}		
-						
+					}			
 				}
-				
-				
 			} // End of updating existing row
 
 		} // End of For loop
@@ -319,6 +342,9 @@ public class TabularReport  {
 					break;
 				case 5: 
 					appned = "(Avg)";
+					break;
+				case 6: 
+					appned = "(Uniq Count)";
 					break;
 				default:
 					break;
