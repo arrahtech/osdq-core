@@ -18,15 +18,17 @@ package org.arrah.framework.dataquality;
  *
  */
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.arrah.framework.ndtable.ReportTableModel;
+import org.arrah.framework.rdbms.Rdbms_conn;
 
 public class EntityResolutionLucene {
 	private ReportTableModel _rt = null;
 	
-	public class MappingClass {
+	public static class MappingClass {
 		
 		private int mappingType = 0; // Exact 0, fuzzy 1 3, range bound 4 startswith 4 endswith 5
 		private Object lowerrange = null, upperrange = null;
@@ -36,6 +38,10 @@ public class EntityResolutionLucene {
 			_indexfield = field;
 			_columnName = column;
 			
+		}
+
+		public MappingClass() {
+			// default
 		}
 
 		public int getMappingType() {
@@ -80,16 +86,16 @@ public class EntityResolutionLucene {
 			return startswith;
 		}
 
-		public void setStartswith(int startswith) {
-			this.startswith = startswith;
+		public void setStartswith(String startswith) {
+			this.startswith = Integer.parseInt(startswith);
 		}
 
 		public int getEndsswith() {
 			return endsswith;
 		}
 
-		public void setEndsswith(int endsswith) {
-			this.endsswith = endsswith;
+		public void setEndsswith(String endsswith) {
+			this.endsswith = Integer.parseInt(endsswith);
 		}
 		
 	}
@@ -105,23 +111,19 @@ public class EntityResolutionLucene {
 	 */
 
     // Prepare query for entity resolution
-    public String prepareLQuery(MappingClass[] mappin) {
+    public String prepareLQuery(MappingClass[] mappin, int rowIndex) {
     	String finalQuery = "";
-    	int rowC = _rt.getModel().getRowCount();
-    	for (int i=0; i < rowC; i++ ) {
     		
 	    	for (MappingClass mc : mappin) {
 	    		String colN = mc.getColname();
 	    		int colI = _rt.getColumnIndex(colN);
-	    		Object ov = _rt.getModel().getValueAt(i, colI);
+	    		Object ov = _rt.getModel().getValueAt(rowIndex, colI);
 	    		if ("".equals(finalQuery) == false)
 	    			finalQuery += " AND " +mapQuery(mc,ov);
 	    		else
 	    			finalQuery += mapQuery(mc,ov);
 	    	}
-	    	
-    	}
-    	
+    	//System.out.println("Query:"+finalQuery);
 		return finalQuery;
 
     }
@@ -140,12 +142,14 @@ public class EntityResolutionLucene {
        	String term = obj.toString();
 
         switch (type) {
-            case 0: // Exact match
+        	case 0:	 // not applicable
+        		break;
+            case 1: // Exact match
                 term.trim();
                 queryString = indexF + ":\"" + term + "\"";
                 break;
-            case 1:
-            case 2: // It may have multi-words
+            case 2:
+            case 3: // It may have multi-words
                 term.trim();
                 term = term.replaceAll(",", " ");
                 term = term.replaceAll("\\s+", " ");
@@ -164,25 +168,34 @@ public class EntityResolutionLucene {
                 }
                 queryString = newTerm;
                 break;
-            case 3: // It may have range Bound query
+            case 4:// It may have range Bound query
                 lv = mapping.getLowerrange().toString();
                 hv = mapping.getUpperrange().toString();
-                String ls = boundValue(obj,lv);
-                String hs = boundValue(obj,hv);
+                String ls = boundValue(obj,lv,0);
+                String hs = boundValue(obj,hv,0);
                 newTerm = indexF + ":[" + ls+ " TO " + hs+ "]";
 
                 queryString = newTerm;
                 break;
-            case 4: //starts with
+            case 5: //starts with
             	int l = mapping.getStartswith();
             	newTerm  = term.substring(0, l);
             	queryString = indexF + ":"+ QueryParser.escape(newTerm.trim()) + "*";
             	break;
-            case 5: //ends with
+            case 6: //ends with
             	l = mapping.getEndsswith();
             	newTerm = term.substring(term.length() - l, term.length());
             	queryString = indexF + ":*"+ QueryParser.escape(newTerm.trim()) ;
             	break;
+            case 7:// It may have range Bound query
+                lv = mapping.getLowerrange().toString();
+                hv = mapping.getUpperrange().toString();
+                ls = boundValue(obj,lv,1);
+                hs = boundValue(obj,hv,1);
+                newTerm = indexF + ":[" + ls+ " TO " + hs+ "]";
+
+                queryString = newTerm;
+                break;
             default:
                 break;
 
@@ -190,28 +203,35 @@ public class EntityResolutionLucene {
         
         return queryString;
     }
-    private String boundValue(Object obj, String val) {
+    private String boundValue(Object obj, String val,int type) {
     	if (obj == null) return "";
-		if (obj instanceof Number) {
+		if (type == 0) { // Number Type
 			try{
 				double d = Double.parseDouble(val);
-				double exv = ((Number)obj).doubleValue();
+				double exv = Double.parseDouble(obj.toString());
 				return new Double(exv+d).toString();
 			} catch (Exception e) {
 				return obj.toString();
 			}
 		}
-		if (obj instanceof java.util.Date) {
+		else if (type == 1) {// Date type
 			try {
-				long ext = ((Date)obj).getTime();
-				long t = ((Number)obj).longValue();
-				return new java.util.Date(ext+t).toString();
+	        	String format = Rdbms_conn.getHValue("DateFormat");
+	        	if (format == null || "".equals(format))
+	        		format = "yyyyMMddHHmmss"; // Lucene Default
+	        	
+        		SimpleDateFormat df = new SimpleDateFormat(format);
+        		Date value = df.parse(obj.toString());
+				long ext = value.getTime();
+				long t = Long.parseLong(val);
+				df.applyPattern("yyyyMMddHHmmss"); // Now format for lucene
+				return df.format(new java.util.Date(ext+(t*1000))); // Convert to milli second
 			} catch (Exception e) {
 				return obj.toString();
 			}
 		}
     	
-		return "";
+		return val;
     }
 
 } // End of Entity Resolution Lucene

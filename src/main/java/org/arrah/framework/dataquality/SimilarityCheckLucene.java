@@ -121,7 +121,6 @@ public class SimilarityCheckLucene {
                     // Field.Store.NO, Field.Index.TOKENIZED)); we have to do hive query
                     // Field.Store.YES, Field.Index.TOKENIZED));
                 	if(row[i] instanceof java.lang.Number ) {
-                		System.out.println(row[i].toString());
                 		doc.add(new DoubleField(colName[i], new Double(row[i].toString()),Field.Store.YES));
                 	}
                 	else if (row[i] instanceof java.util.Date)
