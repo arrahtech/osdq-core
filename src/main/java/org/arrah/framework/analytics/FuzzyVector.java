@@ -34,11 +34,14 @@ public class FuzzyVector extends java.util.Vector<Object> {
 	}
 		
 	private static final long serialVersionUID = 1L;
-	public int indexOf(Object obj, float distance) {
+	
+	// this will return matching index from startIndex
+	// to start from begining put zero
+	public int indexOf(Object obj, float distance, int startIndex) {
 		int matchI = -1;
 		if (obj == null)
 			return matchI;
-		matchI = super.indexOf(obj);
+		matchI = super.indexOf(obj,startIndex);
 		if (matchI != -1 ) //exact match found
 			return matchI;
 		
@@ -47,7 +50,7 @@ public class FuzzyVector extends java.util.Vector<Object> {
 		ArrayList<Character> alist = StringCaseFormatUtil.toArrayListChar(obj.toString());
 		java.util.Set<Character> aset = new java.util.HashSet<Character>(alist);
 		CosineSimilarity<Character> fuzzyalgo = new CosineSimilarity<Character> ();
-		for (int i=0; i < this.size(); i++) {
+		for (int i=startIndex; i < this.size(); i++) {
 			Object b = this.get(i);
 			if (b == null )
 					continue;

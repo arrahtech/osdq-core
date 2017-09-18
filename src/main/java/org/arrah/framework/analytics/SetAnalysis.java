@@ -72,12 +72,18 @@ public class SetAnalysis {
 		}
 		resultSet = new Vector<Object>();
 		FuzzyVector fz = new FuzzyVector(bigSet);
+		Vector<Integer> mIFuzzySet = new Vector<Integer>();
 		
 		for (int i=0 ; i < ilen; i++ ) {
 			Object o = smallSet.get(i);
-			if (fz.indexOf(o,distance) != -1 ) // it is  found in bigger set
+			int matchedI = fz.indexOf(o,distance,0); // first satrt from  begining
+			if (matchedI != -1  && mIFuzzySet.indexOf(matchedI) == -1) { // it is  found in bigger set and not already counted
+				mIFuzzySet.add(matchedI);
 				if (resultSet.indexOf(o) == -1 ) // if it not already added
 					resultSet.add(o);
+			} else {
+				
+			}
 		}
 		return resultSet;
 	}
@@ -107,29 +113,52 @@ public class SetAnalysis {
 		
 		return resultSet;
 	}
+	// We have to make fuzzy both sides and then take intersection
+	public Vector<Object> getUnion (float distance) {
+		Vector<Object> resultSetA = getUnion (smallSet, bigSet, distance);
+		Vector<Object> resultSetB = getUnion (bigSet, smallSet, distance);
+		if (resultSetA.size() == 0) return resultSetB;
+		if (resultSetB.size() == 0) return resultSetA;
+		if (resultSetA.size() >= resultSetB.size()) {
+			bigSet = resultSetA;
+			smallSet = resultSetB;
+		} else {
+			bigSet = resultSetB;
+			smallSet = resultSetA;
+		}
+		
+		return getIntersection();
+	}
 	
 	// This function will return Union set with distance as input
-	public Vector<Object> getUnion (float distance) {
+	public Vector<Object> getUnion (Vector<Object> setA, Vector<Object> setB, float distance) {
 		Vector<Object> resultSet = null;
-		int ilen = smallSet.size();
+		
+		int ilen = setA.size();
 		if (ilen == 0 ) {
 			errstr = "Not Valid sets for Union";
-			return bigSet;
+			return setB;
+		}
+		
+		int ilenB = setB.size();
+		if (ilen == 0 ) {
+			errstr = "Not Valid sets for Union";
+			return setA;
 		}
 		
 		resultSet = new Vector<Object>();
 		
 		for (int i=0 ; i < ilen; i++ ) {
-			Object o = smallSet.get(i);
+			Object o = setA.get(i);
 			if (resultSet.indexOf(o) == -1 ) // it is not found in result set
 				resultSet.add(o);
 		}
-		int ilenB = bigSet.size();
+		
 		FuzzyVector fz = new FuzzyVector(resultSet);
 		
 		for (int i=0 ; i < ilenB; i++ ) {
-			Object o = bigSet.get(i);
-			if (fz.indexOf(o,distance) == -1 ) // it is not found in  fuzzyvector set
+			Object o = setB.get(i);
+			if (fz.indexOf(o,distance,0) == -1 ) // it is not found in  fuzzyvector set
 				if (resultSet.indexOf(o) == -1 )  {// it is not found in  result set
 					resultSet.add(o);
 					fz.add(o);
@@ -183,7 +212,7 @@ public class SetAnalysis {
 			FuzzyVector fz = new FuzzyVector(second);
 			for (int i=0; i < ilen; i++ ) {
 				Object o = first.get(i);
-				if (fz.indexOf(o,distance) == -1 ) // it is not found in second
+				if (fz.indexOf(o,distance,0) == -1 ) // it is not found in second
 					resultSet.add(o);
 			}
 			
@@ -208,6 +237,13 @@ public class SetAnalysis {
 		return errstr;
 	}
 	
+	public void setSmallset(Vector<Object> setA) {
+		smallSet = setA;
+	}
+	public void setBigset(Vector<Object> setA) {
+		bigSet = setA;
+	}
+	
 	// for testing
 	public static void main(String[] args) {
 		Vector<Object> first = new Vector<Object>();
@@ -217,6 +253,7 @@ public class SetAnalysis {
 		second.add("vivek36");second.add("vivekkk");second.add("abcd");second.add("vivek445");
 		
 		SetAnalysis seta = new SetAnalysis(first,second);
+		//SetAnalysis seta = new SetAnalysis(second,first);
 		//Vector<Object> finaltse  = seta.getIntersection(0.9f);
 		Vector<Object> finaltse  = seta.getUnion();
 		//Vector<Object> finaltse  = seta.getDifference(first, second,0.6f);

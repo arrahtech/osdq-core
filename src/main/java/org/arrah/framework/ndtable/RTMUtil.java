@@ -59,7 +59,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 
 public class RTMUtil {
     /*
-     * It will join two tables based on two column Indexes
+     * It will join two tables based on two column Indexes based on fuzzy logic
      */
     public static ReportTableModel joinTables(ReportTableModel leftT,
                                               int indexL, ReportTableModel rightT, int indexR, int joinType, float distance) {
@@ -94,7 +94,7 @@ public class RTMUtil {
                 for (int i = 0; i < lrow_c; i++) {
                 	int i_find = -1; //initialized
                 	if (joinType == 4)
-                		i_find = fz.indexOf(lvc.get(i),distance);
+                		i_find = fz.indexOf(lvc.get(i),distance,0);
                 	else
                 		 i_find = rvc.indexOf(lvc.get(i));
                     if (i_find != -1) {
@@ -116,7 +116,7 @@ public class RTMUtil {
                 for (int i = 0; i < lrow_c; i++) {
                 	int i_find = -1; //initialized
                 	if (joinType == 5)
-                		i_find = fz.indexOf(lvc.get(i),distance);
+                		i_find = fz.indexOf(lvc.get(i),distance,0);
                 	else
                 		 i_find = rvc.indexOf(lvc.get(i));
                 	
@@ -144,7 +144,7 @@ public class RTMUtil {
                 for (int i = 0; i < lrow_c; i++) {
                 	int i_find = -1; //initialized
                 	if (joinType == 6)
-                		i_find = fz.indexOf(lvc.get(i),distance);
+                		i_find = fz.indexOf(lvc.get(i),distance,0);
                 	else
                 		 i_find = rvc.indexOf(lvc.get(i));
 
