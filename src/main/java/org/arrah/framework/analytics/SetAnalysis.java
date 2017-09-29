@@ -1,6 +1,10 @@
 package org.arrah.framework.analytics;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Vector;
+
 import org.arrah.framework.analytics.FuzzyVector;
 
 /**************************************************
@@ -30,8 +34,11 @@ public class SetAnalysis {
 			NullPointerException e = new NullPointerException();
 			throw e;
 		}
+		setA = new Vector<Object>(new HashSet<Object>(setA));// remove duplicates
+		setB = new Vector<Object>(new HashSet<Object>(setB));
+		
 		if ( setA.size() > setB.size() ){
-			smallSet = setB;
+			smallSet = setB; 
 			bigSet = setA;
 		} else {
 			smallSet = setA;
@@ -59,6 +66,7 @@ public class SetAnalysis {
 			if (bigSet.indexOf(o) != -1 ) // it is  found in bigger set
 				resultSet.add(o);
 		}
+		Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 		return resultSet;
 	}
 	
@@ -111,6 +119,7 @@ public class SetAnalysis {
 				resultSet.add(o);
 		}
 		
+		Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 		return resultSet;
 	}
 	// We have to make fuzzy both sides and then take intersection
@@ -127,7 +136,7 @@ public class SetAnalysis {
 			smallSet = resultSetA;
 		}
 		
-		return getIntersection();
+		return getUnion();
 	}
 	
 	// This function will return Union set with distance as input
@@ -193,6 +202,8 @@ public class SetAnalysis {
 	
 	// This function will return A- B set
 	public Vector<Object> getDifference (Vector<Object> first, Vector<Object> second) {
+		first = new Vector<Object>(new HashSet<Object>(first));
+		second = new Vector<Object>(new HashSet<Object>(second));
 		Vector<Object> resultSet = new Vector<Object>();
 		int ilen = first.size();
 		for (int i=0; i < ilen; i++ ) {
@@ -202,6 +213,7 @@ public class SetAnalysis {
 		}
 		
 		errstr = "Difference Successful";
+		Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 		return resultSet;
 	}
 	
@@ -222,6 +234,8 @@ public class SetAnalysis {
 	
 	// This function will return true if A is subset of B
 	public boolean isSubset(Vector<Object> first, Vector<Object> second) {
+		first = new Vector<Object>(new HashSet<Object>(first));
+		second = new Vector<Object>(new HashSet<Object>(second));
 		int ilen = first.size();
 		for (int i=0; i < ilen; i++ ) {
 			Object o = first.get(i);
@@ -244,6 +258,13 @@ public class SetAnalysis {
 		bigSet = setA;
 	}
 	
+	public static final Comparator<Object> COMPARABLE_COMAPRATOR = new Comparator<Object>() {
+		@SuppressWarnings("unchecked")
+		public int compare(Object o1, Object o2) {
+			return ((Comparable<Object>) o1).compareTo(o2);
+		}
+	};
+	
 	// for testing
 	public static void main(String[] args) {
 		Vector<Object> first = new Vector<Object>();
@@ -260,7 +281,6 @@ public class SetAnalysis {
 
 		for (Object a:finaltse)
 			System.out.println(a.toString());
-		
 		
 	}
 
