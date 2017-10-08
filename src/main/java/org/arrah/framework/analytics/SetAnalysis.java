@@ -93,6 +93,7 @@ public class SetAnalysis {
 				
 			}
 		}
+		Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 		return resultSet;
 	}
 	
@@ -122,25 +123,16 @@ public class SetAnalysis {
 		Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 		return resultSet;
 	}
+	
 	// We have to make fuzzy both sides and then take intersection
 	public Vector<Object> getUnion (float distance) {
 		Vector<Object> resultSetA = getUnion (smallSet, bigSet, distance);
-		Vector<Object> resultSetB = getUnion (bigSet, smallSet, distance);
-		if (resultSetA.size() == 0) return resultSetB;
-		if (resultSetB.size() == 0) return resultSetA;
-		if (resultSetA.size() >= resultSetB.size()) {
-			bigSet = resultSetA;
-			smallSet = resultSetB;
-		} else {
-			bigSet = resultSetB;
-			smallSet = resultSetA;
-		}
+		return resultSetA;
 		
-		return getUnion();
 	}
 	
 	// This function will return Union set with distance as input
-	public Vector<Object> getUnion (Vector<Object> setA, Vector<Object> setB, float distance) {
+	protected Vector<Object> getUnion (Vector<Object> setA, Vector<Object> setB, float distance) {
 		Vector<Object> resultSet = null;
 		
 		int ilen = setA.size();
@@ -162,9 +154,18 @@ public class SetAnalysis {
 			if (resultSet.indexOf(o) == -1 ) // it is not found in result set
 				resultSet.add(o);
 		}
+		// Add both set then weed out matching data
+		for (int i=0 ; i < ilenB; i++ ) {
+			Object o = setB.get(i);
+			if (resultSet.indexOf(o) == -1 ) // it is not found in result set
+				resultSet.add(o);
+		}
+		// Now create fuzzy
 		
 		FuzzyVector fz = new FuzzyVector(resultSet);
+		Collections.sort(fz,COMPARABLE_COMAPRATOR);
 		
+		/****
 		for (int i=0 ; i < ilenB; i++ ) {
 			Object o = setB.get(i);
 			if (fz.indexOf(o,distance,0) == -1 ) // it is not found in  fuzzyvector set
@@ -172,9 +173,18 @@ public class SetAnalysis {
 					resultSet.add(o);
 					fz.add(o);
 				}
+		}****/
+		
+		for (int i=0 ; i < fz.size(); i++ ) {
+			Object o = fz.get(i);
+			int matchi = i+1; // Start from one index ahead
+			
+			while ( (matchi = fz.indexOf(o,distance,matchi))  != -1 ) {
+				fz.remove(matchi);
+			}
 		}
 		
-		return resultSet;
+		return fz;
 	}
 	// Order is important cartesian
 	// This function will return cartesian set [first,second]
@@ -219,6 +229,8 @@ public class SetAnalysis {
 	
 	// This function will return A- B set with cosine distance
 		public Vector<Object> getDifference (Vector<Object> first, Vector<Object> second, float distance) {
+			first = new Vector<Object>(new HashSet<Object>(first));
+			second = new Vector<Object>(new HashSet<Object>(second));
 			Vector<Object> resultSet = new Vector<Object>();
 			int ilen = first.size();
 			FuzzyVector fz = new FuzzyVector(second);
@@ -229,6 +241,7 @@ public class SetAnalysis {
 			}
 			
 			errstr = "Difference Successful";
+			Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 			return resultSet;
 		}
 	
