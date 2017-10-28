@@ -70,7 +70,6 @@ public class TabularReport  {
 		
 		// A Hashtable to contain groupby dimensionid and Uniqcount objects
 		Hashtable<String,Vector<Object>> uniqCountTable = new Hashtable<String, Vector<Object>>();
-		Integer uniqCount = null;
 		
 		int _rowC = _rt.getModel().getRowCount();
 		for (int i=0; i< _rowC; i++) { //scan the table and create new tables
