@@ -45,15 +45,17 @@ public class ChiSquareTest {
 		double population = AggrCumRTM.getSum(populationData);
 		double chisquare = 0.000D;
 		
-		for (int i=1; i < (colN -2) ; i++) {
+		for (int i=1; i < (colN -1) ; i++) { // last column is total count
 			Vector<Double> colData = AggrCumRTM.getColumnNumberData(_rtm, i);
 			double colSum = AggrCumRTM.getSum(colData);
 			
 			for (int j=0; j < rowN; j++ ) {
 				double rowSum = new Double(_rtm.getModel().getValueAt(j, colN -1).toString()); //last column value
 				double expectedFreq = colSum * rowSum / population;
+				//System.out.println(rowSum + ":"+colSum +":" +population);
 				double observedFreq = new Double(_rtm.getModel().getValueAt(j, i).toString());
 				double singleChi = ((expectedFreq - observedFreq) * (expectedFreq - observedFreq))/expectedFreq;
+				//System.out.println(expectedFreq + ":"+observedFreq );
 				chisquare += singleChi;
 			}
 		}
