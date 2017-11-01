@@ -78,22 +78,26 @@ public class SetAnalysis {
 			errstr = "Not Valid sets for Intersection";
 			return resultSet;
 		}
+		
+		FuzzyVector fzb = new FuzzyVector(bigSet);
+		fzb = deDupFuzzy(fzb,distance); // self dedup
+		FuzzyVector fzs = new FuzzyVector(smallSet);
+		fzs = deDupFuzzy(fzs,distance); // self dedup
+		
+		ilen = fzs.size();
 		resultSet = new Vector<Object>();
-		FuzzyVector fz = new FuzzyVector(bigSet);
-		Vector<Integer> mIFuzzySet = new Vector<Integer>();
 		
 		for (int i=0 ; i < ilen; i++ ) {
-			Object o = smallSet.get(i);
-			int matchedI = fz.indexOf(o,distance,0); // first satrt from  begining
-			if (matchedI != -1  && mIFuzzySet.indexOf(matchedI) == -1) { // it is  found in bigger set and not already counted
-				mIFuzzySet.add(matchedI);
-				if (resultSet.indexOf(o) == -1 ) // if it not already added
-					resultSet.add(o);
-			} else {
-				
+			Object o = fzs.get(i);
+			int matchi = 0; // start from begining
+			while ( (matchi = fzb.indexOf(o,distance,matchi))  != -1 ) {
+				resultSet.add(o); // add from small set
+				resultSet.add(fzb.get(matchi)); // add from large set
+				matchi++;// from next index
+				//System.out.println("Match:" + i + ":"+matchi);
 			}
 		}
-		Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
+		resultSet = deDupFuzzy(new FuzzyVector(resultSet),distance);
 		return resultSet;
 	}
 	
@@ -163,27 +167,7 @@ public class SetAnalysis {
 		// Now create fuzzy
 		
 		FuzzyVector fz = new FuzzyVector(resultSet);
-		Collections.sort(fz,COMPARABLE_COMAPRATOR);
-		
-		/****
-		for (int i=0 ; i < ilenB; i++ ) {
-			Object o = setB.get(i);
-			if (fz.indexOf(o,distance,0) == -1 ) // it is not found in  fuzzyvector set
-				if (resultSet.indexOf(o) == -1 )  {// it is not found in  result set
-					resultSet.add(o);
-					fz.add(o);
-				}
-		}****/
-		
-		for (int i=0 ; i < fz.size(); i++ ) {
-			Object o = fz.get(i);
-			int matchi = i+1; // Start from one index ahead
-			
-			while ( (matchi = fz.indexOf(o,distance,matchi))  != -1 ) {
-				fz.remove(matchi);
-			}
-		}
-		
+		fz = deDupFuzzy(fz,distance);	
 		return fz;
 	}
 	// Order is important cartesian
@@ -232,16 +216,20 @@ public class SetAnalysis {
 			first = new Vector<Object>(new HashSet<Object>(first));
 			second = new Vector<Object>(new HashSet<Object>(second));
 			Vector<Object> resultSet = new Vector<Object>();
-			int ilen = first.size();
-			FuzzyVector fz = new FuzzyVector(second);
+			
+			FuzzyVector fzs = new FuzzyVector(second);
+			FuzzyVector fzf = new FuzzyVector(first);
+			fzs = deDupFuzzy(fzs,distance);
+			fzf = deDupFuzzy(fzf,distance);
+			
+			int ilen = fzf.size();
 			for (int i=0; i < ilen; i++ ) {
-				Object o = first.get(i);
-				if (fz.indexOf(o,distance,0) == -1 ) // it is not found in second
+				Object o = fzf.get(i);
+				if (fzs.indexOf(o,distance,0) == -1 ) // it is not found in second
 					resultSet.add(o);
 			}
 			
 			errstr = "Difference Successful";
-			Collections.sort(resultSet,COMPARABLE_COMAPRATOR);
 			return resultSet;
 		}
 	
@@ -271,6 +259,24 @@ public class SetAnalysis {
 		bigSet = setA;
 	}
 	
+	public FuzzyVector deDupFuzzy(FuzzyVector fz, float distance) {
+		
+		Collections.sort(fz,COMPARABLE_COMAPRATOR);
+				
+		for (int i=0 ; i < fz.size(); i++ ) {
+			Object o = fz.get(i);
+			int matchi = i+1; // Start from one index ahead
+			
+			while ( (matchi = fz.indexOf(o,distance,matchi))  != -1 ) {
+				fz.remove(matchi);
+				
+				// matched indexed may be last after removing it would be out of index
+				// but if it is positive it will handle it
+			}
+		}
+		return fz;
+	}
+	
 	public static final Comparator<Object> COMPARABLE_COMAPRATOR = new Comparator<Object>() {
 		@SuppressWarnings("unchecked")
 		public int compare(Object o1, Object o2) {
@@ -281,16 +287,19 @@ public class SetAnalysis {
 	// for testing
 	public static void main(String[] args) {
 		Vector<Object> first = new Vector<Object>();
-		first.add("vivek");first.add("vivek16");first.add("abcd");first.add("vivek44");
+		//first.add("vivek");first.add("vivek16");first.add("abcd");first.add("vivek44");
+		first.add("vivek6");
 		
 		Vector<Object> second = new Vector<Object>();
-		second.add("vivek36");second.add("vivekkk");second.add("abcd");second.add("vivek445");
+		//second.add("vivek36");second.add("vivekkk");second.add("abcd");second.add("vivek445");
+		second.add("vivek36");second.add("vivek16");
 		
-		SetAnalysis seta = new SetAnalysis(first,second);
-		//SetAnalysis seta = new SetAnalysis(second,first);
+		//SetAnalysis seta = new SetAnalysis(first,second);
+		SetAnalysis seta = new SetAnalysis(second,first);
 		//Vector<Object> finaltse  = seta.getIntersection(0.9f);
-		Vector<Object> finaltse  = seta.getUnion();
+		//Vector<Object> finaltse  = seta.getUnion();
 		//Vector<Object> finaltse  = seta.getDifference(first, second,0.6f);
+		Vector<Object> finaltse  = seta.getUnion(0.6f);
 
 		for (Object a:finaltse)
 			System.out.println(a.toString());
