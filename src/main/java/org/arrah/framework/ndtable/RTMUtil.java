@@ -565,33 +565,34 @@ public class RTMUtil {
                 if (dcell == null) continue;
                 Object ncell = rtm.getModel().getValueAt(i, comIndex);
                 if (ncell == null) continue;
+                
                 switch(timed) {
                     case 0: //year
-                        dataset.addOrUpdate(new Year((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Year((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 1: //Quarter
-                        dataset.addOrUpdate(new Quarter((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Quarter((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 2: //Month
-                        dataset.addOrUpdate(new Month((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Month((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 3: //Week
-                        dataset.addOrUpdate(new Week((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Week((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 4: //Day
-                        dataset.addOrUpdate(new Day((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Day((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 5: //Hour
-                        dataset.addOrUpdate(new Hour((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Hour((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 6: //Minute
-                        dataset.addOrUpdate(new Minute((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Minute((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 7: //Second
-                        dataset.addOrUpdate(new Second((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Second((Date)dcell) , new Double(ncell.toString()));
                         break;
                     case 8: //Millisecond
-                        dataset.addOrUpdate(new Millisecond((Date)dcell) , (Double)ncell);
+                        dataset.addOrUpdate(new Millisecond((Date)dcell) , new Double(ncell.toString()));
                         break;
 
                     default:
