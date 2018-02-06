@@ -343,7 +343,7 @@ public class RecordMatch
 										rIndex = 0;	
 									}
 								} catch (Exception e) {
-									System.out.println(" Thread Comparison Exeception:"+e.getMessage());
+									System.out.println(" Thread Comparison Exception:"+e.getMessage());
 								}
 					}
 				});
@@ -353,7 +353,7 @@ public class RecordMatch
 				try {
 					tid[i].join();
 				} catch (Exception e) {
-					System.out.println(" Thread Exeception:"+e.getMessage());
+					System.out.println(" Thread Exception:"+e.getMessage());
 				}
 			}
 

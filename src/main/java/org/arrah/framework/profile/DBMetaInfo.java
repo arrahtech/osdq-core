@@ -234,14 +234,14 @@ public class DBMetaInfo {
 		try {
 			boolean flag16 = dbmd.supportsANSI92EntryLevelSQL();
 			rtm__.addFillRow(new String[] {
-					"Databse supports ANSI192 Entry Level SQL",
+					"Database supports ANSI192 Entry Level SQL",
 					!flag16 ? "NO" : "YES" });
 		} catch (UnsupportedOperationException unsupportedoperationexception29) {
 		}
 		try {
 			boolean flag17 = dbmd.supportsANSI92IntermediateSQL();
 			rtm__.addFillRow(new String[] {
-					"Databse supports ANSI192 Intermediate  SQL",
+					"Database supports ANSI192 Intermediate  SQL",
 					!flag17 ? "NO" : "YES" });
 		} catch (UnsupportedOperationException unsupportedoperationexception30) {
 		}
@@ -605,7 +605,7 @@ public class DBMetaInfo {
 			rtm__.addRow();
 			j3 = j5;
 			if (as[j5].compareTo("") != 0)
-				rtm__.setValueAt(as[j5] + "( )", j5, 0);
+				rtm__.setValueAt(as[j5] + "()", j5, 0);
 		}
 
 		for (int k5 = 0; k5 < as1.length; k5++) {
@@ -614,7 +614,7 @@ public class DBMetaInfo {
 				j3 = k5;
 			}
 			if (as1[k5].compareTo("") != 0)
-				rtm__.setValueAt(as1[k5] + "( )", k5, 1);
+				rtm__.setValueAt(as1[k5] + "()", k5, 1);
 		}
 
 		for (int l5 = 0; l5 < as2.length; l5++) {
@@ -623,7 +623,7 @@ public class DBMetaInfo {
 				j3 = l5;
 			}
 			if (as2[l5].compareTo("") != 0)
-				rtm__.setValueAt(as2[l5] + "( )", l5, 2);
+				rtm__.setValueAt(as2[l5] + "()", l5, 2);
 		}
 
 		for (int i6 = 0; i6 < as3.length; i6++) {
@@ -632,7 +632,7 @@ public class DBMetaInfo {
 				j3 = i6;
 			}
 			if (as3[i6].compareTo("") != 0)
-				rtm__.setValueAt(as3[i6] + "( )", i6, 3);
+				rtm__.setValueAt(as3[i6] + "()", i6, 3);
 		}
 
 		for (int j6 = 0; j6 < as4.length; j6++) {
@@ -671,7 +671,7 @@ public class DBMetaInfo {
 		rtm__ = new ReportTableModel(
 				new String[] { "Name", "Data_Type", "Precision", "Prefix",
 						"Suffix", "Param", "Nullable", "Case Sensitive",
-						"Searchable", "Unsigned", "Auto Increamental" });
+						"Searchable", "Unsigned", "Auto Incremental" });
 		ResultSet resultset1;
 		String as10[];
 		for (resultset1 = dbmd.getTypeInfo(); resultset1.next(); rtm__

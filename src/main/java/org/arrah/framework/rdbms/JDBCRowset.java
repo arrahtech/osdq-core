@@ -530,7 +530,7 @@ public class JDBCRowset {
 				String ret = rows.getString(col);
 				return ret;
 			} catch (Exception e) {
-				System.out.println("Exeception:" + e.getLocalizedMessage());
+				System.out.println("Exception:" + e.getLocalizedMessage());
 				return null;
 			}
 		} else
@@ -546,7 +546,7 @@ public class JDBCRowset {
 				String ret = rows.getString(col);
 				return ret;
 			} catch (Exception e) {
-				System.out.println("Exeception:" + e.getLocalizedMessage());
+				System.out.println("Exception:" + e.getLocalizedMessage());
 				return null;
 			}
 		} else

@@ -226,14 +226,14 @@ public class SimilarityCheckLucene {
                                     try {
                                         writer.addDocument(createDocument(j,_rt.getRow(j)));
                                     } catch (Exception e) {
-                                        System.out.println(" Lucene Exeception:"+e.getMessage());
+                                        System.out.println(" Lucene Exception:"+e.getMessage());
                                     }
                             else
                                 for (int j = tindex * rowthread; j < rowC; j++)
                                     try {
                                         writer.addDocument(createDocument(j,_rt.getRow(j)));
                                     } catch (Exception e) {
-                                        System.out.println("Lucene Exeception:"+e.getMessage());
+                                        System.out.println("Lucene Exception:"+e.getMessage());
                                     }
                         }
                     });
@@ -243,11 +243,11 @@ public class SimilarityCheckLucene {
                     try {
                         tid[i].join();
                     } catch (Exception e) {
-                        System.out.println(" Thread Exeception:"+e.getMessage());
+                        System.out.println(" Thread Exception:"+e.getMessage());
                     }
             }
         } catch (Exception e) {
-            System.out.println(" Add Document Exeception:"+e.getMessage());
+            System.out.println(" Add Document Exception:"+e.getMessage());
         }
     }
 
