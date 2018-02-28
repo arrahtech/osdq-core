@@ -30,7 +30,7 @@ import org.arrah.framework.rdbms.Rdbms_conn;
 public class AllTableProfile {
 	private ReportTableModel __rt = new ReportTableModel(new String[] {
 			"Table", "Column", "Record", "Unique", "Pattern", "Null", "Zero",
-			"Empty" }); // it is extended from Panel
+			"Empty","Max","Min" }); // it is extended from Panel
 
 	public AllTableProfile() {
 
@@ -79,8 +79,8 @@ public class AllTableProfile {
 		ResultSet rs_col;
 		Vector<String> vc_c;
 		QueryBuilder c_prof;
-		String all_c, dist_c, null_c, zero_c, empty_c, pattern_c;
-		String all_v, dist_v, null_v, zero_v, empty_v, pattern_v;
+		String all_c, dist_c, null_c, zero_c, empty_c, pattern_c,top_sel_query_c,bot_sel_query_c;
+		String all_v, dist_v, null_v, zero_v, empty_v, pattern_v,top_sel_query_v,bot_sel_query_v;
 
 		Enumeration<String> e = vc.elements();
 		while (e.hasMoreElements()) {
@@ -102,6 +102,8 @@ public class AllTableProfile {
 				zero_v = "0";
 				empty_v = "0";
 				pattern_v = "0";
+				top_sel_query_v = "";
+				bot_sel_query_v = "";
 
 				String col = (String) et.nextElement();
 
@@ -112,6 +114,8 @@ public class AllTableProfile {
 				zero_c = c_prof.get_zeroCount_query_w("0");
 				empty_c = c_prof.get_zeroCount_query_w("''");
 				pattern_c = c_prof.get_pattern_query();
+				top_sel_query_c = c_prof.top_query(false,"top_count", "1");
+				bot_sel_query_c = c_prof.bottom_query(false,"bot_count", "1");
 
 				try {
 					rs_col = Rdbms_conn.runQuery(all_c);
@@ -168,9 +172,27 @@ public class AllTableProfile {
 				} catch (SQLException s_exp) {
 					pattern_v = "N/A";
 				}
-
+				try {
+					rs_col = Rdbms_conn.runQuery(top_sel_query_c);
+					while (rs_col.next()) {
+						top_sel_query_v = rs_col.getString("top_count");
+					}
+					rs_col.close();
+				} catch (SQLException s_exp) {
+					top_sel_query_v = "N/A";
+				}
+				try {
+					rs_col = Rdbms_conn.runQuery(bot_sel_query_c);
+					while (rs_col.next()) {
+						bot_sel_query_v = rs_col.getString("bot_count");
+					}
+					rs_col.close();
+				} catch (SQLException s_exp) {
+					bot_sel_query_v = "N/A";
+				}
+				
 				String[] row = { tbl, col, all_v, dist_v, pattern_v, null_v,
-						zero_v, empty_v };
+						zero_v, empty_v,top_sel_query_v,bot_sel_query_v};
 				__rt.addFillRow(row);
 			} // Close column
 		} // Close table

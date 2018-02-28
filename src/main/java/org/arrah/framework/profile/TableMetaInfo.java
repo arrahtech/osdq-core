@@ -189,8 +189,7 @@ public class TableMetaInfo {
 					String s11 = resultset.getString(16);
 					String s12 = resultset.getString(17);
 					String s13 = resultset.getString(18);
-					String as[] = { s2, s4, s5,s52, s6, s7, s8, s9, s10, s11, s12,
-							s13 };
+					String as[] = { s2, s4, s5,s52, s6, s7, s8, s9, s10, s11, s12,s13 };
 					reporttable.addFillRow(as);
 				}
 			} // End of While
@@ -250,7 +249,7 @@ public class TableMetaInfo {
 		if (reporttable == null)
 		 reporttable  = new ReportTableModel(new String[] { "Table",
 					"Column", "Record", "Unique", "Pattern", "Null", "Zero",
-					"Empty" });
+					"Empty","Max","Min","Avg" });
 		else
 			reporttable.cleanallRow();
 		
@@ -287,6 +286,10 @@ public class TableMetaInfo {
 				String s13 = "0";
 				String s14 = "0";
 				String s15 = "0";
+				String top_sel_query_v = "";
+				String bot_sel_query_v = "";
+				String avg_query_v = "";
+				
 				String s20 = (String) enumeration.nextElement();
 				QueryBuilder querybuilder = new QueryBuilder(s2, s17, s20, s3);
 				String s4 = querybuilder.count_query_w(false, "row_count");
@@ -295,6 +298,10 @@ public class TableMetaInfo {
 				String s7 = querybuilder.get_zeroCount_query_w("0");
 				String s8 = querybuilder.get_zeroCount_query_w("''");
 				String s9 = querybuilder.get_pattern_query();
+				String top_sel_query_c = querybuilder.top_query(false,"top_count", "1");
+				String bot_sel_query_c = querybuilder.bottom_query(false,"bot_count", "1");
+				//index,Count,Avg,Max,Min,Sum Example : 1NYNNNN
+				String avg_query_c = querybuilder.aggr_query("1NYNNNN", 0, "0", "0");
 				if (s3.compareToIgnoreCase("oracle_native") == 0)
 					Rdbms_conn.openConn();
 				try {
@@ -345,7 +352,31 @@ public class TableMetaInfo {
 				} catch (SQLException sqlexception5) {
 					s15 = "N/A";
 				}
-				as = (new String[] { s17, s20, s10, s11, s15, s12, s13, s14 });
+				try {
+					for (resultset = Rdbms_conn.runQuery(top_sel_query_c); resultset.next();)
+						top_sel_query_v = resultset.getString("top_count");
+					
+					resultset.close();
+				} catch (SQLException s_exp) {
+					top_sel_query_v = "N/A";
+				}
+				try {
+					for (resultset = Rdbms_conn.runQuery(bot_sel_query_c); resultset.next();)
+						bot_sel_query_v = resultset.getString("bot_count");
+					
+					resultset.close();
+				} catch (SQLException s_exp) {
+					bot_sel_query_v = "N/A";
+				}
+				try {
+					for (resultset = Rdbms_conn.runQuery(avg_query_c); resultset.next();)
+						avg_query_v = resultset.getString("avg_count");
+					
+					resultset.close();
+				} catch (SQLException s_exp) {
+					avg_query_v = "N/A";
+				}
+				as = (new String[] { s17, s20, s10, s11, s15, s12, s13, s14,top_sel_query_v,bot_sel_query_v,avg_query_v });
 				
 				if (s3.compareToIgnoreCase("oracle_native") == 0)
 					Rdbms_conn.closeConn(); 

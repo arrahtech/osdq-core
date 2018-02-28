@@ -590,7 +590,7 @@ public class DBMetaInfo {
 		String as4[] = null;
 		int j3 = 0;
 		rtm__ = new ReportTableModel(new String[] { "String Fx", "Numeric Fx",
-				"Date Fx", "System Fx", "SQL Keywords" });
+				"Date Fx", "System Fx", "SQL Keywords","All Fx" });
 		String s48 = dbmd.getStringFunctions();
 		as = s48.split(",");
 		String s54 = dbmd.getNumericFunctions();
@@ -643,6 +643,18 @@ public class DBMetaInfo {
 			if (as4[j6].compareTo("") != 0)
 				rtm__.setValueAt(as4[j6], j6, 4);
 		}
+		ResultSet fxrs = dbmd.getFunctions(null, null,null);
+		int fxIndex=0;
+		while (fxrs.next()) {
+			if (fxrs.wasNull() ) continue;
+			String fxnam= fxrs.getString("SPECIFIC_NAME");
+			if (fxIndex > j3) {
+				rtm__.addRow();
+				j3 = fxIndex;
+			}
+			rtm__.setValueAt(fxnam, fxIndex++, 5);
+		}
+		fxrs.close();
 		Rdbms_conn.closeConn();
 		return rtm__;
 	}
