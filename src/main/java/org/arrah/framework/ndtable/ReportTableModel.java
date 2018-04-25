@@ -138,8 +138,12 @@ public class ReportTableModel implements Serializable, Cloneable {
 						return SqlType.getClass(classType[col]);
 					} else { // class type is null
 						for (int i = 0; i < this.getRowCount(); i++)
-							if (getValueAt(i, col) != null)
-								return getValueAt(i, col).getClass();
+							try{
+								if (getValueAt(i, col) != null)
+									return getValueAt(i, col).getClass();
+							} catch(Exception e) {
+								return (new Object()).getClass();
+							}
 						return (new Object()).getClass();
 					}
 				return (new Object()).getClass();

@@ -792,53 +792,6 @@ public class RTMUtil {
 
     }
 
-    // This util function will create a random sample RTM
-    public static ReportTableModel sampleRTM(ReportTableModel rtm, int count) {
-        if (count < 0  || rtm == null || rtm.getModel().getRowCount() <= 0
-                || rtm.getModel().getColumnCount() <= 0) return rtm; // no sampling needed
-
-        String[] colName = rtm.getAllColNameStr();
-        ReportTableModel newRTM = new ReportTableModel(colName,true,true);
-
-        for (int i=0; i < count; i++ ) {
-            int randInt = new Random().nextInt(count);
-            Object[] row = rtm.getRow(randInt);
-            newRTM.addFillRow(row);
-        }
-
-        return newRTM;
-    }
-
-    // This util function will split the rtm in multiple rtm
-    public static ReportTableModel[] splitRTM(ReportTableModel rtm, int count) {
-        ReportTableModel[] newrtm = null;
-        int rowc = rtm.getModel().getRowCount();
-
-        if (count < 0  || rtm == null || rowc <= 0 || rtm.getModel().getColumnCount() <= 0)  {
-            newrtm= new ReportTableModel[1];
-            newrtm[0] = rtm; // no split required
-            return newrtm;
-        }
-
-        int grp1 = Math.floorDiv(rowc,count);
-        newrtm= new ReportTableModel[count];
-
-        String[] colName = rtm.getAllColNameStr();
-
-        for (int i=0; i < count; i++ ) {
-            ReportTableModel newRTM = new ReportTableModel(colName,true,true);
-            newrtm[i] = newRTM;
-            for (int j=i*grp1; j < i*grp1 + grp1; j++) {
-                newrtm[i].addFillRow(rtm.getRow(j));
-            }
-        }
-        for (int j=count*grp1; j <rowc; j++) {
-            newrtm[count-1].addFillRow(rtm.getRow(j));
-        }
-
-        return newrtm;
-    }
-
     // This function will return a dataset which will be used for Multi Linear regression
     public static net.sourceforge.openforecast.DataSet getDataSetfromRTM(ReportTableModel rtm, String dependentCol, String[] independentCols)
     	 {
