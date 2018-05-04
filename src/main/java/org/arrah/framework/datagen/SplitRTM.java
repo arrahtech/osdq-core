@@ -19,7 +19,11 @@ package org.arrah.framework.datagen;
  * 
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Random;
 
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -166,6 +170,160 @@ public class SplitRTM {
 
         return newRTM;
     }
+    
+    public static ReportTableModel explodeRTM(ReportTableModel tableModel, LinkedHashMap<String,List<Integer>> colToRow) {
+    	String [] colName = tableModel.getAllColNameStr();
+    	List<Integer> deleteIndex = new ArrayList<Integer>();
+    	
+    	for (String newCol: colToRow.keySet()) {
+    		List<Integer> deleteSet = colToRow.get(newCol);
+    		int firstIndex = deleteSet.get(0);
+    		colName[firstIndex] = newCol;
+    		
+    		for (int i=1; i<deleteSet.size(); i++)
+    			deleteIndex.add(deleteSet.get(i));
+    		
+    	}
+    	deleteIndex.sort(null);
+    	
+    	String [] newcolName = new String[colName.length - deleteIndex.size()];
+    	int index = 0;
+    	
+    	for (int i=0; i <colName.length; i++) {
+    		if (deleteIndex.indexOf(i) == -1)
+    			newcolName[index++] = colName[i];
+    	}
+    	ReportTableModel rtm = new ReportTableModel(newcolName,true,true);
+    	
+    	
+    	List<List<Object>> finalTable = new ArrayList<List<Object>> ();
+    	for (int i=0; i < tableModel.getModel().getRowCount(); i++) {
+    		List<List<Object>> explodeRow = explodeRow(tableModel.getRow(i),colToRow);
+    		for (List<Object> row:explodeRow) {
+	    		for (int j = deleteIndex.size() -1; j>=0; j-- ) {
+	    			int indexToD = deleteIndex.get(j);
+	    			row.remove(indexToD);
+	    		}
+	    		finalTable.add(row);
+    		}
+    	}
+    	for (List<Object> row:finalTable)
+    		rtm.addFillRow(row.toArray());
+    	
+    	return rtm;
+    }
+    
+    // This function will take a row and explode into multiple rows but putting colArray into row of a single column
+    // Like A[0].name,A[1].name,age
+    //	vivek,singh,20
+    // After conversion will come
+    //A.name,age
+    //vivek,20
+    //singh,20
 
+    public static List<List<Object>> explodeRow(Object[] row, LinkedHashMap<String,List<Integer>> colToRow) {
+    	
+    	List<List<Object>> explodeL = new ArrayList<List<Object>>();
+    	final List<Object> origR = new ArrayList<Object>();
+    	for (Object o:row)
+    		origR.add(o);
+    	
+    	if (row.length == 0 || colToRow.size() == 0 ) {
+    		explodeL.add(origR);
+    		return explodeL;
+    	}
+    	
+    	int colChanged =0;
+    	
+    	for(List<Integer> value:colToRow.values()) {
+    		colChanged = value.size();
+    		for (int i=0; i<colChanged; i++){
+    			List<Object> newR = new ArrayList<Object>();
+    			for (Object o:origR)
+    				newR.add(o);
+    			explodeL.add(newR);
+    		}
+    		break;// After first loop come out
+    	}
+    	
+    	for(List<Integer> value:colToRow.values()) {
+    		int firstI = value.get(0);
+    		for (int i=1; i<value.size(); i++) { // do not remove first
+    			List<Object> rowToChange = explodeL.get(i);
+    			rowToChange.remove(firstI);
+    			rowToChange.add(firstI,origR.get(value.get(i)));
+    			explodeL.remove(i);
+    			explodeL.add(i,rowToChange);
+    		}	
+    	};
+    	
+    	return explodeL;
+    }
+    
+    // This function will take columns Names and show columns which has indexes at at
+    // input --  Like A[0].name,A[1].name,age,A[0].id[0],A[0].id[1]
+    // output -- A[] , A.id[]
+
+
+    public static List<String> getFlattableColumns(String[] colNames) {
+    	List<String> flatC = new ArrayList<String>();
+    	for(String s: colNames) {
+    		int searchFrom = 0;
+    		int indexVal = -1;
+    		while( ( indexVal = s.indexOf("[",searchFrom)) != -1) { // found flattening information
+    			searchFrom = indexVal+1; // search from next character
+    			String value = s.substring(0, indexVal).replaceAll("\\[\\d\\]", ""); // replace [number]
+    			value = value.concat("[]");
+    			if (flatC.indexOf(value) == -1)
+    				flatC.add(value);
+    		}
+    	}
+    	return flatC;
+    }
+    
+    // This function will a flattable column and search from all column where it matches
+    // input --  Like A[]
+    // output -- A[0].id , A[0].id[1],A[1], A[1].id[2]
+    
+    public static LinkedHashMap<String,List<Integer>> getMatchingColumns(String flatColumn,String[] colNames) {
+    	LinkedHashMap<String,List<Integer>> flatCI = new LinkedHashMap<String,List<Integer>> ();
+    	flatColumn = flatColumn.substring(0, flatColumn.length() - 2); // take without end "[]"
+    	
+    	int i=0;
+    	for(String s: colNames) {
+    		String[] origN = s.split("\\.");
+    		s = s.replaceAll("\\[\\d\\]", ""); // replace [number]
+    		if (s.indexOf(flatColumn,0) == 0) { // match from start
+    			String col = s.substring(0,flatColumn.length());
+    			String[] afterS = col.split("\\.");
+    			int len = afterS.length -1;
+    			col="";
+    			
+    			for (int j=0; j <origN.length; j++) {
+    				if (j==len) {
+    					if ("".equals(col) == false && col.endsWith(".") == false)
+        					col = col+".";
+    					col = col+afterS[j];
+    					continue;
+    				}
+    				if ("".equals(col) == false && col.endsWith(".") == false)
+    					col = col+".";
+    				col = col+origN[j];
+    					
+    			}
+    			List<Integer> colI = flatCI.get(col);
+    			if (colI == null) {
+    				colI = new ArrayList<Integer>();
+    				colI.add(i);
+    				flatCI.put(col,colI);
+    			} else {
+    				colI.add(i);
+    				flatCI.put(col,colI);
+    			}
+    		}
+    		i++;
+    	}
+    	return flatCI;
+    }
 	
 } // End of SplitRTM
