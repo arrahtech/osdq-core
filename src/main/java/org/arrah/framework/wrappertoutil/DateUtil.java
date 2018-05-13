@@ -1,4 +1,4 @@
-package org.arrah.framework.teiidwrapper;
+package org.arrah.framework.wrappertoutil;
 /**
  * @author vivek singh
  *
@@ -6,8 +6,8 @@ package org.arrah.framework.teiidwrapper;
 
 import java.util.TimeZone;
 
-import org.arrah.framework.datagen.TimeUtil;
 import org.arrah.framework.dataquality.FormatCheck;
+import org.arrah.framework.util.TimeUtil;
 
 public class DateUtil {
 	

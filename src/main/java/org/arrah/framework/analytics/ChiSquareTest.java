@@ -19,7 +19,7 @@ package org.arrah.framework.analytics;
 
 import java.util.Vector;
 
-import org.arrah.framework.datagen.AggrCumRTM;
+import org.arrah.framework.datagen.AggrCumColumnUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 
 public class ChiSquareTest {
@@ -41,13 +41,13 @@ public class ChiSquareTest {
 		
 		setDegreeOfFreedom((rowN -1 )* (colN -3)); // there are two extra cols in rtm
 		
-		Vector<Double> populationData = AggrCumRTM.getColumnNumberData(_rtm, colN -1);
-		double population = AggrCumRTM.getSum(populationData);
+		Vector<Double> populationData = _rtm.getColDataVD(colN -1);
+		double population = AggrCumColumnUtil.getSum(populationData);
 		double chisquare = 0.000D;
 		
 		for (int i=1; i < (colN -1) ; i++) { // last column is total count
-			Vector<Double> colData = AggrCumRTM.getColumnNumberData(_rtm, i);
-			double colSum = AggrCumRTM.getSum(colData);
+			Vector<Double> colData = _rtm.getColDataVD(i);
+			double colSum = AggrCumColumnUtil.getSum(colData);
 			
 			for (int j=0; j < rowN; j++ ) {
 				double rowSum = new Double(_rtm.getModel().getValueAt(j, colN -1).toString()); //last column value

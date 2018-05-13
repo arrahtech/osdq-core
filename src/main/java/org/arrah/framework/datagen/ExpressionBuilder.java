@@ -213,8 +213,9 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("SUM_".length()));
 			if (i < 0) return i; 
 			else {
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				Double sum = AggrCumRTM.getSum(colData);
+				//colData = AggrCumRTM.getColumnNumberData(rpt,i);
+				colData = rpt.getColDataVD(i);
+				Double sum = AggrCumColumnUtil.getSum(colData);
 				Vector<Double> sum_v = new Vector<Double>();
 				sum_v.add(sum);
 				aggrColVal.put(colName,sum_v);
@@ -225,8 +226,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("AVG_".length()));
 			if (i < 0) return i; 
 			else {
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				Double avg = AggrCumRTM.getAverage(colData);
+				colData = rpt.getColDataVD(i);
+				Double avg = AggrCumColumnUtil.getAverage(colData);
 				Vector<Double> avg_v = new Vector<Double>();
 				avg_v.add(avg);
 				aggrColVal.put(colName,avg_v);
@@ -237,8 +238,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("MIN_".length()));
 			if (i < 0) return i; 
 			else { 
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				double[] minmax = AggrCumRTM.getMinMax(colData);
+				colData = rpt.getColDataVD(i);
+				double[] minmax = AggrCumColumnUtil.getMinMax(colData);
 				Vector<Double> min_v = new Vector<Double>();
 				min_v.add(minmax[0]);
 				aggrColVal.put(colName,min_v);
@@ -250,8 +251,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("MAX_".length()));
 			if (i < 0) return i; 
 			else {
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				double[] minmax = AggrCumRTM.getMinMax(colData);
+				colData = rpt.getColDataVD(i);
+				double[] minmax = AggrCumColumnUtil.getMinMax(colData);
 				Vector<Double> max_v = new Vector<Double>();
 				max_v.add(minmax[1]);
 				aggrColVal.put(colName,max_v);
@@ -262,8 +263,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("CUMSUM_".length()));
 			if (i < 0) return i; 
 			else { 
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				Vector<Double> cumsum = AggrCumRTM.getCumSum(colData);
+				colData = rpt.getColDataVD(i);
+				Vector<Double> cumsum = AggrCumColumnUtil.getCumSum(colData);
 				aggrColVal.put(colName,cumsum);
 				return 6;
 			}
@@ -272,8 +273,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("CUMAVG_".length()));
 			if (i < 0) return i;
 			else {
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				Vector<Double> cumavg = AggrCumRTM.getCumAvg(colData);
+				colData = rpt.getColDataVD(i);
+				Vector<Double> cumavg = AggrCumColumnUtil.getCumAvg(colData);
 				aggrColVal.put(colName,cumavg);
 				return 7;
 			}
@@ -282,8 +283,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("PREV_".length()));
 			if (i < 0) return i;
 			else {
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				Vector<Double> prevavg = AggrCumRTM.putPrevVal(colData);
+				colData = rpt.getColDataVD(i);
+				Vector<Double> prevavg = AggrCumColumnUtil.putPrevVal(colData);
 				aggrColVal.put(colName,prevavg);
 				return 8;
 			}
@@ -292,8 +293,8 @@ public class ExpressionBuilder {
 			int i = ReportTableModel.getColumnIndex(rpt, colName.substring("NEXT_".length()));
 			if (i < 0) return i;
 			else {
-				colData = AggrCumRTM.getColumnNumberData(rpt,i);
-				Vector<Double> nextavg = AggrCumRTM.putNextVal(colData);
+				colData = rpt.getColDataVD(i);
+				Vector<Double> nextavg = AggrCumColumnUtil.putNextVal(colData);
 				aggrColVal.put(colName,nextavg);
 				return 9;
 			}

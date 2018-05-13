@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Random;
 import java.util.Vector;
 
 import net.sourceforge.openforecast.DataSet;
@@ -219,6 +218,7 @@ public class RTMUtil {
 
         return lookup;
     }
+
     // This function will return Hashtable with with key and rowno id
     public static Hashtable<Object,Object> lookupIndex( ReportTableModel rightT, int indexR) {
 
@@ -233,7 +233,6 @@ public class RTMUtil {
 
         return lookup;
     }
-
     /*
      * It will look for the conditions in table based on column Index. Int will
      * tell what types of condition (<, >, = , Like% etc) it is looking for.

@@ -1,4 +1,4 @@
-package org.arrah.framework.teiidwrapper;
+package org.arrah.framework.wrappertoutil;
 /**
  * @author vivek singh
  *

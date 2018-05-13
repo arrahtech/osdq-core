@@ -1,4 +1,4 @@
-package org.arrah.framework.datagen;
+package org.arrah.framework.util;
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *

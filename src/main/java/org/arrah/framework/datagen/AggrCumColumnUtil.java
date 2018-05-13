@@ -22,12 +22,11 @@ package org.arrah.framework.datagen;
 import java.util.Arrays;
 import java.util.Vector;
 
-import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.profile.StatisticalAnalysis;
 
-public class AggrCumRTM {
+public class AggrCumColumnUtil {
 
-	public AggrCumRTM() {
+	public AggrCumColumnUtil() {
 		
 	} // Constructor
 	
@@ -175,25 +174,6 @@ public class AggrCumRTM {
 			denum_b = denum_b + b*b;
 		}
 		return num/(Math.sqrt(denum_a) * Math.sqrt(denum_b));
-	}
-	
-	/* This is utility function to get ReportTableModel data into vector */
-	public static Vector<Double> getColumnNumberData(ReportTableModel rpt, int columnIndex) {
-		Vector<Double> columnDataVector = new Vector<Double>();
-		int rowCount = rpt.getModel().getRowCount();
-		
-		for (int i=0; i < rowCount; i++ ){
-			Object obj = rpt.getModel().getValueAt(i, columnIndex);
-			if (obj == null) columnDataVector.add(0D);
-			try {
-				Double d = Double.parseDouble(obj.toString());
-				columnDataVector.add(d);
-			} catch (Exception e) {
-				columnDataVector.add(0D);
-			}
-		}
-		
-		return columnDataVector;	
 	}
 	
 

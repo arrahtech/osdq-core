@@ -30,12 +30,13 @@ import javax.swing.JOptionPane;
 public class LicenseManager {
 
 	private Date oldDate = null;
-	private Hashtable _table = new Hashtable();
+	private Hashtable<String,String> _table = new Hashtable<String,String>();
 
 	public boolean isEval = true;
 	public int days_remaining = -1;
 	public String c_name = null;
 
+	@SuppressWarnings("unchecked")
 	public boolean isValid() {
 		try {
 
@@ -44,7 +45,7 @@ public class LicenseManager {
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 
 			// If eval copy gets the timestamp
-			_table = (Hashtable) in.readObject();
+			_table = (Hashtable<String,String>) in.readObject();
 			c_name = (String) _table.get("Company_name");
 			if (c_name.equalsIgnoreCase("evaluation copy") == true) {
 				System.out.println("\nEvaluation Copy");
@@ -63,15 +64,18 @@ public class LicenseManager {
 					FileOutputStream fileOut = new FileOutputStream(
 							"profiler.lic");
 					ObjectOutputStream out = new ObjectOutputStream(fileOut);
-					out.writeObject((Hashtable) _table);
+					out.writeObject((Hashtable<String,String>) _table);
 					out.writeObject((Date) oldDate);
 					out.close();
 					fileOut.close();
 					return true;
-				} else
+				} else {
+					in.close();
 					return isTimeV();
+				}
 			}
 			isEval = false;
+			in.close();
 			if (c_name == null) {
 				return false;
 			}

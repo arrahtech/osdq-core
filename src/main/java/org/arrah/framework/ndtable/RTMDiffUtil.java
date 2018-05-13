@@ -1,4 +1,4 @@
-package org.arrah.framework.analytics;
+package org.arrah.framework.ndtable;
 
 /**************************************************
 *     Copyright to Vivek K Singh      2014        *
@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-
-import org.arrah.framework.ndtable.ReportTableModel;
 
 public class RTMDiffUtil {	
 	

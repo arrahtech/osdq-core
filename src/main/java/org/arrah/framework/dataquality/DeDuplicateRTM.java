@@ -15,8 +15,12 @@ package org.arrah.framework.dataquality;
  * This class is used finding duplicate rows from
  * RTM and show the duplicate values
  *
+ * This file will also be used for completing 
+ * some empty columns like address completion
+ * if zip code is provided.
  */
 import java.math.BigInteger;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -81,6 +85,48 @@ public class DeDuplicateRTM {
 	public ReportTableModel showDuplicateModel () {
 		
 		return duplicate;
+	}
+	
+	// This function will be used for address completion wrapper function
+	public static ReportTableModel  completeRTMCOls (ReportTableModel rtm, Integer[] indexToComplete,int matchIndex,
+				Hashtable<Object,Object> keyRowMap,ReportTableModel toFillFrom, int[] indexToFetch ) {
+		if (indexToComplete.length != indexToFetch.length) {
+			System.out.println("To Fill and From Fill columns does not match");
+			return rtm;
+		}
+
+		int rowC = rtm.getModel().getRowCount();
+		for (int i=0; i < rowC; i++ ) {
+			Object matchO = rtm.getModel().getValueAt(i, matchIndex);
+			int rowMatched = (Integer)keyRowMap.get(matchO);
+			Object[] valuesToFill = toFillFrom.getSelectedColRow(rowMatched, indexToFetch);
+			completeColumnsRowIndex(rtm,i,indexToComplete,valuesToFill);
+		}
+		return rtm;
+	}
+	
+	// This function will be used for address completion
+	public static void completeColumnsRowIndex (ReportTableModel rtm,int rowI, Integer[] indexToComplete, Object[] valuesToFill) {
+		if (indexToComplete.length != valuesToFill.length) {
+			System.out.println("To Fill and From Fill columns does not match");
+			return;
+		}
+			
+		for (int i=0; i <indexToComplete.length; i++) {
+			Object o = rtm.getModel().getValueAt(rowI, indexToComplete[i]);
+			if (o == null || o.toString().equals("")) // override
+				rtm.getModel().setValueAt(valuesToFill[i], rowI, indexToComplete[i]);
+		}
+	}
+	
+	// This function will be used for address completion
+	public static Object[]  completeColumns (Object[] row, Integer[] indexToComplete, Object[] valuesToFill) {
+		for (int i=0; i <indexToComplete.length; i++) {
+			Object o = row[indexToComplete[i]];
+			if (o == null || o.toString().equals("")) // override
+				row[indexToComplete[i]] = valuesToFill[i];
+		}
+		return row;
 	}
 	
 	}
