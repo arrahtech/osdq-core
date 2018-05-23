@@ -26,6 +26,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoubleField;
@@ -161,7 +162,7 @@ public class SimilarityCheckLucene {
         		System.out.println("Index:"+indexPath+" exists.");
         		return false;
         	}
-            IndexWriterConfig conf = new IndexWriterConfig(new StandardAnalyzer());
+            IndexWriterConfig conf = new IndexWriterConfig(new StandardAnalyzer(CharArraySet.EMPTY_SET));
             conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             writer = new IndexWriter(idx,conf);
         } catch (Exception e) {
@@ -179,7 +180,7 @@ public class SimilarityCheckLucene {
         idx = new RAMDirectory();
         try {
             // writer = new IndexWriter(idx, new StandardAnalyzer(), true);
-            IndexWriterConfig conf = new IndexWriterConfig(new StandardAnalyzer());
+            IndexWriterConfig conf = new IndexWriterConfig(new StandardAnalyzer(CharArraySet.EMPTY_SET));
             conf.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             writer = new IndexWriter(idx,conf);
         } catch (Exception e) {
@@ -335,7 +336,7 @@ public class SimilarityCheckLucene {
     public Query parseQuery(String query) {
         try {
         	
-            QueryParser qp = new QueryParser(colName[0], new StandardAnalyzer()) {
+            QueryParser qp = new QueryParser(colName[0], new StandardAnalyzer(CharArraySet.EMPTY_SET)) {
             	public Query parse(String query) throws ParseException {
             		return super.parse(query);
             		

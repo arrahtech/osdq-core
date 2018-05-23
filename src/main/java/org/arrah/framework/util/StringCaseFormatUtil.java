@@ -3,6 +3,7 @@ package org.arrah.framework.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Vector;
 
 /***********************************************
@@ -471,6 +472,21 @@ public class StringCaseFormatUtil {
 		ArrayList<Character> charList = toArrayListChar(showUnique);
 		HashSet<Character> setc = new HashSet<Character>(charList);
 		return setc;
+	}
+	
+	// This function will return List of String
+	// to be used by similarity spilt by blank space 
+	public static List<String> toListString (String showUnique) {
+		List<String> splitL = new ArrayList<String> ();
+		if (showUnique == null || "".equals(showUnique) || showUnique.indexOf(" ") == -1) {
+			splitL.add(showUnique);
+			return splitL;
+		}
+		
+		String[] split = showUnique.split(" ");
+		for (String s: split)
+			splitL.add(s);
+		return splitL;
 	}
 
 }

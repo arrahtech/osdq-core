@@ -361,6 +361,7 @@ public class CSVtoReportTableModel {
 			int colL=0;
 			boolean headerset = false;
 			while ((nextLine = reader.readNext()) != null) {
+				
 				if (headerset == false) { // 1st line is header
 					showT = new ReportTableModel(nextLine, true, true);
 					headerset = true;
@@ -369,8 +370,12 @@ public class CSVtoReportTableModel {
 				}
 				if (colL == nextLine.length)
 					showT.addFillRow(nextLine);
-				else
-					System.out.println("No of Column not matching:" + nextLine);
+				else {
+					System.out.print("No of Column("+colL + ") not matching:");
+					for (String s:nextLine)
+						System.out.print(s +"\t");
+					System.out.println("--");
+				}
 			}
 			reader.close();
 		} catch (IOException ie) {

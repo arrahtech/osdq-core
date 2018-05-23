@@ -383,6 +383,11 @@ public class ReportTableModel implements Serializable, Cloneable {
 		}
 		return obj;
 	}
+	// To get only indexed or selected cols
+	public Object[] getSelectedColRow(int rowIndex,Integer[] colI) {
+		int[] leftI = Arrays.stream(colI).mapToInt(Integer::intValue).toArray();
+		return getSelectedColRow( rowIndex, leftI);
+	}
 
 	public void cleanallRow() {
 		int i = tabModel.getRowCount();

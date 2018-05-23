@@ -31,12 +31,13 @@ import java.util.Vector;
 import net.sourceforge.openforecast.DataSet;
 
 import org.apache.lucene.document.Document;
-// import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
+
 import org.arrah.framework.analytics.FuzzyVector;
 import org.arrah.framework.dataquality.SimilarityCheckLucene;
 import org.arrah.framework.dataquality.SimilarityCheckLucene.Hits;
 import org.arrah.framework.rdbms.DataDictionaryPDF;
+
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Millisecond;
@@ -253,18 +254,18 @@ public class RTMUtil {
 
         for (int i = 0; i < rowC; i++) {
             switch (cond) {
-                case 2:
+                case 2: // Null
                     Object obj = _rt.getModel().getValueAt(i, colI);
                     if (obj == null)
                         result_v.add(i);
                     break;
-                case 3:
+                case 3: // Not Null
                     obj = _rt.getModel().getValueAt(i, colI);
                     if (obj != null)
                         result_v.add(i);
                     break;
-                case 4:
-                case 5:
+                case 4: // Like
+                case 5: // Not Like
                     boolean found = false;
                     obj = _rt.getModel().getValueAt(i, colI);
                     if (obj == null || condV == null || "".equals(condV))
@@ -296,12 +297,12 @@ public class RTMUtil {
                     if (cond == 5 && found == false)
                         result_v.add(i);
                     break;
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
+                case 6: // Equal to
+                case 7: // Not Equal to
+                case 8: // greater than >
+                case 9: // Greater than equal to >=
+                case 10: // less than <
+                case 11: // less than equal to <=
                     found = false;
                     obj = _rt.getModel().getValueAt(i, colI);
                     if (obj == null || condV == null || "".equals(condV))

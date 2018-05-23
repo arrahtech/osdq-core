@@ -214,9 +214,6 @@ public class RecordMatch
 			functor = new ConcurrentHashMap <String,Entry<Method,Object>>();
 			
 			biclassmap.put("org.simmetrics.metrics.BlockDistance","compare");
-			//biclassmap.put("org.simmetrics.metrics.ChapmanLengthDeviation","compare");
-			//biclassmap.put("org.simmetrics.metrics.ChapmanMeanLength","compare");
-			//biclassmap.put("org.simmetrics.metrics.ChapmanOrderedNameCompoundSimilarity","compare");
 			biclassmap.put("org.simmetrics.metrics.CosineSimilarity","compare");
 
 			biclassmap.put("org.simmetrics.metrics.DiceSimilarity","compare");
@@ -228,17 +225,14 @@ public class RecordMatch
 			biclassmap.put("org.simmetrics.metrics.Levenshtein","compare");
 
 			biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","compare");
-			//biclassmap.put("org.simmetrics.metrics.MongeElkan","compare");
+			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$MongeElkan","compare");
 			biclassmap.put("org.simmetrics.metrics.SimonWhite","compare");
 			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","compare");
 			biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","compare");
-			//biclassmap.put("org.simmetrics.metrics.QGramsDistance","compare");
 
 			biclassmap.put("org.simmetrics.metrics.SmithWaterman","compare");
 			biclassmap.put("org.simmetrics.metrics.SmithWatermanGotoh","compare");
-			//biclassmap.put("org.simmetrics.metrics.Soundex","compare");
-			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLink","compare");
-			//biclassmap.put("uk.ac.shef.wit.simmetrics.similaritymetrics.TagLinkToken","compare");
+
 
 			String methodName, className;
 			
@@ -249,9 +243,9 @@ public class RecordMatch
 					methodName = m.getValue();
 							
 					className = m.getKey();
-					//System.out.println("Algo name is:"+ className);
 					Class<?> cls = Class.forName(className);
 					Object ob = cls.newInstance();
+					
 					// Create functor
 					if (className.equals("org.simmetrics.metrics.CosineSimilarity") ||
 							className.equals("org.simmetrics.metrics.DiceSimilarity") ||
@@ -261,7 +255,7 @@ public class RecordMatch
 					} else if(className.equals("org.simmetrics.metrics.BlockDistance") || 
 							className.equals("org.simmetrics.metrics.EuclideanDistance") ||
 							className.equals("org.simmetrics.metrics.MatchingCoefficient") ||
-							className.equals("org.simmetrics.metrics.MongeElkan") ||
+							className.equals("org.arrah.framework.dataquality.SimmetricsUtil$MongeElkan") ||
 							className.equals("org.simmetrics.metrics.SimonWhite")) {
 						functor.put(new String(className.substring(className.lastIndexOf('.') +1, className.length()).toUpperCase()), new AbstractMap.SimpleEntry<Method,Object>(cls.getDeclaredMethod(methodName, new Class[]{List.class,List.class}),ob));
 					}
@@ -436,22 +430,30 @@ public class RecordMatch
 					Entry<Method,Object> en = null;
 					for(ColData dd: metaA.getA() )
 					{
-						en = functor.get(dd.getM_algoName());
+						String algoName=dd.getM_algoName();
+						
+						if (algoName.compareToIgnoreCase("MongeElkan") == 0)
+							algoName = "SIMMETRICSUTIL$"+algoName;
+
+						en = functor.get(algoName);
 						if((matchprob = dd.getM_matchIndex() )!= 1.0)
 						{
 							Object ob;
-							if (dd.getM_algoName().compareToIgnoreCase("CosineSimilarity") == 0 ||
-									dd.getM_algoName().compareToIgnoreCase("DiceSimilarity") == 0 ||
-									dd.getM_algoName().compareToIgnoreCase("JaccardSimilarity") == 0 ||
-									dd.getM_algoName().compareToIgnoreCase("OverlapCoefficient") == 0 ) {
+							if (algoName.compareToIgnoreCase("CosineSimilarity") == 0 ||
+								algoName.compareToIgnoreCase("DiceSimilarity") == 0 ||
+								algoName.compareToIgnoreCase("JaccardSimilarity") == 0 ||
+								algoName.compareToIgnoreCase("OverlapCoefficient") == 0 ) {
 								ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toSetChar(o1.get(dd.getM_colIndexA())),
 										StringCaseFormatUtil.toSetChar(o2.get(dd.getM_colIndexB())));
-							} else if (dd.getM_algoName().compareToIgnoreCase("BlockDistance") == 0 ||
-									dd.getM_algoName().compareToIgnoreCase("EuclideanDistance") == 0 ||
-									dd.getM_algoName().compareToIgnoreCase("MatchingCoefficient") == 0 ||
-									dd.getM_algoName().compareToIgnoreCase("SimonWhite") == 0 ) {
+							} else if (algoName.compareToIgnoreCase("BlockDistance") == 0 ||
+										algoName.compareToIgnoreCase("EuclideanDistance") == 0 ||
+										algoName.compareToIgnoreCase("MatchingCoefficient") == 0 ||
+										algoName.compareToIgnoreCase("SimonWhite") == 0 ) {
 								ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toArrayListChar(o1.get(dd.getM_colIndexA())),
 										StringCaseFormatUtil.toArrayListChar(o2.get(dd.getM_colIndexB())));
+							} else if(algoName.compareToIgnoreCase("SimmetricsUtil$MongeElkan") == 0 ) {
+								ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toListString(o1.get(dd.getM_colIndexA())),
+										StringCaseFormatUtil.toListString(o2.get(dd.getM_colIndexB())));
 							} else
 								ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
 							//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
