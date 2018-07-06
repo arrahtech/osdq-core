@@ -190,7 +190,7 @@ public class DiscreetRange {
 	// It may have multiple 1s in values
 	public static Hashtable<Object,Integer> getBinaryEncoding(Vector<Object> list){
 		
-		
+		// TO DO
 		return null;
 		
 	}

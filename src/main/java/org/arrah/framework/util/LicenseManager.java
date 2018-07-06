@@ -35,18 +35,21 @@ public class LicenseManager {
 	public boolean isEval = true;
 	public int days_remaining = -1;
 	public String c_name = null;
+	public String user_name = null;
 
 	@SuppressWarnings("unchecked")
 	public boolean isValid() {
 		try {
 
 			// Open the file and read Company name
-			FileInputStream fileIn = new FileInputStream("profiler.lic");
+			String filepath= LicenseManager.class.getClassLoader().getResource("profiler.lic").getPath();
+			FileInputStream fileIn = new FileInputStream(filepath);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 
 			// If eval copy gets the timestamp
 			_table = (Hashtable<String,String>) in.readObject();
 			c_name = (String) _table.get("Company_name");
+			user_name = (String) _table.get("User_name");
 			if (c_name.equalsIgnoreCase("evaluation copy") == true) {
 				System.out.println("\nEvaluation Copy");
 				oldDate = (Date) in.readObject();

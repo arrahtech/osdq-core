@@ -422,6 +422,20 @@ public class StringCaseFormatUtil {
 		return onlyDigit;
 	}
 	
+	// removing extra characters and returning only Letters
+	public static String letterString(String numString) {
+		String onlyLetter="";
+		if (numString == null  || "".equals(numString) )
+			return onlyLetter;
+		int strlen = numString.length();
+		for (int i=0; i < strlen; i++) {
+			char c = numString.charAt(i);
+			if (Character.isLetter(c) == true )
+				onlyLetter += c;
+		}
+		return onlyLetter;
+	}
+	
 	// This function will return unique char and count from String
 	public static HashMap<Character,Integer> uniqueCharCount (String showUnique) {
 		if (showUnique == null || "".equals(showUnique) ) // nothing to compare

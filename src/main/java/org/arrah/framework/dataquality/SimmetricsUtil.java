@@ -2,6 +2,9 @@ package org.arrah.framework.dataquality;
 
 import java.util.List;
 
+import org.simmetrics.StringMetric;
+import org.simmetrics.StringMetricBuilder;
+
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
@@ -41,7 +44,40 @@ public class SimmetricsUtil {
 		}
 		
 	}
+	
+	public static class Soundex {
+		private StringMetric soundex;
+		public Soundex() {
+			soundex = org.simmetrics.StringMetrics.soundex();
+		}
 		
+		public float compare(String a, String b) {
+			return soundex.compare(a, b);
+		}
+	}
+	
+	public static class qGramDistance {
+		private StringMetric qGram;
+		public qGramDistance() {
+			qGram = org.simmetrics.StringMetrics.qGramsDistance();
+		}
+		
+		public float compare(String a, String b) {
+			return qGram.compare(a, b);
+		}
+	}
+	
+	public static class DoubleMetaPhone {
+		private StringMetric dmetaPhone;
+		public DoubleMetaPhone() {
+			dmetaPhone = StringMetricBuilder.with(org.simmetrics.StringMetrics.jaroWinkler()).
+					simplify(new org.simmetrics.simplifiers.DoubleMetaphone()).build();
+		}
+		
+		public float compare(String a, String b) {
+			return dmetaPhone.compare(a, b);
+		}
+	}
 	
 	
 	

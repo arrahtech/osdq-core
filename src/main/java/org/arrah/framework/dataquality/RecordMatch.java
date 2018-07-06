@@ -226,6 +226,9 @@ public class RecordMatch
 
 			biclassmap.put("org.simmetrics.metrics.MatchingCoefficient","compare");
 			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$MongeElkan","compare");
+			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$Soundex","compare");
+			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$qGramDistance","compare");
+			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$DoubleMetaPhone","compare");
 			biclassmap.put("org.simmetrics.metrics.SimonWhite","compare");
 			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","compare");
 			biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","compare");
@@ -315,17 +318,19 @@ public class RecordMatch
 										for(List<String> r : right)
 										{
 											 // System.out.println("Record right " + r);
+											synchronized(fz) {
 											if(fz.compare(l, r) == 0)
 											{
 												atleastOneRecordmatch = true;
 												matched.add(new Result(true,lIndex,rIndex,l,r,fz.simMatchVal));
-												// System.out.println("Left Index:"+lIndex+" Right Index:"+rIndex);
+												//System.out.println("Left Index:"+lIndex+" Right Index:"+rIndex);
+												//System.out.println("Sim:"+fz.simMatchVal+":"+l.toString()+ " " +r.toString());
 												// One row matched
 												//If we are looking for only first right to match 
 												// first left go to next left row
 												if(firstRecordMatch)
 													break;
-											}
+											} }
 											rIndex++;
 										}
 										if(!atleastOneRecordmatch)
@@ -407,7 +412,7 @@ public class RecordMatch
 	class  fuzzyCompare implements Comparator<List<String>> 
 	{
 		private MultiColData metaA;
-		private float simMatchVal = 0; // this will hold the last matched value between 0.00f - 1.00f
+		private float simMatchVal = 0f; // this will hold the last matched value between 0.00f - 1.00f
 		
 		public fuzzyCompare(MultiColData metaA,boolean bycell)
 		{
@@ -423,7 +428,8 @@ public class RecordMatch
 		{
 			boolean exactMatch = metaA.isExactMatch();
 			boolean atLeastOneMatch = false;
-			float matchprob;
+			float matchprob = 1; // default exact match
+			simMatchVal = 0f;
 			
 				try
 				{
@@ -432,7 +438,10 @@ public class RecordMatch
 					{
 						String algoName=dd.getM_algoName();
 						
-						if (algoName.compareToIgnoreCase("MongeElkan") == 0)
+						if (algoName.compareToIgnoreCase("MongeElkan") == 0 ||
+							algoName.compareToIgnoreCase("Soundex") == 0 ||
+							algoName.compareToIgnoreCase("qGramDistance") == 0 ||
+							algoName.compareToIgnoreCase("DoubleMetaPhone") == 0)
 							algoName = "SIMMETRICSUTIL$"+algoName;
 
 						en = functor.get(algoName);
@@ -456,8 +465,9 @@ public class RecordMatch
 										StringCaseFormatUtil.toListString(o2.get(dd.getM_colIndexB())));
 							} else
 								ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
-							//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
-							//System.out.printf(dd.getM_algoName());
+							
+							 	//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
+							 	//System.out.printf(dd.getM_algoName());
 							
 							simMatchVal = (Float)ob; // update the matched or unmatched value
 							if(simMatchVal < matchprob)
@@ -471,10 +481,12 @@ public class RecordMatch
 							{
 								atLeastOneMatch = true;
 								
+								//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),simMatchVal);
+							 	//System.out.printf(dd.getM_algoName());
 								if(!exactMatch)
 									break;
 							}
-						}
+						} // Exact Match
 						else
 						{
 							if((o1.get(dd.getM_colIndexA()).compareToIgnoreCase(o2.get(dd.getM_colIndexB()))) == 0)
