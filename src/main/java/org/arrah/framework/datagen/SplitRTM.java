@@ -30,6 +30,7 @@ import org.arrah.framework.ndtable.ReportTableModel;
 
 public class SplitRTM {
 
+	private static int maxIndex = -1;
 
 	public SplitRTM() {
 		
@@ -176,6 +177,12 @@ public class SplitRTM {
     	
     	for (String newCol: colToRow.keySet()) {
     		List<Integer> deleteSet = colToRow.get(newCol);
+    		// take only odd values
+    		List<Integer> newR = new ArrayList<Integer>();
+    		for (int i=0; i < deleteSet.size(); i=i+2){
+    			newR.add(deleteSet.get(i));
+    		}
+    		deleteSet = newR;
     		int firstIndex = deleteSet.get(0);
     		colName[firstIndex] = newCol;
     		
@@ -198,12 +205,25 @@ public class SplitRTM {
     	List<List<Object>> finalTable = new ArrayList<List<Object>> ();
     	for (int i=0; i < tableModel.getModel().getRowCount(); i++) {
     		List<List<Object>> explodeRow = explodeRow(tableModel.getRow(i),colToRow);
+    		
+    		/***
+    		for (List<Object> row:explodeRow)
+    			System.out.println(row);
+    		***/
+    		
     		for (List<Object> row:explodeRow) {
-	    		for (int j = deleteIndex.size() -1; j>=0; j-- ) {
+    			List<Object> newRow= new ArrayList<Object>();
+    			for (Object o: row)
+    				newRow.add(o);
+    			
+    			// System.out.println("next:" + newRow + " Size:"+deleteIndex.size()+ " DeleteI"+deleteIndex);
+	    		for (int j = deleteIndex.size()-1; j>=0; j-- ) {
+	    			//System.out.println("J:" +j +"  -- "+(deleteIndex.size()-1));
 	    			int indexToD = deleteIndex.get(j);
-	    			row.remove(indexToD);
+	    			//System.out.println(" DeleteIndex"+indexToD + "J:" +j);
+	    			newRow.remove(indexToD);
 	    		}
-	    		finalTable.add(row);
+	    		finalTable.add(newRow);
     		}
     	}
     	for (List<Object> row:finalTable)
@@ -224,37 +244,68 @@ public class SplitRTM {
     	
     	List<List<Object>> explodeL = new ArrayList<List<Object>>();
     	final List<Object> origR = new ArrayList<Object>();
-    	for (Object o:row)
+    	for (Object o:row) {
     		origR.add(o);
+    		// System.out.println(o);
+    	}
     	
     	if (row.length == 0 || colToRow.size() == 0 ) {
     		explodeL.add(origR);
     		return explodeL;
     	}
     	
-    	int colChanged =0;
+    	/**
+    	for (String s:colToRow.keySet()) {
+    		System.out.println(s+":"+colToRow.get(s));
+    	}**/
     	
-    	for(List<Integer> value:colToRow.values()) {
-    		colChanged = value.size();
-    		for (int i=0; i<colChanged; i++){
-    			List<Object> newR = new ArrayList<Object>();
-    			for (Object o:origR)
-    				newR.add(o);
-    			explodeL.add(newR);
-    		}
-    		break;// After first loop come out
-    	}
-    	
+    	// Add enough rows half of the total count
+		for (int i=0; i<= maxIndex; i++){
+			List<Object> newR = new ArrayList<Object>();
+			for (Object o:origR)
+				newR.add(o);
+			explodeL.add(newR);
+		}
+		
+		// System.out.println("Max Index:"+maxIndex);
+		
     	for(List<Integer> value:colToRow.values()) {
     		int firstI = value.get(0);
-    		for (int i=1; i<value.size(); i++) { // do not remove first
+    		// take only odd value
+    		List<Integer> newR = new ArrayList<Integer>();
+    		for (int i=0; i < value.size(); i=i+2){
+    			newR.add(value.get(i));
+    		}
+    		// take only even value
+    		List<Integer> newER = new ArrayList<Integer>();
+    		for (int i=1; i < value.size(); i=i+2){
+    			newER.add(value.get(i));
+    		}
+    		value = newR; // assign new value
+    		
+    		// make all empty
+    		for (int i=0; i < explodeL.size(); i++) {
     			List<Object> rowToChange = explodeL.get(i);
     			rowToChange.remove(firstI);
-    			rowToChange.add(firstI,origR.get(value.get(i)));
+    			rowToChange.add(firstI,"");
     			explodeL.remove(i);
     			explodeL.add(i,rowToChange);
+    		}
+    		
+    		
+    		//System.out.println("Value:"+value);
+    		//System.out.println("NewER:"+newER);
+    		//System.out.println("FirstI:"+firstI);
+    		
+    		for (int i=0; i < value.size(); i++) { // start from first
+    			List<Object> rowToChange = explodeL.get(newER.get(i));
+    			rowToChange.remove(firstI);
+    			rowToChange.add(firstI,origR.get(value.get(i)));
+    			explodeL.remove((int)newER.get(i));
+    			//System.out.println("AddI:"+newER.get(i) + " - "+rowToChange);
+    			explodeL.add(newER.get(i),rowToChange);
     		}	
-    	};
+    	}
     	
     	return explodeL;
     }
@@ -289,6 +340,7 @@ public class SplitRTM {
     	flatColumn = flatColumn.substring(0, flatColumn.length() - 2); // take without end "[]"
     	
     	int i=0;
+    	maxIndex = -1;
     	for(String s: colNames) {
     		String[] origN = s.split("\\.");
     		s = s.replaceAll("\\[\\d\\]", ""); // replace [number]
@@ -297,12 +349,22 @@ public class SplitRTM {
     			String[] afterS = col.split("\\.");
     			int len = afterS.length -1;
     			col="";
-    			
+    			int indexmatched = -1;
     			for (int j=0; j <origN.length; j++) {
     				if (j==len) {
     					if ("".equals(col) == false && col.endsWith(".") == false)
         					col = col+".";
     					col = col+afterS[j];
+    					// It is right place to grab index then pass it on
+    					String stripIndex = origN[len];
+    					String indexStr = stripIndex.substring(stripIndex.indexOf("[") + 1, stripIndex.indexOf("]"));
+    					//System.out.println(indexStr);
+    					try{
+    						indexmatched = Integer.parseInt(indexStr);
+    					} catch(Exception e) {
+    						indexmatched = -1;
+    					}
+    					if (indexmatched > maxIndex) maxIndex =indexmatched;
     					continue;
     				}
     				if ("".equals(col) == false && col.endsWith(".") == false)
@@ -314,9 +376,11 @@ public class SplitRTM {
     			if (colI == null) {
     				colI = new ArrayList<Integer>();
     				colI.add(i);
+    				colI.add(indexmatched); // tuple of column and index matched 2,0 ( column 2 index 0)
     				flatCI.put(col,colI);
     			} else {
     				colI.add(i);
+    				colI.add(indexmatched);
     				flatCI.put(col,colI);
     			}
     		}

@@ -42,8 +42,7 @@ public class LicenseManager {
 		try {
 
 			// Open the file and read Company name
-			String filepath= LicenseManager.class.getClassLoader().getResource("profiler.lic").getPath();
-			FileInputStream fileIn = new FileInputStream(filepath);
+			FileInputStream fileIn = new FileInputStream("resource/profiler.lic");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 
 			// If eval copy gets the timestamp
@@ -65,7 +64,7 @@ public class LicenseManager {
 					days_remaining = 60;
 					// days_remaining = 15 ; // 15 days license
 					FileOutputStream fileOut = new FileOutputStream(
-							"profiler.lic");
+							"resource/profiler.lic");
 					ObjectOutputStream out = new ObjectOutputStream(fileOut);
 					out.writeObject((Hashtable<String,String>) _table);
 					out.writeObject((Date) oldDate);
