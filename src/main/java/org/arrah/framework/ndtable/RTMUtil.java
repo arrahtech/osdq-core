@@ -347,22 +347,22 @@ public class RTMUtil {
                         try {
                             Double num = Double.parseDouble(condV);
                             if (cond == 6)
-                                found = (((Double) obj).doubleValue() == num
+                            	found = (((Number) obj).doubleValue() == num
                                         .doubleValue()) ? true : false;
                             else if (cond == 7)
-                                found = (((Double) obj).doubleValue() != num
+                                found = (((Number) obj).doubleValue() != num
                                         .doubleValue()) ? true : false;
                             else if (cond == 8)
-                                found = (((Double) obj).doubleValue() < num
+                                found = (((Number) obj).doubleValue() < num
                                         .doubleValue()) ? true : false;
                             else if (cond == 9)
-                                found = (((Double) obj).doubleValue() <= num
+                                found = (((Number) obj).doubleValue() <= num
                                         .doubleValue()) ? true : false;
                             else if (cond == 10)
-                                found = (((Double) obj).doubleValue() > num
+                                found = (((Number) obj).doubleValue() > num
                                         .doubleValue()) ? true : false;
                             else if (cond == 10)
-                                found = (((Double) obj).doubleValue() >= num
+                                found = (((Number) obj).doubleValue() >= num
                                         .doubleValue()) ? true : false;
                         } catch (NumberFormatException nexp) {
                             System.out.println("\n ERROR:Could not Parse " + condV
