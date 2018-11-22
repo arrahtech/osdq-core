@@ -422,6 +422,21 @@ public class StringCaseFormatUtil {
 		return onlyDigit;
 	}
 	
+	// removing extra characters and returning alpha numeric and 
+	public static String alphanuemricString(String numString,String skipchar) {
+		String alphanuemric="";
+		if (numString == null  || "".equals(numString) )
+			return alphanuemric;
+		int strlen = numString.length();
+		for (int i=0; i < strlen; i++) {
+			char c = numString.charAt(i);
+			if (Character.isLetterOrDigit(c) == true ||
+					(skipchar != null && skipchar.indexOf(c) != -1) )
+				alphanuemric += c;
+		}
+		return alphanuemric;
+	}
+	
 	// removing extra characters and returning only Letters
 	public static String letterString(String numString) {
 		String onlyLetter="";

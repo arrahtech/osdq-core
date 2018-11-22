@@ -690,4 +690,13 @@ public class QualityCheck {
 		return rt;
 	}
 	
+	// This function find a key matching the filter and 
+	// do auto format detection
+
+	public ReportTableModel autoFormatDetection(JDBCRowset rows, String col,Hashtable<String, String> filter) throws SQLException {
+
+		AutoFormatCheck afc = new AutoFormatCheck(filter);
+		return afc.getRowsetCountintoRTM(rows,col);
+	}
+	
 }
