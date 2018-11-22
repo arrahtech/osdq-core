@@ -20,8 +20,8 @@ package org.arrah.framework.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -37,8 +37,10 @@ public class AsciiParser {
 		 */
 		public void init(String fileName) throws IOException{
 			
-    BufferedReader br = new BufferedReader(new InputStreamReader(
-        AsciiParser.class.getClassLoader().getResourceAsStream(fileName)));
+    //BufferedReader br = new BufferedReader(new InputStreamReader(
+       // AsciiParser.class.getClassLoader().getResourceAsStream(fileName)));
+			
+			BufferedReader br = new BufferedReader(new  FileReader(fileName));
 			 
 			int ctr = 1; // Counter
 			String sCurrentLine = null;
