@@ -229,6 +229,7 @@ public class RecordMatch
 			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$Soundex","compare");
 			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$qGramDistance","compare");
 			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$DoubleMetaPhone","compare");
+			biclassmap.put("org.arrah.framework.dataquality.SimmetricsUtil$CustomNames","compare");
 			biclassmap.put("org.simmetrics.metrics.SimonWhite","compare");
 			biclassmap.put("org.simmetrics.metrics.NeedlemanWunch","compare");
 			biclassmap.put("org.simmetrics.metrics.OverlapCoefficient","compare");
@@ -441,7 +442,8 @@ public class RecordMatch
 						if (algoName.compareToIgnoreCase("MongeElkan") == 0 ||
 							algoName.compareToIgnoreCase("Soundex") == 0 ||
 							algoName.compareToIgnoreCase("qGramDistance") == 0 ||
-							algoName.compareToIgnoreCase("DoubleMetaPhone") == 0)
+							algoName.compareToIgnoreCase("DoubleMetaPhone") == 0  ||
+							algoName.compareToIgnoreCase("CustomNames") == 0 )
 							algoName = "SIMMETRICSUTIL$"+algoName;
 
 						en = functor.get(algoName);

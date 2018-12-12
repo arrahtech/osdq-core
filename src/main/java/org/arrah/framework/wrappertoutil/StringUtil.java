@@ -5,11 +5,11 @@ package org.arrah.framework.wrappertoutil;
  */
 import java.util.ArrayList;
 
-import org.arrah.framework.analytics.PIIValidator;
 import org.arrah.framework.datagen.ShuffleRTM;
 import org.arrah.framework.ndtable.ResultsetToRTM;
 import org.arrah.framework.util.StringCaseFormatUtil;
 import org.arrah.framework.datagen.EncryptRTM;
+import org.arrah.framework.dataquality.PIIValidator;
 import org.simmetrics.metrics.*;
 
 /**

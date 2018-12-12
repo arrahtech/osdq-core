@@ -1,4 +1,4 @@
-package org.arrah.framework.analytics;
+package org.arrah.framework.dataquality;
 
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -86,6 +86,7 @@ public class PIIValidator {
 	
 	// Validating SSN
 	public boolean isSSN(String ssnnumber) {
+		errdef = "";
 		int strlen = ssnnumber.length();
 		
 		// length
@@ -114,8 +115,9 @@ public class PIIValidator {
 		return true;
 		
 	}
-	// Validating SSN
+	// Validating Phone
 	public boolean isPhone(String phonenum) {
+		errdef = "";
 		int strlen = phonenum.length();
 		
 		if (strlen > 12 || strlen < 8) { // phone number can vary from 8 digit to upto 12 digits
@@ -130,6 +132,7 @@ public class PIIValidator {
 	
 	// Validating Emails
 	public boolean isEmails(String[] emailStr) {
+		errdef = "";
 		boolean allEmail = false;
 		for(String email : emailStr) {
 			allEmail = isEmail(email);
@@ -142,6 +145,7 @@ public class PIIValidator {
 	}
 	// Validating Email
 	public boolean isEmail(String emailStr) {
+		errdef = "";
 		//  Valid Email="^.+@[^\.].*\.[a-zA-Z0-9]{2,}$"
 		// String regex = "^[A-Za-z0-9+_.-]+@(.+)$";
 
@@ -162,6 +166,7 @@ public class PIIValidator {
 	}
 	// Validating Date of Birth
 	public boolean isDoB(Date dob) {
+		errdef = "";
 		
 		long dobmilliSec = dob.getTime();
 		long nowmilliSec = System.currentTimeMillis();
@@ -178,6 +183,7 @@ public class PIIValidator {
 	}
 	// Validating accounting number or salary
 	public boolean isAccountingNumber(String salary) {
+		errdef = "";
 		
 		for (int i=0; i < salary.length(); i++) {
 			char c = salary.charAt(i);
@@ -193,6 +199,7 @@ public class PIIValidator {
 	}
 	// Validating IP v4 and v6
 	public boolean isIp(String ipaddress) {
+		errdef = "";
 		
 		final Pattern IPV4_PATTERN =
 				Pattern.compile("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");

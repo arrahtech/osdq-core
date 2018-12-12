@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.arrah.framework.dataquality.PIIValidator;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.rdbms.QueryBuilder;
 import org.arrah.framework.rdbms.Rdbms_conn;
@@ -27,6 +28,7 @@ import org.simmetrics.metrics.JaroWinkler;
  * This file is used to Match Matadata from
  * column headers and see if they are close 
  * to ( edit distance) standard names
+ * then the are matched with data to understand PII
  */
 
 
@@ -45,7 +47,7 @@ public class MetadataMatcher {
 		
 	} 
 	
-	// Parse CS and return String array
+	// Parse CS and return String array  - utility function
 	public String[] getCSValue (String key) {
 		String val = _ht.get(key);
 		if (val == null || "".equals(val))
@@ -54,7 +56,7 @@ public class MetadataMatcher {
 		return newval;
 	}
 	
-	// Will add a new Value to Key-value pair
+	// Will add a new Value to Key-value pair -  - utility function
 	public void addnewValue(String key, String value) {
 		
 		if (key == null || "".equals(key) || value == null )
@@ -65,7 +67,7 @@ public class MetadataMatcher {
 		
 	}
 	
-	// Will delete an existing Value to Key Value pair
+	// Will delete an existing Value to Key Value pair -  - utility function
 	public void deleteValue(String key, String value) {
 		String newval="";
 		String[] val = getCSValue(key);
@@ -141,7 +143,7 @@ public class MetadataMatcher {
 		// then fetch top 10 data and run thru all the attributes they are matching
 		// right now we do not have random fetch to get top 10
 		 if (table instanceof String)
-			 colD = getDataforCol( table.toString(),  col);
+			 colD = getDataforCol_sample10( table.toString(),  col);
 		 else if (table instanceof ReportTableModel)
 			 colD = ((ReportTableModel)table).getColDataRandom(col,10);
 		 else {
@@ -210,7 +212,7 @@ public class MetadataMatcher {
 		return colD;
 	}
 	
-	public Object[] getDataforCol(String table, String col) {
+	public Object[] getDataforCol_sample10(String table, String col) {
 		Object[] coldata = new Object[10];
 		QueryBuilder querybuilder = new QueryBuilder(Rdbms_conn.getHValue("Database_DSN"), 
 				table, col, Rdbms_conn.getDBType());
