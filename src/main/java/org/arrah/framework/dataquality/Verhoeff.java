@@ -1,4 +1,4 @@
-package org.arrah.framework.analytics;
+package org.arrah.framework.dataquality;
 
 public class Verhoeff {
 	/**

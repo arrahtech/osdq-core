@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /***********************************************
- *     Copyright to Vivek Kumar Singh  2016    *
+ *     Copyright to Vivek Kumar Singh  2018    *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with copyright      *

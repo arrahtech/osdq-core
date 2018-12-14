@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 
 /***********************************************
- *     Copyright to Vivek Kumar Singh  2016    *
+ *     Copyright to Vivek Kumar Singh  2018    *
  *                                             *
  * Any part of code or file can be changed,    *
  * redistributed, modified with copyright      *

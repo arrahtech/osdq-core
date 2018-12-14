@@ -45,7 +45,7 @@ public class BusinessPIIFormatCheck {
 		for (int i=0; i < rowc; i++) {
 			Object o = rtm.getModel().getValueAt(i, colI);
 			if (o == null || "".equals(o.toString())) continue;
-			Boolean isValid = pii.isCreditCard(o.toString());
+			Boolean isValid = pii.isCreditCard(o.toString().replaceAll("\\s+", "").trim());
 			String des = pii.getErrdef();
 			rtm.getModel().setValueAt(isValid.toString(), i, validI);
 			rtm.getModel().setValueAt(des, i, descI);
@@ -70,7 +70,7 @@ public class BusinessPIIFormatCheck {
 		for (int i=0; i < rowc; i++) {
 			Object o = rtm.getModel().getValueAt(i, colI);
 			if (o == null || "".equals(o.toString())) continue;
-			HashMap<String, String> responseMap = panV.validate(o.toString());
+			HashMap<String, String> responseMap = panV.validate(o.toString().replaceAll("\\s+", "").trim());
 			rtm.getModel().setValueAt(responseMap.get("isValid"), i, validI);
 			rtm.getModel().setValueAt(responseMap.get("entityDesc"), i, descI);
 		}
@@ -94,7 +94,55 @@ public class BusinessPIIFormatCheck {
 		for (int i=0; i < rowc; i++) {
 			Object o = rtm.getModel().getValueAt(i, colI);
 			if (o == null || "".equals(o.toString())) continue;
-			HashMap<String, String> responseMap = gstV.validate(o.toString());
+			HashMap<String, String> responseMap = gstV.validate(o.toString().replaceAll("\\s+", "").trim());
+			rtm.getModel().setValueAt(responseMap.get("isValid"), i, validI);
+			rtm.getModel().setValueAt(responseMap.get("entityDesc"), i, descI);
+		}
+		
+		return rtm;
+		
+	}
+	
+	public ReportTableModel isAADHARmatch (ReportTableModel rtm, int colI) {
+		AadharValidator gstV = new AadharValidator();
+		
+		int rowc = rtm.getModel().getRowCount();
+		if ( rtm.getModel().findColumn("IsAADHARValid") == -1 )
+			rtm.addColumn("IsAADHARValid"); 
+		if ( rtm.getModel().findColumn("AADHARValidDescription") == -1 )
+			rtm.addColumn("AADHARValidDescription");
+		
+		int validI = rtm.getModel().findColumn("IsAADHARValid"); 
+		int descI = rtm.getModel().findColumn("AADHARValidDescription");
+		
+		for (int i=0; i < rowc; i++) {
+			Object o = rtm.getModel().getValueAt(i, colI);
+			if (o == null || "".equals(o.toString())) continue;
+			HashMap<String, String> responseMap = gstV.validate(o.toString().replaceAll("\\s+", "").trim());
+			rtm.getModel().setValueAt(responseMap.get("isValid"), i, validI);
+			rtm.getModel().setValueAt(responseMap.get("entityDesc"), i, descI);
+		}
+		
+		return rtm;
+		
+	}
+	
+	public ReportTableModel isMobiematch (ReportTableModel rtm, int colI) {
+		MNValidator mobileV = new MNValidator();
+		
+		int rowc = rtm.getModel().getRowCount();
+		if ( rtm.getModel().findColumn("IsMobileValid") == -1 )
+			rtm.addColumn("IsMobileValid"); 
+		if ( rtm.getModel().findColumn("MobileValidDescription") == -1 )
+			rtm.addColumn("MobileValidDescription");
+		
+		int validI = rtm.getModel().findColumn("IsMobileValid"); 
+		int descI = rtm.getModel().findColumn("MobileValidDescription");
+		
+		for (int i=0; i < rowc; i++) {
+			Object o = rtm.getModel().getValueAt(i, colI);
+			if (o == null || "".equals(o.toString())) continue;
+			HashMap<String, String> responseMap = mobileV.validate(o.toString().replaceAll("\\s+", "").trim());
 			rtm.getModel().setValueAt(responseMap.get("isValid"), i, validI);
 			rtm.getModel().setValueAt(responseMap.get("entityDesc"), i, descI);
 		}
