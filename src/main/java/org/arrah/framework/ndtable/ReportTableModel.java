@@ -327,10 +327,10 @@ public class ReportTableModel implements Serializable, Cloneable {
 		return tabModel;
 	}
 
-	public boolean isRTEditable() {
+	public boolean isRTMEditable() {
 		return _isEditable;
 	}
-	public boolean isRTShowClass() {
+	public boolean isRTMShowClass() {
 		return showClass;
 	}
 
@@ -523,5 +523,10 @@ public class ReportTableModel implements Serializable, Cloneable {
 	public int[] getClassType() {
 		return classType;
 	}
+	
+	public Object clone() throws CloneNotSupportedException   
+    {  
+        return super.clone();  
+    }  
 	
 } // End of ReportTableModel class

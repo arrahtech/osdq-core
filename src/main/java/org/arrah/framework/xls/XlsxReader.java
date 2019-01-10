@@ -16,12 +16,15 @@ package org.arrah.framework.xls;
  */
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -37,7 +40,8 @@ import org.arrah.framework.ndtable.ReportTableModel;
 public class XlsxReader {
 	private ReportTableModel _rt = null;
 	private ArrayList<String> columnName = new ArrayList<String> ();
-	private boolean allSheet = false;
+	private boolean allSheet = true;
+	private Workbook workbook = null;
 
 	public XlsxReader() {
 	};
@@ -46,8 +50,8 @@ public class XlsxReader {
 		allSheet = readAll;
 	}
 
-	public ReportTableModel read(File file) {
-		if (loadXlsxFile(file) == true)
+	public ReportTableModel read(List<String> sheetName) {
+		if (loadXlsxFile(sheetName) == true)
 			return _rt;
 		else {
 			System.out.println("XLSX File can not be loaded");
@@ -55,22 +59,47 @@ public class XlsxReader {
 		}
 	}
 
+	public List<String> showSheets(File file) {
+		List<String> sheetName = new ArrayList<String>();
+		try {
+			workbook = WorkbookFactory.create(file);
+			int noOfSheet = workbook.getNumberOfSheets();
+			// System.out.println("No of Sheets in Xlsx:"+noOfSheet);
+			for (int i=0; i < noOfSheet ; i++) {
+				sheetName.add(workbook.getSheetName(i));
+				//System.out.println("Name:"+workbook.getSheetName(i));
+			}
+			
+		} catch (EncryptedDocumentException e) {
+			System.out.println("EncryptedDocumentException:"+e.getLocalizedMessage());
+			e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			System.out.println("InvalidFormatException:"+e.getLocalizedMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("IOException:"+e.getLocalizedMessage());
+			e.printStackTrace();
+		}
+		return sheetName;
+		
+	}
+	
 	// Send Double, Boolean LocalDate not Date
-		private  boolean loadXlsxFile(File fileName) {
+		private  boolean loadXlsxFile(List<String> sheetName) {
 		int colI=0; // column Index
 		boolean headerSet= false; // for multiple sheets
 		
 		try {
 
-			Workbook workbook = WorkbookFactory.create(fileName);
-			int noOfSheet = workbook.getNumberOfSheets();
-			System.out.println("No of Sheets in Xlsx:"+noOfSheet);
-			
 			// It takes all the sheets
 			java.util.Iterator<Sheet> shiter = workbook.sheetIterator();
 			
 			while (shiter.hasNext()) {
 				Sheet sheet = shiter.next();
+				//System.out.println(sheetName + ":" + sheet.getSheetName());
+				
+				if (sheetName.indexOf(sheet.getSheetName()) == -1 ) // skip this
+					continue;
 			
 			// Fill the mergered Cell value
 			Hashtable<String,String> mergeV = fillMergedVal( sheet);
@@ -133,10 +162,7 @@ public class XlsxReader {
 			if (allSheet == false)
 				break; // no need for next iteration
 		} // end of iterator
-		} catch ( FileNotFoundException e) {
-			System.out.println("File Not found");
-			return false;
-		} catch (Exception e) {
+		}  catch (Exception e) {
 			System.out.println("Exception:"+e.getClass().getSimpleName()+ " Message: "+e.getLocalizedMessage());
 			return false;
 		}

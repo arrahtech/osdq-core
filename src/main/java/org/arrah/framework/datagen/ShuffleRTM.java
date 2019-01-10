@@ -59,9 +59,13 @@ public class ShuffleRTM {
 	public static ReportTableModel shuffleRecord(ReportTableModel rtm, int colIndex, int beginRow, int endRow) {
 		if (rtm == null || rtm.getModel().getRowCount() == 0) return rtm;
 		for (int i = beginRow; i < endRow; i++ ) {
-			String colVal = (rtm.getModel().getValueAt(i, colIndex)).toString();
-			String newColVal = shuffleString(colVal);
-			rtm.setValueAt(newColVal,i, colIndex);
+			try {
+				String colVal = (rtm.getModel().getValueAt(i, colIndex)).toString();
+				String newColVal = shuffleString(colVal);
+				rtm.setValueAt(newColVal,i, colIndex);
+			} catch (Exception e) {
+				rtm.setValueAt(rtm.getModel().getValueAt(i, colIndex),i, colIndex);
+			}
 		}
 		return rtm;
 		
@@ -96,8 +100,12 @@ public class ShuffleRTM {
 		if (rtm == null || rtm.getModel().getRowCount() == 0) return rtm;
 		
 		for (int i = beginRow; i < endRow; i++ ) {
-			
-			String colVal = (rtm.getModel().getValueAt(i, colIndex)).toString();
+			Object o = rtm.getModel().getValueAt(i, colIndex);
+			if ( o == null) {
+				rtm.setValueAt(o,i,colIndex);
+				continue;
+			}
+			String colVal = o.toString();
 			String newcolVal = null;
 			if ( maskChar.length() > colVal.length() )
 				newcolVal = maskChar;

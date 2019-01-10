@@ -414,7 +414,7 @@ public class RTMUtil {
 			return _rt;
 		}
 		
-    	ReportTableModel newRTM = new ReportTableModel(_rt.getAllColNameStr(),_rt.isRTEditable(),_rt.isRTShowClass());
+    	ReportTableModel newRTM = new ReportTableModel(_rt.getAllColNameStr(),_rt.isRTMEditable(),_rt.isRTMShowClass());
     	if (rowI.isEmpty() == true)
     		return newRTM;
 
@@ -543,7 +543,7 @@ public class RTMUtil {
 
         Object[] colName = _rtm.getAllColName();
 
-        ReportTableModel newRTM = new ReportTableModel(colName, _rtm.isRTEditable(), true);
+        ReportTableModel newRTM = new ReportTableModel(colName, _rtm.isRTMEditable(), true);
         for (int i =0; i < rows.length; i++)
             newRTM.addFillRow(rows[i].getRow());
 
