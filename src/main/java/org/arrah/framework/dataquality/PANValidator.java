@@ -59,7 +59,7 @@ public class PANValidator  {
 		}
 	}
 	
-
+	// Validate without name
 	public HashMap<String, String> validate(String id) {
 
 		HashMap<String, String> responseMap = new HashMap<>();
@@ -68,7 +68,8 @@ public class PANValidator  {
 			id = id.toUpperCase();
 			Matcher matcher = pattern.matcher(id);
 			if (matcher.matches()) {
-				//TODO: if entity name is known, we can also validate 5th char
+				// if entity name is known, we can also validate 5th char
+				// validate (String,String) does that
 				responseMap.put("isValid", "true");
 				responseMap.put("entityType", getEntityType(id));
 				responseMap.put("entityDesc", getEntityDesc(id));
@@ -82,6 +83,28 @@ public class PANValidator  {
 		return responseMap;
 		
 	}
+	
+	// Validate with name
+	public HashMap<String, String> validate(String id, String name) {
+		HashMap<String, String> responseMap = validate(id);
+		String valid= responseMap.get("isValid");
+		
+		// if false return if true then check name
+		if (valid == null || "".equals(valid) || valid.compareToIgnoreCase("true") != 0 ||
+				name == null || "".equals(name) == true)
+			return responseMap;
+		
+		String[] nametok = name.trim().split("\\s+");
+		String nameC = getNameChar(id);
+		//First name, last name is not accurate so loop thru all
+		for (int i=0; i<nametok.length; i++) {
+			if ( nameC.compareToIgnoreCase(nametok[i].substring(0, 1)) == 0 ) 
+				return responseMap;
+		}
+		responseMap.put("isValid", "false");
+		responseMap.put("entityDesc", "Name Character did not match");
+		return responseMap;
+	}
 
 	private String getEntityType(String id) {
 		return Enum.valueOf(EntityType.class, id.substring(3, 4)).name();
@@ -89,6 +112,10 @@ public class PANValidator  {
 
 	private String getEntityDesc(String id) {
 		return Enum.valueOf(EntityType.class, id.substring(3, 4)).toString();
+	}
+	
+	private String getNameChar(String id) {
+		return id.substring(4, 5);
 	}
 
 }

@@ -3,6 +3,7 @@ package org.arrah.framework.dataquality;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 /***********************************************
@@ -31,11 +32,51 @@ import java.util.Map;
  */
 public class GSTINValidator   {
 
+	// only 37 states as if today
 	private static Pattern stateCode = Pattern.compile("(0[1-9]|1[0-9]|2[0-9]|3[0-7])");
-
 	private static Pattern char13And14 = Pattern.compile("(\\d{1})Z$");
-
 	private PANValidator panValidator = new PANValidator();
+	private Hashtable<String,String> statecode = new  Hashtable<String,String>();
+	
+	public GSTINValidator () {
+		statecode.put("01","JAMMU AND KASHMIR");
+		statecode.put("20","JHARKHAND");
+		statecode.put("02","HIMACHAL PRADESH");
+		statecode.put("21","ODISHA");
+		statecode.put("03","PUNJAB");
+		statecode.put("22","CHATTISGARH");
+		statecode.put("04","CHANDIGARH");
+		statecode.put("23","MADHYA PRADESH");
+		statecode.put("05","UTTARAKHAND");
+		statecode.put("24","GUJARAT");
+		statecode.put("06","HARYANA");
+		statecode.put("25","DAMAN AND DIU");
+		statecode.put("07","DELHI");
+		statecode.put("26","DADRA AND NAGAR HAVELI");
+		statecode.put("08","RAJASTHAN");
+		statecode.put("27","MAHARASHTRA");
+		statecode.put("09","UTTAR  PRADESH");
+		statecode.put("28","ANDHRA PRADESH (old)");
+		statecode.put("10","BIHAR");
+		statecode.put("29","KARNATAKA");
+		statecode.put("11","SIKKIM");
+		statecode.put("30","GOA");
+		statecode.put("12","ARUNACHAL PRADESH");
+		statecode.put("31","LAKSHWADEEP");
+		statecode.put("13","NAGALAND");
+		statecode.put("32","KERALA");
+		statecode.put("14","MANIPUR");
+		statecode.put("33","TAMIL NADU");
+		statecode.put("15","MIZORAM");
+		statecode.put("34","PUDUCHERRY");
+		statecode.put("16","TRIPURA");
+		statecode.put("35","ANDAMAN AND NICOBAR ISLANDS");
+		statecode.put("17","MEGHLAYA");
+		statecode.put("36","TELANGANA");
+		statecode.put("18","ASSAM");
+		statecode.put("37","ANDHRA PRADESH (NEW)");
+		statecode.put("19","WEST BENGAL");
+	}
 
 	public HashMap<String, String> validate(String id) {
 
@@ -48,13 +89,14 @@ public class GSTINValidator   {
 			Map<String, String> panValidation = panValidator.validate(id.substring(2, 12));
 			boolean isValidPAN = Boolean.parseBoolean(panValidation.get("isValid"));
 			if (stateCodeMatcher.matches() && isValidPAN && lastThreeCharsMatcher.matches() && isCheckSumValid(id)) {
-				// TODO: if entity name is known, we can also validate 5th char
+				// if entity name is known, we can also validate 5th char
+				// Getting done in PAN validation
 				responseMap.put("isValid", "true");
 				responseMap.put("entityType", panValidation.get("entityType"));
-				responseMap.put("entityDesc", panValidation.get("entityDesc"));
+				responseMap.put("entityDesc", panValidation.get("entityDesc") + " :State:"+statecode.get(id.substring(0, 2)));
 			} else {
 				responseMap.put("isValid", "false");
-				responseMap.put("entityDesc", "GSTIN Format not valid");
+				responseMap.put("entityDesc", "GSTIN not valid");
 			}
 		} else {
 			responseMap.put("entityDesc", "GSTIN Format is not 15 characters");
@@ -63,7 +105,36 @@ public class GSTINValidator   {
 		return responseMap;
 
 	}
+	
+	// Validate with Company Name
+	public HashMap<String, String> validate(String id, String name) {
 
+		HashMap<String, String> responseMap = new HashMap<>();
+		responseMap.put("isValid", "false");
+		if (id != null && !id.isEmpty() && id.length() == 15) {
+			id = id.toUpperCase();
+			Matcher stateCodeMatcher = stateCode.matcher(id.substring(0, 2));
+			Matcher lastThreeCharsMatcher = char13And14.matcher(id.substring(12, 14));
+			Map<String, String> panValidation = panValidator.validate(id.substring(2, 12),name);
+			boolean isValidPAN = Boolean.parseBoolean(panValidation.get("isValid"));
+			if (stateCodeMatcher.matches() && isValidPAN && lastThreeCharsMatcher.matches() && isCheckSumValid(id)) {
+				// if entity name is known, we can also validate 5th char
+				// Getting done in PAN validation
+				responseMap.put("isValid", "true");
+				responseMap.put("entityType", panValidation.get("entityType"));
+				responseMap.put("entityDesc", panValidation.get("entityDesc") + " :State:"+statecode.get(id.substring(0, 2)));
+			} else {
+				responseMap.put("isValid", "false");
+				responseMap.put("entityDesc", "GSTIN not valid");
+			}
+		} else {
+			responseMap.put("entityDesc", "GSTIN Format is not 15 characters");
+		}
+
+		return responseMap;
+
+	}
+	
 	/**
 	 * 
 	 * Step-1 Find “Place Value of Digit” and “Factor” of all Digits as follows:
