@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.arrah.framework.dataquality.AadharValidator;
+
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
  *                                             *
@@ -26,6 +28,7 @@ public class FileProfile {
 	private int unique_count = 0;
 	private int pattern_count =0;
 	private int null_count =0 ;
+	private int empty_count =0 ;
 	private boolean hasNull = false;
 	
 	public FileProfile () {
@@ -35,9 +38,13 @@ public class FileProfile {
 	private void profileHashtable(Hashtable <Object, Integer> hashtable) {
 		Object o = new String("Null-Arrah");
 		
-		if (hashtable.containsKey(o )== true ) {
-			hasNull = true;
+		if (hashtable.containsKey(o ) == true ) {
+			setHasNull(true);
 			null_count = hashtable.get("Null-Arrah");
+		}
+		
+		if (hashtable.containsKey("") == true ) {
+			empty_count = hashtable.get("");
 		}
 		
 		Collection<Integer> values =   hashtable.values();
@@ -54,9 +61,43 @@ public class FileProfile {
 	
 	public Integer[] getProfiledValue (Hashtable <Object, Integer> hashtable) {
 			profileHashtable(hashtable);
-			Integer[] value = new Integer[4];
-			value[0] = total_count;value[1] = unique_count;value[2] = pattern_count;value[3] = null_count;
+			Integer[] value = new Integer[5];
+			value[0] = total_count;value[1] = unique_count;value[2] = pattern_count;value[3] = null_count;value[4] = empty_count;
 			return value;
+	}
+	
+	public Integer[] getStrProfiledValue (Hashtable <Object, Integer> hashtable) {
+		Integer[] value = new Integer[2];
+		int spaceC=0;
+		int controlC=0;
+		
+		Enumeration<Object> keys =   hashtable.keys();
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (key.toString().matches(".*\\s+.*") == true) {
+				spaceC = spaceC+hashtable.get(key);
+			}
+			if (key.toString().matches("^(?=.*[\\w])(?=.*[\\W])[\\w|\\W]+$") == true) {
+				controlC = controlC+hashtable.get(key);
+			}
+			
+		}
+		value[0] = spaceC;value[1] = controlC;
+		return value;
+	}
+	
+	public Integer getAadhardValue (Hashtable <Object, Integer> hashtable) {
+		Integer value = 0;
+		Enumeration<Object> keys =   hashtable.keys();
+		AadharValidator av = new AadharValidator();
+		
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (av.isValidAadhar(key.toString()) == true) {
+				value = value+hashtable.get(key);
+			}
+		}
+		return value;
 	}
 	
 	public Hashtable <Object, Integer>  showPattern(Hashtable <Object, Integer> hashtable) {
@@ -68,5 +109,13 @@ public class FileProfile {
 				pattern.put(key, val);
 		}
 		return pattern;
+	}
+
+	public boolean isHasNull() {
+		return hasNull;
+	}
+
+	public void setHasNull(boolean hasNull) {
+		this.hasNull = hasNull;
 	}
 }
