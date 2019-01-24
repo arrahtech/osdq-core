@@ -135,6 +135,16 @@ public class GSTINValidator   {
 
 	}
 	
+	public boolean isValidGST(String id) {
+
+		HashMap<String, String> responseM = validate( id);
+		String val = responseM.get("isValid");
+		if (val == null || "".equals(val) || val.equalsIgnoreCase("false") )
+			return false;
+		return true;
+		
+	}
+	
 	/**
 	 * 
 	 * Step-1 Find “Place Value of Digit” and “Factor” of all Digits as follows:

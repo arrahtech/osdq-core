@@ -5,6 +5,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.arrah.framework.dataquality.AadharValidator;
+import org.arrah.framework.dataquality.GSTINValidator;
+import org.arrah.framework.dataquality.PANValidator;
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
@@ -94,6 +96,34 @@ public class FileProfile {
 		while (keys.hasMoreElements()) {
 			Object key = keys.nextElement();
 			if (av.isValidAadhar(key.toString()) == true) {
+				value = value+hashtable.get(key);
+			}
+		}
+		return value;
+	}
+	
+	public Integer getPANValue (Hashtable <Object, Integer> hashtable) {
+		Integer value = 0;
+		Enumeration<Object> keys =   hashtable.keys();
+		PANValidator av = new PANValidator();
+		
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (av.isValidPAN(key.toString()) == true) {
+				value = value+hashtable.get(key);
+			}
+		}
+		return value;
+	}
+	
+	public Integer getGSTValue (Hashtable <Object, Integer> hashtable) {
+		Integer value = 0;
+		Enumeration<Object> keys =   hashtable.keys();
+		GSTINValidator av = new GSTINValidator();
+		
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (av.isValidGST(key.toString()) == true) {
 				value = value+hashtable.get(key);
 			}
 		}

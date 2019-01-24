@@ -117,5 +117,15 @@ public class PANValidator  {
 	private String getNameChar(String id) {
 		return id.substring(4, 5);
 	}
+	
+	public boolean isValidPAN(String id) {
+
+		HashMap<String, String> responseM = validate( id);
+		String val = responseM.get("isValid");
+		if (val == null || "".equals(val) || val.equalsIgnoreCase("false") )
+			return false;
+		return true;
+		
+	}
 
 }
