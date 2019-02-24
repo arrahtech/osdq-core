@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.arrahtec</groupId>
     <artifactId>osdq-core</artifactId>
-    <version>6.2.6</version>
+    <version>6.2.7</version>
     <name>osdq-core</name>
     <url>http://www.arrahtech.com</url>
     <scm>
