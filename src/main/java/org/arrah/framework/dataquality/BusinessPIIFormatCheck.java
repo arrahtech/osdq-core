@@ -1,6 +1,8 @@
 package org.arrah.framework.dataquality;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -98,6 +100,32 @@ public class BusinessPIIFormatCheck {
 			Boolean isValid = false; String des = " Not in Date Format";
 			if (o instanceof Date) {
 				isValid = pii.isDoB((Date)o);
+				des = pii.getErrdef();
+			}
+			rtm.getModel().setValueAt(isValid.toString(), i, validI);
+			rtm.getModel().setValueAt(des, i, descI);
+		}
+		
+		return rtm;
+		
+	}
+	public ReportTableModel isDoBmatch (ReportTableModel rtm, int colI, Date from, Date to) throws ParseException {
+		PIIValidator pii = new PIIValidator();
+		int rowc = rtm.getModel().getRowCount();
+		if ( rtm.getModel().findColumn("IsDoBValid") == -1 )
+			rtm.addColumn("IsDoBValid"); 
+		if ( rtm.getModel().findColumn("DoBValidDescription") == -1 )
+			rtm.addColumn("DoBValidDescription");
+		
+		int validI = rtm.getModel().findColumn("IsDoBValid"); 
+		int descI = rtm.getModel().findColumn("DoBValidDescription");
+
+		for (int i=0; i < rowc; i++) {
+			Object o = rtm.getModel().getValueAt(i, colI);
+			if (o == null || "".equals(o.toString()) ) continue;
+			Boolean isValid = false; String des = " Not in Date Format";
+			if (o instanceof Date) {
+				isValid = pii.isDoB((Date)o,from,to);
 				des = pii.getErrdef();
 			}
 			rtm.getModel().setValueAt(isValid.toString(), i, validI);

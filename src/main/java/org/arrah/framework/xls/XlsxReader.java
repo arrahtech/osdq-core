@@ -16,6 +16,7 @@ package org.arrah.framework.xls;
  */
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,7 +24,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
+
+
+
 import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -32,8 +37,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-
-
+import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.arrah.framework.ndtable.ReportTableModel;
 
@@ -192,5 +196,52 @@ public class XlsxReader {
         }
 		return mergerVal;
 		
+	}
+	
+	public boolean saveXlsxFile(ReportTableModel rt, File file) {
+		try {
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			XSSFSheet sheet = workbook.createSheet("Arrah Sheet");
+			int row = rt.getModel().getRowCount();
+			int col = rt.getModel().getColumnCount();
+			
+			POIXMLProperties.ExtendedProperties ext =  workbook.getProperties().getExtendedProperties();
+	        ext.getUnderlyingProperties().setAppVersion("Microsoft Excel");
+			// Get Column header
+			// Create a Row
+			XSSFRow headerRow = sheet.createRow(0);
+			for (int j = 0; j < col; j++) {
+				XSSFCell cell = headerRow.createCell(j);
+	            cell.setCellValue((String)rt.getModel().getColumnName(j));
+			}
+			
+			System.out.println(headerRow);
+			
+			// Put the cell & values
+			for (int i = 0; i < row; i++) {
+				XSSFRow newRow = sheet.createRow(i+1);
+				for (int j = 0; j < col; j++) {
+					XSSFCell cell = newRow.createCell(j);
+					Object obj = rt.getModel().getValueAt(i, j);
+//					if (obj == null)
+//						continue;
+					//cell.setCellValue((String)obj.toString());
+					cell.setCellValue("test" + i);
+					System.out.println(cell);
+				}
+			}
+			
+			// All sheets and cells added. Now write out the workbook
+	        FileOutputStream fileOut = new FileOutputStream(file);
+	        workbook.write(fileOut);
+	        fileOut.flush();
+	        fileOut.close();
+			workbook.close();
+			System.out.println("File:" + file);
+		} catch (Exception e) {
+			System.out.println("\n XLSX Save Exception:" + e.getMessage());
+			return false;
+		}
+		return true;
 	}
 }

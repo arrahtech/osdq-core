@@ -181,6 +181,28 @@ public class PIIValidator {
 		return true;
 		
 	}
+	
+	// Validating Date of Birth
+	public boolean isDoB(Date dob, Date from, Date to) {
+		errdef = "";
+		
+		// date of birth can not be less than to
+		if (dob.before(from) ) {
+			errdef = "Dob is before start date";
+			return false;
+		}
+		
+		// date of birth can not be more than from
+		if (dob.after(to) ) {
+			errdef = "Dob is after end date";
+			return false;
+		}
+
+		errdef = "Date of Birth Validation successful";
+		return true;
+		
+	}
+	
 	// Validating accounting number or salary
 	public boolean isAccountingNumber(String salary) {
 		errdef = "";
