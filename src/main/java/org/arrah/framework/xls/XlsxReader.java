@@ -27,6 +27,7 @@ import java.util.List;
 
 
 
+
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -215,7 +216,7 @@ public class XlsxReader {
 	            cell.setCellValue((String)rt.getModel().getColumnName(j));
 			}
 			
-			System.out.println(headerRow);
+			//System.out.println(headerRow);
 			
 			// Put the cell & values
 			for (int i = 0; i < row; i++) {
@@ -223,11 +224,11 @@ public class XlsxReader {
 				for (int j = 0; j < col; j++) {
 					XSSFCell cell = newRow.createCell(j);
 					Object obj = rt.getModel().getValueAt(i, j);
-//					if (obj == null)
-//						continue;
-					//cell.setCellValue((String)obj.toString());
-					cell.setCellValue("test" + i);
-					System.out.println(cell);
+					if (obj == null)
+						continue;
+					cell.setCellValue((String)obj.toString());
+//					cell.setCellValue("test" + i);
+//					System.out.println(cell);
 				}
 			}
 			
@@ -237,11 +238,12 @@ public class XlsxReader {
 	        fileOut.flush();
 	        fileOut.close();
 			workbook.close();
-			System.out.println("File:" + file);
+			//System.out.println("File:" + file);
 		} catch (Exception e) {
 			System.out.println("\n XLSX Save Exception:" + e.getMessage());
 			return false;
 		}
 		return true;
 	}
+
 }

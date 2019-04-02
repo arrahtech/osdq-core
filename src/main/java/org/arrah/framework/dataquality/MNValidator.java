@@ -46,5 +46,15 @@ public class MNValidator {
 		}
 		return responseMap;
 	}
+	
+	public boolean isValidMN(String id) {
+
+		HashMap<String, String> responseM = validate( id);
+		String val = responseM.get("isValid");
+		if (val == null || "".equals(val) || val.equalsIgnoreCase("false") )
+			return false;
+		return true;
+		
+	}
 
 }

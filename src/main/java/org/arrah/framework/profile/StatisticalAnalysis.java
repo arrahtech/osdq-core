@@ -179,7 +179,9 @@ public class StatisticalAnalysis {
 			return ((Number)(_colObj[_colObj.length -1 ])).doubleValue() - ((Number)(_colObj[0])).doubleValue();
 		}
 		return 0D;
-		
+	}
+	public double getSum() {
+		return sum;
 	}
 
 	private void fillDataIntoTable() {

@@ -527,6 +527,19 @@ public class ReportTableModel implements Serializable, Cloneable {
 	public Object clone() throws CloneNotSupportedException   
     {  
         return super.clone();  
-    }  
+    }
+	
+	public void toPrint() {
+		String[] colN = this.getAllColNameStr();
+		for(String s: colN)
+			System.out.print(s+" ");
+			System.out.println();
+		for (int i=0 ; i <this.getModel().getRowCount(); i++) {
+			for (int j=0 ; j <this.getModel().getColumnCount(); j++) {
+				System.out.print(this.getModel().getValueAt(i, j).toString()+" ");
+			}
+			System.out.println();
+		}
+	}
 	
 } // End of ReportTableModel class

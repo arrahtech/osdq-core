@@ -6,7 +6,9 @@ import java.util.Hashtable;
 
 import org.arrah.framework.dataquality.AadharValidator;
 import org.arrah.framework.dataquality.GSTINValidator;
+import org.arrah.framework.dataquality.MNValidator;
 import org.arrah.framework.dataquality.PANValidator;
+import org.arrah.framework.dataquality.PIIValidator;
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
@@ -82,7 +84,6 @@ public class FileProfile {
 			if (key.toString().matches("^(?=.*[\\w])(?=.*[\\W])[\\w|\\W]+$") == true) {
 				controlC = controlC+hashtable.get(key);
 			}
-			
 		}
 		value[0] = spaceC;value[1] = controlC;
 		return value;
@@ -130,6 +131,48 @@ public class FileProfile {
 		return value;
 	}
 	
+	public Integer getCreditCardValue (Hashtable <Object, Integer> hashtable) {
+		Integer value = 0;
+		Enumeration<Object> keys =   hashtable.keys();
+		PIIValidator pii = new PIIValidator();
+		
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (pii.isCreditCard(key.toString()) == true) {
+				value = value+hashtable.get(key);
+			}
+		}
+		return value;
+	}
+	
+	public Integer getEmailValue (Hashtable <Object, Integer> hashtable) {
+		Integer value = 0;
+		Enumeration<Object> keys =   hashtable.keys();
+		PIIValidator pii = new PIIValidator();
+		
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (pii.isEmail(key.toString()) == true) {
+				value = value+hashtable.get(key);
+			}
+		}
+		return value;
+	}
+	
+	public Integer getMobileNValue (Hashtable <Object, Integer> hashtable) {
+		Integer value = 0;
+		Enumeration<Object> keys =   hashtable.keys();
+		MNValidator  mnvalid = new MNValidator();
+		
+		while (keys.hasMoreElements()) {
+			Object key = keys.nextElement();
+			if (mnvalid.isValidMN(key.toString()) == true) {
+				value = value+hashtable.get(key);
+			}
+		}
+		return value;
+	}
+	
 	public Hashtable <Object, Integer>  showPattern(Hashtable <Object, Integer> hashtable) {
 		Hashtable <Object, Integer> pattern = new Hashtable <Object, Integer>();
 		for (Enumeration<Object> e = hashtable.keys(); e.hasMoreElements();) {
@@ -147,5 +190,27 @@ public class FileProfile {
 
 	public void setHasNull(boolean hasNull) {
 		this.hasNull = hasNull;
+	}
+	
+	public Double[] getNumberProfiledValue (Object[]  val) {
+		for (int i=0; i < val.length; i++)
+			val[i] = Double.parseDouble(val[i].toString());
+		StatisticalAnalysis sa = new StatisticalAnalysis(val);
+		Double[] value = new Double[5];
+		value[0] = sa.getSum();value[1] = sa.getMean();
+		value[2] = Double.parseDouble(sa.getMinObject().toString()); value[3] = Double.parseDouble(sa.getMaxObject().toString()); 
+		value[4] = sa.getSDev();
+		return value;
+	}
+	
+	public Double[] getStrLengthProfiledValue (Object[]  val) {
+		for (int i=0; i < val.length; i++)
+			val[i] = val[i].toString().length();
+		StatisticalAnalysis sa = new StatisticalAnalysis(val);
+		Double[] value = new Double[5];
+		value[0] = sa.getSum();value[1] = sa.getMean();
+		value[2] = Double.parseDouble(sa.getMinObject().toString()); value[3] = Double.parseDouble(sa.getMaxObject().toString()); 
+		value[4] = sa.getSDev();
+		return value;
 	}
 }

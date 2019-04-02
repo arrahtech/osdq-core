@@ -544,6 +544,84 @@ public class RecordMatch
 		}
 	} // End of FuzzyCompare class
 
+	
+	/*
+	 * simple Comparator for comparing two strings
+	 */
+	
+	public class  fuzzyCompareStrings 
+	{
+		private float simMatchVal = 0f; // this will hold the last matched value between 0.00f - 1.00f
+		private String algo ="";
+		
+		public fuzzyCompareStrings(String algo)
+		{
+			this.algo = algo;
+		}
+		
+		public float getsimMatchVal() {
+			return simMatchVal;
+		}
+		
+		public String getAlgo() {
+			return algo;
+		}
+		public void setAlgo(String algo) {
+			this.algo = algo;
+		}
+
+		public float compare(String o1, String o2) 
+		{
+			simMatchVal = 0f;
+			
+				try
+				{
+					Entry<Method,Object> en = null;
+						String algoName=algo;
+						
+						if (algoName.compareToIgnoreCase("MongeElkan") == 0 ||
+							algoName.compareToIgnoreCase("Soundex") == 0 ||
+							algoName.compareToIgnoreCase("qGramDistance") == 0 ||
+							algoName.compareToIgnoreCase("DoubleMetaPhone") == 0  ||
+							algoName.compareToIgnoreCase("CustomNames") == 0 )
+							algoName = "SIMMETRICSUTIL$"+algoName;
+
+						en = functor.get(algoName);
+//						System.out.println(en );
+//						System.out.println( en.getValue());
+//						System.out.println( en.getKey());
+
+						Object ob;
+						if (algoName.compareToIgnoreCase("CosineSimilarity") == 0 ||
+							algoName.compareToIgnoreCase("DiceSimilarity") == 0 ||
+							algoName.compareToIgnoreCase("JaccardSimilarity") == 0 ||
+							algoName.compareToIgnoreCase("OverlapCoefficient") == 0 ) {
+							ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toSetChar(o1),
+									StringCaseFormatUtil.toSetChar(o2));
+						} else if (algoName.compareToIgnoreCase("BlockDistance") == 0 ||
+									algoName.compareToIgnoreCase("EuclideanDistance") == 0 ||
+									algoName.compareToIgnoreCase("MatchingCoefficient") == 0 ||
+									algoName.compareToIgnoreCase("SimonWhite") == 0 ) {
+							ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toArrayListChar(o1),
+									StringCaseFormatUtil.toArrayListChar(o2));
+						} else if(algoName.compareToIgnoreCase("SimmetricsUtil$MongeElkan") == 0 ) {
+							ob = en.getKey().invoke(en.getValue(), StringCaseFormatUtil.toListString(o1),
+									StringCaseFormatUtil.toListString(o2));
+						} else
+							ob = en.getKey().invoke(en.getValue(), o1,o2);
+						
+							en = null;
+						return simMatchVal = (Float)ob; // update the matched or unmatched value
+				} catch (InvocationTargetException x) {
+				    x.printStackTrace();
+				    return 0f;
+				} catch (IllegalAccessException x) {
+				    x.printStackTrace();
+				    return 0f;
+				}
+			
+		}
+	} // End of FuzzyCompare class
 	// For Unit testing
 	public static void main(String ... args)
 	{ /*

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.arrah.framework.ndtable.ReportTableModel;
 import org.simmetrics.StringMetric;
 import org.simmetrics.StringMetricBuilder;
 
@@ -136,16 +137,69 @@ public class SimmetricsUtil {
 		}
 		
 	}
+	public static ReportTableModel runSimForAll(Object[] leftA, Object[] rightA) {
+		List<String> leftV = new ArrayList<String>();
+		List<String> rightV = new ArrayList<String>();
+		for (int i=0; i < leftA.length; i++) {
+			try {
+				Object a = leftA[i];
+				Object b = rightA[i];
+				if (a == null || b == null ) continue;
+				leftV.add(a.toString()); rightV.add(b.toString());
+			} catch (Exception e) {
+				continue;
+				// my be array out of bound if left and right are not matching
+			}
+		}
+		return runSimForAll(leftV,rightV);
+		
+	}
+	public static ReportTableModel runSimForAll(List<String> leftV, List<String> rightV) {
+		
+		String[] algoList = new String[]{"Levenshtein","JaroWinkler","Jaro",
+				"NeedlemanWunch","SmithWaterman","SmithWatermanGotoh","CosineSimilarity",
+				"DiceSimilarity","JaccardSimilarity","OverlapCoefficient","BlockDistance",
+				"EuclideanDistance","MatchingCoefficient","SimonWhite","MongeElkan","Soundex","qGramDistance","DoubleMetaPhone","CustomNames"};
+		
+		RecordMatch diff = new RecordMatch();
+		RecordMatch.operator doDiff = diff.new operator(); // Just to intantiate 
+		
+		String[] colName = new String[algoList.length + 2] ;
+		colName[0] = "Value";colName[1] = "MatchedValue";
+		for (int i=2; i < colName.length; i++)
+			colName[i] = algoList[i-2];
+		
+		ReportTableModel rtm = new ReportTableModel(colName,true,true);
+
+		for ( int i=0; i < leftV.size(); i++) {
+			Object[] row = new Object[colName.length];
+			row[0] = leftV.get(i);
+			row[1] = rightV.get(i);
+			int j = 2;	
+			for (String algo:algoList) {
+				RecordMatch.fuzzyCompareStrings cmpStr = diff.new fuzzyCompareStrings(algo.toUpperCase());
+				float mvalue = cmpStr.compare(leftV.get(i), rightV.get(i));
+				//System.out.println(algo + ":" + mvalue + ":" +leftV.get(i) + ":"+ rightV.get(i));
+				row[j++] = mvalue;
+			}
+			rtm.addFillRow(row);
+		}
+		
+		return rtm;
+		
+	}
 	
 	public static void main(String[] argv) {
-		MongeElkan mg = new MongeElkan();
+		//MongeElkan mg = new MongeElkan();
 		List <String> ls = new ArrayList<String>();
 		List <String> rs = new ArrayList<String>();
 		
 		ls.add("k.");ls.add("vivek");ls.add("singh");ls.add("shree");
-		rs.add("singh");rs.add("vivek"); rs.add("kumar");
+		rs.add("singh");rs.add("vivek"); rs.add("kumar");rs.add("shree");
 		
-		System.out.println(mg.compare(ls,rs));
+		//System.out.println(mg.compare(ls,rs));
+		ReportTableModel rtm = runSimForAll(ls,rs);
+		rtm.toPrint();
 	}
 	
 	
