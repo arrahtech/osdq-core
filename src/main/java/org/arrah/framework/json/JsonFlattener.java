@@ -1,7 +1,7 @@
 package org.arrah.framework.json;
 
 
-/* This files is used for reading,writing xls files
+/* This files is used for reading,writing json files
  *
  */
 

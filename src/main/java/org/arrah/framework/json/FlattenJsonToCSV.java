@@ -56,10 +56,12 @@ public class FlattenJsonToCSV {
 
         for (Map<String, String> map : flatJson) {
         	String rowStr = getSeperatedColumns(headers, map, separator);
-        	rtm.addFillRow(rowStr.split(separator));
+        	rowStr =rowStr+separator; // add to last
+        	rtm.addFillRow(rowStr.split(separator,-1));
             csvString = csvString + rowStr + "\n";
         }
 
+        //System.out.println(csvString);
         return csvString;
     }
 
@@ -173,8 +175,15 @@ public class FlattenJsonToCSV {
 		
 		try {
 			JsonElement doc = new JsonParser().parse(byteJson);
+			//System.out.println(doc.toString());
+			
 			jsFlat.flatten(doc, keyPath, flattened);
 			List<Map<String, String>> flatJson = jsFlat.getFlatJson();
+			
+//			for (Map<String, String> l : flatJson)
+//			for (String s : l.keySet()) 
+//				System.out.println(s+" - "+ l.get(s));
+			
 			getCSV(flatJson);
 		} catch (Exception e) {
 			System.out.println("Exception:"+e.getLocalizedMessage());

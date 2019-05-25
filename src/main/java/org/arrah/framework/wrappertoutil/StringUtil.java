@@ -4,6 +4,7 @@ package org.arrah.framework.wrappertoutil;
  *
  */
 import java.util.ArrayList;
+import java.util.Vector;
 
 import org.arrah.framework.datagen.ShuffleRTM;
 import org.arrah.framework.ndtable.ResultsetToRTM;
@@ -159,6 +160,22 @@ public class StringUtil {
 		return new Levenshtein().compare(a, b);
 	}
 	
+	public static int bestmatchIndex(String a, Vector<String> matchlist) {
+		int mindex = 0;
+		float prevf = 0.0f;
+		
+		for (int i=0 ; i < matchlist.size(); i++) {
+			String b = matchlist.get(i);
+			if (b == null) continue;
+			float f = jaroWinklerDistance (a,b ); // default algo to match
+			if (f == 1.0f ) return i;
+			if (f > prevf) {
+				mindex = i; prevf = f;
+			}
+		}
+		return mindex; // default for no match
+		
+	}
 	
 	public static void main(String [] args) {
 		float i  = jaccardDistance("sdfdsfvivek","sdfdsfdsfds");
