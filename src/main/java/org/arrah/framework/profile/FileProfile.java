@@ -204,8 +204,12 @@ public class FileProfile {
 	}
 	
 	public Double[] getStrLengthProfiledValue (Object[]  val) {
-		for (int i=0; i < val.length; i++)
+		for (int i=0; i < val.length; i++) {
+			if (val[i] == null) {
+				val[i] = 0; continue;
+			}
 			val[i] = val[i].toString().length();
+		}
 		StatisticalAnalysis sa = new StatisticalAnalysis(val);
 		Double[] value = new Double[5];
 		value[0] = sa.getSum();value[1] = sa.getMean();
