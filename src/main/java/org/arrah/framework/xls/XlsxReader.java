@@ -24,10 +24,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-
-
-
-
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -40,6 +36,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+
 import org.arrah.framework.ndtable.ReportTableModel;
 
 public class XlsxReader {
@@ -86,6 +83,75 @@ public class XlsxReader {
 			e.printStackTrace();
 		}
 		return sheetName;
+		
+	}
+	
+	// This function is added to give sheet name if a fully qualified path is give
+	// You can wrap this function in restful API
+	public List<String> showSheets(String filename) {
+		List<String> sheetName = new ArrayList<String>();
+		try {
+			File file = new File(filename);
+			workbook = WorkbookFactory.create(file);
+			int noOfSheet = workbook.getNumberOfSheets();
+			System.out.println("No of Sheets in Xlsx:"+noOfSheet);
+			for (int i=0; i < noOfSheet ; i++) {
+				sheetName.add(workbook.getSheetName(i));
+				//System.out.println("Name:"+workbook.getSheetName(i));
+			}
+		} catch (EncryptedDocumentException e) {
+			System.out.println("EncryptedDocumentException:"+e.getLocalizedMessage());
+			sheetName.add("EncryptedDocumentException ERROR");
+			//e.printStackTrace();
+		} catch (InvalidFormatException e) {
+			System.out.println("InvalidFormatException:"+e.getLocalizedMessage());
+			sheetName.add("InvalidFormatException ERROR");
+			//e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("IOException:"+e.getLocalizedMessage());
+			sheetName.add("IOException ERROR");
+			//e.printStackTrace();
+		}
+		return sheetName;
+		
+	}
+	
+	// This function is added to give columns name if a sheetname is given
+	// You can wrap this function in restful API
+	public List<String> showColumnNames(String sheetName) {
+		
+		try {
+			if ( workbook == null) {
+				columnName.add("Empty Workbook");
+				return columnName;
+			}
+			// It takes all the sheets
+			java.util.Iterator<Sheet> shiter = workbook.sheetIterator();
+			while (shiter.hasNext()) {
+				Sheet sheet = shiter.next();
+				//System.out.println(sheetName + ":" + sheet.getSheetName());
+				if (sheetName.indexOf(sheet.getSheetName()) == -1 ) // skip this
+					continue;
+			
+			Iterator<Row> rowIterator = sheet.iterator();
+				while (rowIterator.hasNext()) {
+					Row row = rowIterator.next();
+					Iterator<Cell> cellIterator = row.cellIterator();
+					if (row.getRowNum() == 0) { // this is header - default behaviour
+						while (cellIterator.hasNext()) {
+							Cell cell = cellIterator.next();
+							columnName.add(cell.getStringCellValue());
+						}
+					} else  return columnName;
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("Exception:"+e.getLocalizedMessage());
+			columnName.add("ERROR");
+			//e.printStackTrace();
+		}
+	
+		return columnName;
 		
 	}
 	

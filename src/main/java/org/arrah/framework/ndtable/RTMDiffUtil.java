@@ -113,7 +113,7 @@ public class RTMDiffUtil {
 			if (leftRow == null ) continue;
 			boolean ismatch = false;
 			
-			for (int j=0 ; j < rightRowC; j++) { // Iterate thru right RTM
+			for (int j=0 ; j < rightRowC; j++) { // Iterate thru right RTM // very costly
 				Object[] rightRow = rightRTM.getRow(j);
 				if (rightRow == null ) continue;
 				
