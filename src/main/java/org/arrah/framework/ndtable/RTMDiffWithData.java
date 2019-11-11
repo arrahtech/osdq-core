@@ -22,6 +22,7 @@ package org.arrah.framework.ndtable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
@@ -32,7 +33,7 @@ public class RTMDiffWithData {
 	private String[] _dataTypeL ;// same data type will match _dataTypeR;
 	private Vector<Integer> _leftKeyI,_rightKeyI,_colsToMatchLI,_colsToMatchRI;
 	private Hashtable<String,Object[]> keywithDataL,keywithDataR;
-	private String[][] keydata;
+	private String[][] matchedKeyData;
 	private ArrayList<String[]> nomatchKeyData;
 
 	
@@ -77,6 +78,31 @@ public class RTMDiffWithData {
 		
 	}
 	
+	// This Constructor is more suited for Index and metric match where datatype would be number
+	public RTMDiffWithData(ReportTableModel left, Vector<Integer> keyLI,Vector<Integer> colsToMatchL,
+							ReportTableModel right, Vector<Integer> keyRI, Vector<Integer> colsToMatchR) {
+		leftRTM = left; rightRTM = right;
+		
+		_leftKeyI = new Vector<Integer>(); _rightKeyI = new Vector<Integer>();
+		_colsToMatchLI = new Vector<Integer>(); _colsToMatchRI =  new Vector<Integer>();
+		
+		_leftKeyI = keyLI; _rightKeyI = keyRI;
+		_colsToMatchLI = colsToMatchL;_colsToMatchRI = colsToMatchR;
+		
+		// Validation
+		if ( (_leftKeyI.indexOf(-1) != -1) || (_rightKeyI.indexOf(-1) != -1) || 
+			 (_colsToMatchLI.indexOf(-1) != -1) || (_colsToMatchRI.indexOf(-1) != -1 ) ) {
+			System.out.println("Error: Column Name could not be found in table");
+			return;
+		}
+		
+		_dataTypeL = new String[colsToMatchL.size()];
+		for (int i=0; i < _dataTypeL.length; i++)
+			_dataTypeL[i] = "Number";
+		prepareData();// Now prepare
+		
+	}
+	
 	// This funtion will put the data in key , value in hashtable that will be 
 	// easier to compare
 	private void prepareData() {
@@ -97,6 +123,10 @@ public class RTMDiffWithData {
 			return;
 		}
 		
+//		leftRTM.toPrint();
+//		rightRTM.toPrint();
+//		System.out.println(_leftKeyI.toString());
+		
 		// Prepare Left or First table
 		for (int i=0 ; i < leftRowC; i++) {
 			Object[] leftRow = leftRTM.getRow(i);
@@ -112,6 +142,7 @@ public class RTMDiffWithData {
 			for (int j=0; j< _colsToMatchLI.size(); j++)
 				data[j] = leftRow[_colsToMatchLI.get(j)];
 			
+			// System.out.println("Left Key:" + key + "Left Data:" + Arrays.toString(data) );
 			keywithDataL.put(key, data); // populate hashtable
 		}
 		
@@ -134,6 +165,7 @@ public class RTMDiffWithData {
 			for (int j=0; j< _colsToMatchRI.size(); j++)
 				data[j] = rightRow[_colsToMatchRI.get(j)];
 			
+			// System.out.println("Right Key:" + key + "Right Data:" + Arrays.toString(data)  );
 			keywithDataR.put(key, data); // populate hashtable
 		}
 		
@@ -155,63 +187,69 @@ public class RTMDiffWithData {
 		}
 				
 		Object[][] newdata = new Object[leftRTM.getModel().getRowCount()][_colsToMatchLI.size()*3]; // 3 values for each column - left,right and diff
-		keydata = new String[leftRTM.getModel().getRowCount()][];
+		matchedKeyData = new String[leftRTM.getModel().getRowCount()][];
 		nomatchKeyData = new ArrayList<String[]>();
 		Set<String> keyset = keywithDataL.keySet();
 		int index=0;
 		
-		for (String key:keyset ) {
-			Object[] rightD = keywithDataR.get(key); // inner join keys should be in both
-			Object[] leftD = keywithDataL.get(key);
-			
-			if ( leftD == null || leftD.length ==0 )
-				continue; // inner join condition failed
-			
-			if (rightD == null || rightD.length ==0 )  { // Left outer join condition
-				String [] nomatchKey = key.split("@@@");
-				nomatchKeyData.add(nomatchKey);
-				continue; // inner join condition failed
-			}
-			
-			for (int i=0; i <rightD.length; i++ ) {
+		try {
+			for (String key:keyset ) {
+				Object[] rightD = keywithDataR.get(key); // inner join keys should be in both
+				Object[] leftD = keywithDataL.get(key);
 				
-				keydata[index] = key.split("@@@");
-//				System.out.println("index:"+index + "i:" +i + "key:" + Arrays.toString(keydata[index]));
-//				System.out.println(Arrays.toString(rightD));
-//				System.out.println(Arrays.toString(leftD));
-//				
-				newdata[index][i*3]=leftD[i];newdata[index][(i*3) + 1]=rightD[i];
-				if (leftD[i] == null || rightD[i] == null) {
-					newdata[index][(i*3) + 2] = null;
-					continue;
+				// System.out.println("Key:" + key + "Left Data:" + Arrays.toString(leftD) +  "Right Data:" + Arrays.toString(rightD) );
+				
+				if ( leftD == null || leftD.length ==0 )
+					continue; // inner join condition failed
+				
+				if (rightD == null || rightD.length ==0 )  { // Left outer join condition
+					String [] nomatchKey = key.split("@@@");
+					nomatchKeyData.add(nomatchKey);
+					continue; // inner join condition failed
 				}
-				// newdata[index][(i*3) + 2] = leftD[i] -  rightD[i] ; // depending on datatype implement -
-				if (_dataTypeL[i].equals("Number")) {
-					newdata[index][(i*3) + 2] =  Double.parseDouble(leftD[i].toString()) - Double.parseDouble(rightD[i].toString());
-				} else if (_dataTypeL[i].equals("Date")) { // find date format
-					// might need diff from epoch date
-					try {
-						newdata[index][(i*3) + 2] =  DateFormat.getDateInstance().parse(leftD[i].toString()).compareTo(
-								DateFormat.getDateInstance().parse(rightD[i].toString()) );
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				
+				for (int i=0; i <rightD.length; i++ ) {
+					
+					matchedKeyData[index] = key.split("@@@");
+//					System.out.println("index:"+index + "i:" +i + "key:" + Arrays.toString(matchedKeyData[index]));
+//					System.out.println(Arrays.toString(rightD));
+//					System.out.println(Arrays.toString(leftD));
+					
+					newdata[index][i*3]=leftD[i];newdata[index][(i*3) + 1]=rightD[i];
+					if (leftD[i] == null || rightD[i] == null) {
+						newdata[index][(i*3) + 2] = null;
+						continue;
 					}
-				} else {
-					newdata[index][(i*3) + 2] =  leftD[i].toString().compareTo(rightD[i].toString());
+					// newdata[index][(i*3) + 2] = leftD[i] -  rightD[i] ; // depending on datatype implement -
+					if (_dataTypeL[i].equals("Number")) {
+						newdata[index][(i*3) + 2] =  Double.parseDouble(leftD[i].toString()) - Double.parseDouble(rightD[i].toString());
+					} else if (_dataTypeL[i].equals("Date")) { // find date format
+						// might need diff from epoch date
+						try {
+							newdata[index][(i*3) + 2] =  DateFormat.getDateInstance().parse(leftD[i].toString()).compareTo(
+									DateFormat.getDateInstance().parse(rightD[i].toString()) );
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else {
+						newdata[index][(i*3) + 2] =  leftD[i].toString().compareTo(rightD[i].toString());
+					}
 				}
+				
+				index++;
 			}
-			
-			index++;
+		} catch (Exception e) {
+			System.out.println("Compare Data Exception: "+e.getLocalizedMessage());
 		}
 		return newdata;
 	}	
 	
-	public String[][] getkeydata() {
-		return keydata;
+	public String[][] getmatchedKeyData() {
+		return matchedKeyData;
 	}
 	public ArrayList<String[]> getNomatchKeyData() {
 		return nomatchKeyData;
 	}
 	
-} // end of class RTMDiffUtil
+} // end of class RTMDiffUtilWithData

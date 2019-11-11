@@ -28,6 +28,56 @@ import org.arrah.framework.ndtable.ReportTableModel;
 public class TabularReport  {
 	
 	
+	
+	// Wrapper constructor (user friendly)  to call showreport to aggregate
+	public static ReportTableModel showReport (ReportTableModel _rtm, String[] dimCol, String[] metricCol, String[] aggrType ) {
+		
+		Vector<Integer> _reportColV = new Vector<Integer>();
+		Vector<Integer> _reportFieldV  = new Vector<Integer>();
+		
+		// Fill the dimensions
+		for (String dim:dimCol) {
+			int index = _rtm.getColumnIndex(dim);
+			if (index == -1) {
+				System.out.println("Cound not find Column:" +dim);
+				return _rtm;
+			}
+			_reportColV.add(index);
+			_reportFieldV.add(0); // 0 is for dimension
+		}
+		
+		// Fill the metric
+		for (int i=0; i < metricCol.length; i++) {
+			String metric= metricCol[i];
+			int index = _rtm.getColumnIndex(metric);
+			if (index == -1) {
+				System.out.println("Cound not find Column:" +metric);
+				return _rtm;
+			}
+			_reportColV.add(index);
+			String aggr = aggrType[i];
+			//  1 : Sum // 2 : Absolute Sum
+			// 3: Count // 4:Avg // 5: Uniq Count
+			
+			// Default SUM
+			if ( aggr == null || "".equals(aggr) || aggr.equalsIgnoreCase("sum") == true)
+				_reportFieldV.add(1); // 1 is for SUM
+			else if (aggr.equalsIgnoreCase("absolute sum") == true || aggr.equalsIgnoreCase("abs sum"))
+				_reportFieldV.add(2); // 2 is for ABSOLUTE SUM
+			else if (aggr.equalsIgnoreCase("count") == true )
+				_reportFieldV.add(3); // 3 is for COUNT
+			else if (aggr.equalsIgnoreCase("average") == true || aggr.equalsIgnoreCase("avg") == true)
+				_reportFieldV.add(4); // 4 is for AVG
+			else if (aggr.equalsIgnoreCase("unique count") == true || aggr.equalsIgnoreCase("uniq count") == true)
+				_reportFieldV.add(5); // 5 is for Uniq Count
+			else
+				_reportFieldV.add(1); // Default SUM
+		}
+				
+		return showReport(_rtm,_reportColV,_reportFieldV);
+		
+	}
+	
 	// Utility function to create tabular report from master
 	// _reportColV will have index of column name for new Table
 	// _reportFieldV will the type like Sum, Min, Group By
@@ -99,7 +149,12 @@ public class TabularReport  {
 			
 			
 			for ( int j=0; j<measureSize ; j++) {
-				measureObj[j] = _rt.getModel().getValueAt(i,measureV.get(j));
+				try {
+					measureObj[j] = Double.parseDouble(_rt.getModel().getValueAt(i,measureV.get(j)).toString() );
+					} catch (Exception e) {
+						System.out.println("\n Value is not Number");
+						continue;
+					}
 			}
 			
 			// prepare new Record
@@ -108,7 +163,8 @@ public class TabularReport  {
 				int fieldVal = newColT[j];
 				if ( fieldVal == 2) {  // Absolute Sum
 					try {
-					row[j] = Math.abs((Double)(_rt.getModel().getValueAt(i,_reportColV.get(j))));
+						//row[j] = Math.abs((Double)(_rt.getModel().getValueAt(i,_reportColV.get(j))));
+						row[j] = Math.abs( Double.parseDouble(_rt.getModel().getValueAt(i,_reportColV.get(j)).toString()) );
 					} catch (Exception e) {
 						System.out.println("\n Can not cast table value as Number");
 					}
@@ -145,9 +201,17 @@ public class TabularReport  {
 					int fieldVal = newColT[j];
 					if (fieldVal == 1 || fieldVal == 2 // Sum // Absolute Sum
 							||  fieldVal == 3 ||  fieldVal == 4  ||  fieldVal == 5) {  // Count // Avg //Uniq Count
-						existMeasureObj[k] = newRT.getModel().getValueAt(existingrowid.intValue(),j);
+						
+						// make sure it is number
+						try {
+						existMeasureObj[k] = Double.parseDouble(newRT.getModel().getValueAt(existingrowid.intValue(),j).toString() );
+						} catch (Exception e) {
+							System.out.println("\n Value is not Number");
+							continue;
+						}
 						Double newVal =0D;
-						if (newRT.getModel().getColumnClass(j).getName().toString().toUpperCase().contains("DOUBLE")) {
+						if (newRT.getModel().getColumnClass(j).getName().toString().toUpperCase().contains("DOUBLE") ||
+								existMeasureObj[k] instanceof Number ) {
 							if (fieldVal == 1) {
 								 newVal = (Double)existMeasureObj[k] + (Double)measureObj[k];
 							} else if (fieldVal == 2) {

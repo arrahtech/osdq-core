@@ -289,22 +289,29 @@ public class RecordMatch
 		public List<Result> compare(List<List<String>> left, List <List<String>> right, MultiColData meta1, MultiColData meta2)
 		{
 			
-			fuzzyCompare fz = new fuzzyCompare(meta1,false);
-			List<Result> matched = Collections.synchronizedList(new ArrayList<Result>());
+			//fuzzyCompare fz = new fuzzyCompare(meta1,false);
+			//List<Result> matched = Collections.synchronizedList(new ArrayList<Result>());
+			List<Result> matched = new ArrayList<Result>();
 			boolean firstRecordMatch = meta1.isFirstRecordMatch();
 			
 			// Make it multi threaded for faster output
 			final int THREADCOUNT = 10;
+			//final int THREADCOUNT = 1;  // for testing purpose only
 			Thread[] tid = new Thread[THREADCOUNT];
 			final int rowthread = left.size() / THREADCOUNT;
 			
+			List<Result>[] matchedThread = new ArrayList[THREADCOUNT]; // for each thread
+			
 			for (int i = 0; i < THREADCOUNT; i++) {
 				final int tindex = i;
+				matchedThread[tindex] = new ArrayList<Result>();
+				
 				tid[tindex] = new Thread(new Runnable() {
 					public void run() {
 						List<List<String>> leftsub;
 						int lIndex = tindex * rowthread; int rIndex = 0; // leftIndex from where thread starts , right Index zero
 						boolean atleastOneRecordmatch;
+						fuzzyCompare fz = new fuzzyCompare(meta1,false); // to be hold by thread
 						
 						if (tindex < THREADCOUNT - 1) 
 							 leftsub = left.subList(tindex * rowthread, tindex * rowthread + rowthread);
@@ -312,18 +319,32 @@ public class RecordMatch
 							 leftsub = left.subList(tindex * rowthread, left.size());
 						
 								try {
+									int rowindex=0; // for instrumentation
+									int totalcount=leftsub.size();
+									
 									for(List<String> l : leftsub)
 									{
+										//System.out.println((++rowindex) % 1000);
+										if ((++rowindex) % 500 == 0 ) { // For progress report
+											
+											System.out.println(rowindex + " of " + totalcount + " Rows Processed for Thread:" +  tindex
+											+" at:" + System.currentTimeMillis());
+											System.out.println("Length of Object:" + matchedThread[tindex].size());
+										}
 										atleastOneRecordmatch = false;
 										// System.out.println("Record left" + l);
+										//System.out.println("Startloop:" + System.currentTimeMillis());
 										for(List<String> r : right)
 										{
 											 // System.out.println("Record right " + r);
-											synchronized(fz) {
+											//synchronized(fz) {
 											if(fz.compare(l, r) == 0)
 											{
 												atleastOneRecordmatch = true;
-												matched.add(new Result(true,lIndex,rIndex,l,r,fz.simMatchVal));
+												//matched.add(new Result(true,lIndex,rIndex,l,r,fz.simMatchVal));
+												matchedThread[tindex].add(new Result(true,lIndex,rIndex,l,r,fz.simMatchVal));
+												
+												
 												//System.out.println("Left Index:"+lIndex+" Right Index:"+rIndex);
 												//System.out.println("Sim:"+fz.simMatchVal+":"+l.toString()+ " " +r.toString());
 												// One row matched
@@ -331,7 +352,7 @@ public class RecordMatch
 												// first left go to next left row
 												if(firstRecordMatch)
 													break;
-											} }
+											} //} // synchronized
 											rIndex++;
 										}
 										if(!atleastOneRecordmatch)
@@ -342,6 +363,7 @@ public class RecordMatch
 										lIndex++;
 										rIndex = 0;	
 									}
+									
 								} catch (Exception e) {
 									System.out.println(" Thread Comparison Exception:"+e.getMessage());
 								}
@@ -355,6 +377,9 @@ public class RecordMatch
 				} catch (Exception e) {
 					System.out.println(" Thread Exception:"+e.getMessage());
 				}
+			}
+			for (int i = 0; i < THREADCOUNT; i++) {
+				matched.addAll(matchedThread[i]); // Put into big bucket
 			}
 
 			matched.sort(null); // natural sort on left index T
@@ -468,13 +493,15 @@ public class RecordMatch
 							} else
 								ob = en.getKey().invoke(en.getValue(), o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
 							
-							 	//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
-							 	//System.out.printf(dd.getM_algoName());
+//							 	System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),(float)ob);
+//							 	System.out.printf(dd.getM_algoName());
+//							 	System.out.println("exactMatch:"+exactMatch);
+//							 	System.out.println("atLeastOneMatch:"+atLeastOneMatch);
 							
 							simMatchVal = (Float)ob; // update the matched or unmatched value
 							if(simMatchVal < matchprob)
 							{
-								if(exactMatch)
+								if(exactMatch) // exact match is AND operation
 								{
 									return -1;
 								}
@@ -483,12 +510,12 @@ public class RecordMatch
 							{
 								atLeastOneMatch = true;
 								
-								//System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),simMatchVal);
-							 	//System.out.printf(dd.getM_algoName());
-								if(!exactMatch)
+//								System.out.printf("\n [Col  [%s] [%s] result %f ] " ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()),simMatchVal);
+//							 	System.out.printf(dd.getM_algoName());
+								if(!exactMatch) // OR Conditon
 									break;
 							}
-						} // Exact Match
+						} // All character Match
 						else
 						{
 							if((o1.get(dd.getM_colIndexA()).compareToIgnoreCase(o2.get(dd.getM_colIndexB()))) == 0)
@@ -496,7 +523,7 @@ public class RecordMatch
 								simMatchVal = 1.00f ; // exact match
 				//				System.out.printf("[Col [%s] [%s] matched]" ,   o1.get(dd.getM_colIndexA()),o2.get(dd.getM_colIndexB()));
 								atLeastOneMatch = true;
-								if(!exactMatch)
+								if(!exactMatch) // OR Condition any column matched
 									break;
 							}
 							else

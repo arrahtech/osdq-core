@@ -170,6 +170,7 @@ public class SimilarityCheckLucene {
             System.out.println("\n ERROR: Index Open Exception");
             return false;
         }
+        System.out.println("FileSystem Index Created :"+indexPath);
         return true;
 
     }
@@ -188,6 +189,7 @@ public class SimilarityCheckLucene {
             System.out.println("\n ERROR: Index Open Exception");
             return false;
         }
+        System.out.println("In Memory Index Created");
         return true;
 
     }
@@ -201,6 +203,7 @@ public class SimilarityCheckLucene {
             System.out.println("\n " + e.getMessage());
             System.out.println("\n ERROR: Index Close Exception");
         }
+        System.out.println("Index Closed");
     }
 
     /* Since it is in sequence it will work for hive */
@@ -208,34 +211,48 @@ public class SimilarityCheckLucene {
         // Create multiple threads(10) if rowId > 100
         try {
             if (rowC <= 100 || isRowSet == true) { // Rowset has synch problem so no thread
-                for (int i = 0; i < rowC; i++)
+                for (int i = 0; i < rowC; i++) {
                     if (isRowSet == false)
                         writer.addDocument(createDocument(i, _rt.getRow(i)));
                     else
                         writer.addDocument(createDocument(i + 1,_rows.getRow(i + 1)));
+	            
+					if (i % 1000 == 0 ) // For progress report
+						System.out.println(i + " of " + rowC + " Rows Processed for Index Writing");
+                }
             } else {
                 final int THREADCOUNT = 10;
                 Thread[] tid = new Thread[THREADCOUNT];
                 final int rowthread = rowC / THREADCOUNT;
                 for (int i = 0; i < THREADCOUNT; i++) {
                     final int tindex = i;
+                    
                     tid[tindex] = new Thread(new Runnable() {
                         public void run() {
-                            if (tindex < THREADCOUNT - 1)
+                        	int rowIndex =0;
+                            if (tindex < THREADCOUNT - 1) {
                                 for (int j = tindex * rowthread; j < tindex
                                         * rowthread + rowthread; j++)
                                     try {
                                         writer.addDocument(createDocument(j,_rt.getRow(j)));
+                                        rowIndex++;
+                                        if (rowIndex % 1000 == 0 ) // For progress report
+                    						System.out.println(rowIndex + " of " + rowthread + " Rows Processed for Index Writing for ThreadId: "+tindex);
                                     } catch (Exception e) {
                                         System.out.println(" Lucene Exception:"+e.getMessage());
                                     }
-                            else
+                            } else {
                                 for (int j = tindex * rowthread; j < rowC; j++)
                                     try {
                                         writer.addDocument(createDocument(j,_rt.getRow(j)));
+                                        rowIndex++;
+                                        if (rowIndex % 1000 == 0 ) // For progress report
+                    						System.out.println(rowIndex +  " Rows Processed for Index Writing for Last ThreadId: "+tindex);
                                     } catch (Exception e) {
                                         System.out.println("Lucene Exception:"+e.getMessage());
                                     }
+                            }
+                            
                         }
                     });
                     tid[i].start();
@@ -329,6 +346,7 @@ public class SimilarityCheckLucene {
             System.out.println("\n Error: Can not open Index Searcher");
             return false;
         }
+        System.out.println("Index Opened for Search");
         return true;
     }
 
@@ -392,6 +410,7 @@ public class SimilarityCheckLucene {
             System.out.println("\n " + e.getMessage());
             System.out.println("\n Error: Can not Close Search  Index");
         }
+        System.out.println("Search Index Closed");
     }
     public void setRowset(JDBCRowset rowset) {
         _rows= rowset;
@@ -420,7 +439,8 @@ public class SimilarityCheckLucene {
         return newTerm;
     }
 
-    // This function will an array of objects that matched the query
+    // This function will return an array of objects that matched the query
+    // All matching Rows of the table
     public Object[][]  searchTableObject(String fuzzyQ) {
         if (openIndex() == false)
             return null;
