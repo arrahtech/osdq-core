@@ -82,7 +82,7 @@ private final String jcbRule;
 		
 			// Tell quartz to schedule the job using our trigger
 			
-			String key="ExecuteJob1", value="Report Generation1";
+			String key="ExecuteJob", value="Report Generation" +jcbRule ;
 			JobKey jobKey = new JobKey(key, value);
 			
 			JobDataMap jobDataMap = new JobDataMap(hashtable);
