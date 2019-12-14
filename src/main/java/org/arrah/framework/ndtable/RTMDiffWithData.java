@@ -22,7 +22,6 @@ package org.arrah.framework.ndtable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
