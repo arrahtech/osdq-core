@@ -23,6 +23,7 @@ import java.util.Vector;
 import org.arrah.framework.ndtable.RTMUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.util.DiscreetRange;
+import org.arrah.framework.util.StringCaseFormatUtil;
 
 public class AddressUtil {
 	
@@ -111,4 +112,97 @@ public class AddressUtil {
 		return matchedObject;
 	}
 	
+	// This function will be used for spliting freeflow address
+	// like 12 Pleason drive will be [12][Pleason][drive]
+	// More information can be found at https://pe.usps.com/text/pub28/28aph.htm
+	// [Lot] [Directional] [Street] [StreetSuffix]  [Secondary Unit Type] [Secondary Unit lot]
+	// 12/1 SW Lanlon st STE 201
+	// Lot can be fractional or alpha numberic
+	
+	public static String[]  splitUSAddressSecondLine (String addressString) {
+		String[] parseV = new String[6];
+		String[] splitV = addressString.split(" ");
+		boolean isDirectional = false;
+		
+		// remove meta character from start and end 
+		for (String s:splitV)
+			StringCaseFormatUtil.removeMetaCharString(s, "", true, false, true);
+		
+		if (splitV.length == 3) { // Standard Address
+			parseV[0] = splitV[0]; parseV[2] = splitV[1]; parseV[3] = splitV[2];
+			return parseV;
+		} 
+		if (splitV.length > 3) { // it may be directional or secondary unit type and lot in one
+			
+			parseV[0] = splitV[0];
+			String directionStr= getdirectionalVal(splitV[1]); 
+			
+			if (directionStr== null|| "".equals(directionStr)) { // 2nd value is not directornal 
+				parseV[2] = splitV[1]; parseV[3] = splitV[2];
+			} else { // 2nd value is  directornal like 1200 N Main st
+				parseV[1] = directionStr; parseV[2] = splitV[2]; parseV[3] = splitV[3];
+				if (splitV.length == 4) // Standard directional address
+						return parseV;
+				isDirectional = true;
+			}
+			
+			directionStr= getdirectionalVal(splitV[3]); // Now check 4th value
+			if (directionStr== null|| "".equals(directionStr)) { // 4th value is not directornal . 
+				parseV[2] = splitV[1]; parseV[3] = splitV[2]; parseV[4] = splitV[3];
+			} else { // 4th value is  directional like 1200  Main st South
+				parseV[1] = directionStr; parseV[2] = splitV[1]; parseV[3] = splitV[2];
+				isDirectional= true;
+			}
+			if (splitV.length == 4) //  like 1200 Main St STE110 or 1200 N Main St or 1200 Main st North
+				return parseV;
+			
+			if (splitV.length > 4) {
+				if (isDirectional == false)  { // 1200 Main St STE 110
+					parseV[5] = splitV[4];
+				} else { // 1200 Main St North STE110
+					parseV[4] = splitV[4];
+				}
+			}
+			
+			if (splitV.length == 5) //  like 1200 Main St STE 110 or 1200 N Main St STE#110
+				return parseV;
+			
+			parseV[5] = splitV[5]; // 1200 N Main St STE 110
+			
+			// Now secondary unit
+			
+		} // end of non standard loop
+		
+		
+		return parseV;
+		
 	}
+
+	private static String getdirectionalVal(String input) {
+		String directionVal=null;
+		String inputVal = input.toUpperCase();
+		switch(inputVal) {
+			case "N": case "NORTH":
+				return "N";
+			case "S": case "SOUTH":
+				return "S";
+			case "W": case "WEST":
+				return "W";
+			case "E": case "EAST":
+				return "E";
+			case "SW": case "SOUTHWEST":
+				return "SW";
+			case "SE": case "SOUTHEAST":
+				return "SE";
+			case "NW": case "NORTHWEST":
+				return "NW";
+			case "NE": case "NORTHEAST":
+				return "NE";
+				default:
+		
+		}
+		
+		return directionVal;
+	}
+	
+} // end of class

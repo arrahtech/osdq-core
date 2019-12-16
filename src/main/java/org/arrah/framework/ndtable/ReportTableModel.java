@@ -17,6 +17,9 @@ package org.arrah.framework.ndtable;
  *
  */
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Random;
@@ -25,6 +28,8 @@ import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 
 import org.arrah.framework.rdbms.SqlType;
+
+import com.opencsv.CSVWriter;
 
 public class ReportTableModel implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
@@ -539,6 +544,49 @@ public class ReportTableModel implements Serializable, Cloneable {
 				System.out.print(this.getModel().getValueAt(i, j).toString()+" ");
 			}
 			System.out.println();
+		}
+	}
+	
+	/**
+	 * save the table as comma separated values (OpenCSV format)
+	 */
+	public void saveAsOpenCSV(String fileLoc) {
+		
+		File fileN = null;
+		if (fileLoc.toLowerCase().endsWith(".csv") == false) {
+			fileN = new File(fileLoc + ".csv");
+		} else 
+			fileN = new File(fileLoc);
+			
+		
+		// Get Row and Column count
+		int rowCount = this.getModel().getRowCount();
+		int columnCount = this.getModel().getColumnCount();
+		String[] colD = new String[columnCount];
+
+		try {
+			CSVWriter writer = new CSVWriter(new FileWriter(fileN));
+			
+			// Get Column header
+			for (int j = 0; j < columnCount; j++) 
+				colD[j] = this.getModel().getColumnName(j);
+			writer.writeNext(colD,true);
+			
+			// Get Column data
+			for (int i = 0; i < rowCount; i++) {
+				for (int j = 0; j < columnCount; j++) {
+					Object o = this.getModel().getValueAt(i, j);
+					if (o == null)
+						colD[j] = "null";
+					else
+						colD[j] = o.toString();
+				}
+				writer.writeNext(colD,true);
+			}
+			writer.close();
+		} catch (IOException exp) {
+			System.out.println( exp.getMessage());
+
 		}
 	}
 	

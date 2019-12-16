@@ -13,10 +13,6 @@ import org.arrah.framework.datagen.EncryptRTM;
 import org.arrah.framework.dataquality.PIIValidator;
 import org.simmetrics.metrics.*;
 
-/**
- * @author vsingh007c
- *
- */
 public class StringUtil {
 	
 	/**
