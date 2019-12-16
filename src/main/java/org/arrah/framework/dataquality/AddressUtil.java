@@ -121,7 +121,10 @@ public class AddressUtil {
 	
 	public static String[]  splitUSAddressSecondLine (String addressString) {
 		String[] parseV = new String[6];
-		String[] splitV = addressString.split(" .*");
+		if (addressString == null || "".equals(addressString))
+			return parseV;
+		
+		String[] splitV = addressString.trim().split("\\s+");
 		boolean isDirectional = false;
 		
 		// remove meta character from start and end 
