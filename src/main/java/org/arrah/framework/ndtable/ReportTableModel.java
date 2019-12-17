@@ -537,11 +537,18 @@ public class ReportTableModel implements Serializable, Cloneable {
 	public void toPrint() {
 		String[] colN = this.getAllColNameStr();
 		for(String s: colN)
-			System.out.print(s+" ");
+			if (s != null)
+				System.out.print(s+" ");
+			else
+				System.out.print("EMPTYCOLNAME"+" ");
 			System.out.println();
 		for (int i=0 ; i <this.getModel().getRowCount(); i++) {
 			for (int j=0 ; j <this.getModel().getColumnCount(); j++) {
-				System.out.print(this.getModel().getValueAt(i, j).toString()+" ");
+				Object o = this.getModel().getValueAt(i, j);
+				if (o != null)
+					System.out.print(o.toString()+" ");
+				else
+					System.out.print("null"+" ");
 			}
 			System.out.println();
 		}

@@ -267,12 +267,18 @@ public class DQUtil {
 	public static ArrayList<String> matchFuzzyString(String searchStr,ArrayList<String> searchFrom,double similarity) {
 		
 		ArrayList<String> matchedString= new ArrayList<String> ();
+		if (searchStr == null || searchFrom == null)
+			return matchedString;
 		
         ArrayList<Character> searchList = new ArrayList<Character>();
         for (int i=0; i < searchStr.length(); i++  ) {
 			char c = searchStr.charAt(i);
 			searchList.add(i, c);
 		}
+        
+        Set<Character> fromStrunion = new HashSet<Character>();
+        fromStrunion.addAll(searchList);
+        
         ArrayList<Character> searchFromList = new ArrayList<Character>();
         
         Set<Character> union = new HashSet<Character>();
@@ -286,7 +292,11 @@ public class DQUtil {
 	        }
 	        union.addAll(searchFromList);
 	        
-	        int inter = searchStr.length() + str.length() - union.size();
+	        // Str and searchStr may have duplicate characters
+	        Set<Character> toStrunion = new HashSet<Character>();
+	        toStrunion.addAll(searchFromList);
+	        
+	        int inter = fromStrunion.size() + toStrunion.size() - union.size();
 	        double similarityD = ((double)inter / union.size());
 	        if (similarityD >= similarity)
 	        	matchedString.add(str);
