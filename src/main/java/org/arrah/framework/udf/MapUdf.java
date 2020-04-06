@@ -1,7 +1,8 @@
 package org.arrah.framework.udf;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import org.arrah.framework.ndtable.ReportTableModel;
 
 /**
  * An abstract class for all map type UDFs.
@@ -16,6 +17,6 @@ import java.util.List;
  */
 public abstract class MapUdf<T> {
 
-    abstract public List<T> eval(ArrayList<Object> input);
+    abstract public List<T> eval(ReportTableModel rtm, List<String> columnName);
 
 }

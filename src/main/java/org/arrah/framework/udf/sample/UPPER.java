@@ -1,8 +1,9 @@
 package org.arrah.framework.udf.sample;
 
+import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.udf.MapUdf;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,8 +16,8 @@ public class UPPER extends MapUdf<String> {
 
 
     @Override
-    public List<String> eval(ArrayList<Object> input) {
-        ArrayList<String> outputList = new ArrayList<>(input.size());
+    public List<String> eval(ReportTableModel rtm, List<String> columnName) {
+    	List<Object> input = Arrays.asList(rtm.getColData(columnName.get(0)) );
         return input.stream().map(e -> {return ((String)e).toUpperCase();}).collect(Collectors.toList());
     }
 }

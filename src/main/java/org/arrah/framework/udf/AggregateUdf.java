@@ -1,6 +1,8 @@
 package org.arrah.framework.udf;
 
-import java.util.ArrayList;
+import java.util.List;
+
+import org.arrah.framework.ndtable.ReportTableModel;
 
 /**
  * An abstract class for all aggregate type UDFs. For UDFs to be recognized
@@ -13,9 +15,9 @@ public abstract class AggregateUdf<T> {
     /**
      * main UDF to be implemented by UDF author.
      *
-     * @param input
-     * @return
+     * @param ReportTableModel, ColumnName
+     * @return Aggregred Value
      */
-    public abstract T eval(ArrayList<Object> input);
+    public abstract T eval(ReportTableModel rtm, List<String> columnName);
 
 }
