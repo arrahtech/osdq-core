@@ -43,7 +43,6 @@ public class ReportTableModel implements Serializable, Cloneable {
 	private boolean isEditable = false;
 	private boolean showClass = false;
 	private int[] classType = null;
-	private Object item;
 
 	public ReportTableModel(String[] column) {
 		addColumns(column);
@@ -181,12 +180,12 @@ public class ReportTableModel implements Serializable, Cloneable {
 
 				columnIndex[0] = column;
 
-				if (isEditable == true) {
+				if (isEditable) {
 					return true;
 				}
 
 				else { // isEditable False
-					if (columnName.endsWith("Editable") == true ) {
+					if (columnName.endsWith("Editable")) {
 						return true;
 					} else  { // colN.endsWith("Editable") not true
 						return false;
@@ -195,7 +194,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 			} // end of isCellEditable
 
 			public Class<?> getColumnClass(int columnIndex) {
-				if (showClass == true)
+				if (showClass)
 					if (classType != null) {
 						return SqlType.getClass(classType[columnIndex]);
 					} else { // class type is null
@@ -204,11 +203,11 @@ public class ReportTableModel implements Serializable, Cloneable {
 								if (getValueAt(i, columnIndex) != null)
 									return getValueAt(i, columnIndex).getClass();
 							} catch(Exception e) {
-								return (new Object()).getClass();
+								return Object.class;
 							}
-						return (new Object()).getClass();
+						return Object.class;
 					}
-				return (new Object()).getClass();
+				return Object.class;
 			}
 		};
 
@@ -224,7 +223,6 @@ public class ReportTableModel implements Serializable, Cloneable {
 	}
 
 	public void setValueAt(Object value, int row, int column) {
-		item = value;
 
 		if (row < 0 || column < 0) {
 			return;
@@ -237,7 +235,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		int i;
 
 		for (i = 0; i < columns.length; i++) {
-			columnVector.addElement((String) columns[i]);
+			columnVector.addElement(columns[i]);
 		}
 
 		columnSize = i;
@@ -247,7 +245,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		int i;
 
 		for (i = 0; i < columns.length; i++){
-			columnVector.addElement((String) columns[i].toString());
+			columnVector.addElement(columns[i].toString());
 		}
 
 		columnSize = i;
@@ -258,7 +256,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 			Vector<String> newRow = new Vector<>();
 
 			for (int j = 0; j < table[i].length; j++) {
-				newRow.addElement((String) table[i][j]);
+				newRow.addElement(table[i][j]);
 			}
 
 			rowVector.addElement(newRow);
@@ -269,7 +267,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		Vector<String> newRow = new Vector<>();
 
 		for (int j = 0; j < stringRow.length; j++) {
-			newRow.addElement((String) stringRow[j]);
+			newRow.addElement(stringRow[j]);
 		}
 
 		rowVector.addElement(newRow);
@@ -412,7 +410,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int i = row.size() - 1; i >= 0; i--) {
 			Object[] a = row.elementAt(vci++);
 
-			columnCount = (columnCount > a.length) ? a.length : columnCount;
+			columnCount = Math.min(columnCount, a.length);
 
 			for (int j = 0; j < columnCount; j++)
 				defaultTableModel.setValueAt(a[j], startRow + i, j);
@@ -433,7 +431,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 
 		Object[] rowReference = row;
 
-		columnCount = (columnCount > rowReference.length) ? rowReference.length : columnCount;
+		columnCount = Math.min(columnCount, rowReference.length);
 
 		for (int j = 0; j < columnCount; j++) {
 			defaultTableModel.setValueAt(rowReference[j], startRow, j);
@@ -487,6 +485,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 				continue;
 			}
 		}
+
 		return objectArray;
 	}
 
@@ -527,7 +526,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 				if ( i == columnIndex[j]) isColumnMatched = true;
 			}
 
-			if (isColumnMatched == false && (!(rowObjectArray[i] == null || "".equals(rowObjectArray[i].toString())))) {
+			if (!isColumnMatched && (!(rowObjectArray[i] == null || "".equals(rowObjectArray[i].toString())))) {
 				return false;
 			}
 		}
@@ -725,7 +724,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 	public void saveAsOpenCSV(String fileLocation) {
 		
 		File fileName = null;
-		if (fileLocation.toLowerCase().endsWith(".csv") == false) {
+		if (!fileLocation.toLowerCase().endsWith(".csv")) {
 			fileName = new File(fileLocation + ".csv");
 		} else {
 			fileName = new File(fileLocation);
