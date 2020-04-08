@@ -37,71 +37,72 @@ import com.opencsv.CSVWriter;
 public class ReportTableModel implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
 	private Vector<Vector<?>> rowVector = new Vector<>();
-	private Vector<Object> column_v = new Vector<Object>();
-	private int col_size = 0;
-	private DefaultTableModel tabModel;
-	private boolean _isEditable = false;
+	private Vector<Object> columnVector = new Vector<Object>();
+	private int columnSize = 0;
+	private DefaultTableModel defaultTableModel;
+	private boolean isEditable = false;
 	private boolean showClass = false;
 	private int[] classType = null;
+	private Object item;
 
-	public ReportTableModel(String[] col) {
-		addColumns(col);
+	public ReportTableModel(String[] column) {
+		addColumns(column);
 		createTable(false);
 
 	}
 
-	public ReportTableModel(Object[] col) {
-		addColumns(col);
+	public ReportTableModel(Object[] column) {
+		addColumns(column);
 		createTable(false);
 
 	}
 
-	public ReportTableModel(Object[] col, boolean isEditable) {
-		addColumns(col);
+	public ReportTableModel(Object[] column, boolean isEditable) {
+		addColumns(column);
 		createTable(isEditable);
 
 	}
 
-	public ReportTableModel(String[] col, boolean isEditable) {
-		addColumns(col);
+	public ReportTableModel(String[] column, boolean isEditable) {
+		addColumns(column);
 		createTable(isEditable);
 
 	}
 
-	public ReportTableModel(String[] col, boolean isEditable, boolean colClass) {
-		addColumns(col);
+	public ReportTableModel(String[] column, boolean isEditable, boolean columnClass) {
+		addColumns(column);
 		createTable(isEditable);
-		showClass = colClass;
+		showClass = columnClass;
 
 	}
 
-	public ReportTableModel(String[] col, int[] sqlType, boolean isEditable,
+	public ReportTableModel(String[] column, int[] sqlType, boolean isEditable,
 			boolean colClass) {
-		addColumns(col);
+		addColumns(column);
 		createTable(isEditable);
 		showClass = colClass;
 		classType = sqlType;
 
 	}
 
-	public ReportTableModel(Object[] col, boolean isEditable, boolean colClass) {
-		addColumns(col);
+	public ReportTableModel(Object[] column, boolean isEditable, boolean columnClass) {
+		addColumns(column);
 		createTable(isEditable);
-		showClass = colClass;
+		showClass = columnClass;
 
 	}
 
-	public ReportTableModel(String less, String more, String b_less1,
-			String b_more1, String b_less2, String b_more2) {
+	public ReportTableModel(String less, String more, String bLess1,
+			String bMore1, String bLess2, String bMore2) {
 
 		String[] columnNames = {
 				"<html><b><i>Values</i></b></html>",
 				"<html><b>Aggregate</i></b></html>",
 				"<html><b> &lt;  <i>" + less + "</i></b></html>",
 				"<html><b> &gt;  <i>" + more + "</i></b></html>",
-				"<html><b><i>" + b_less1 + "</i>&lt;&gt;<i>" + b_more1
+				"<html><b><i>" + bLess1 + "</i>&lt;&gt;<i>" + bMore1
 						+ "</i></b></html>",
-				"<html><b><i>" + b_less2 + "</i>&lt;&gt;<i>" + b_more2
+				"<html><b><i>" + bLess2 + "</i>&lt;&gt;<i>" + bMore2
 						+ "</i></b></html>" };
 
 		String[][] data = {
@@ -118,21 +119,53 @@ public class ReportTableModel implements Serializable, Cloneable {
 		createTable(false);
 	};
 
+	public static ReportTableModel copyTable(ReportTableModel rpt,
+			boolean editable, boolean showClass) {
+		if (rpt == null)
+			return null;
+		int colC = rpt.defaultTableModel.getColumnCount();
+		int rowC = rpt.defaultTableModel.getRowCount();
+		String[] colName = new String[colC];
+
+		for (int i = 0; i < colC; i++)
+			colName[i] = rpt.defaultTableModel.getColumnName(i);
+
+		ReportTableModel newRT = new ReportTableModel(colName, editable,
+				showClass);
+		for (int i = 0; i < rowC; i++) {
+			newRT.addRow();
+			for (int j = 0; j < colC; j++)
+				newRT.defaultTableModel.setValueAt(rpt.defaultTableModel.getValueAt(i, j), i, j);
+		}
+		return newRT;
+
+	}
+
+	// Static utility method
+	public static int getColumnIndex(ReportTableModel rpt, String colName) {
+		int row_c = rpt.getModel().getColumnCount();
+		for (int i = 0; i < row_c; i++) {
+			if (colName.equals(rpt.getModel().getColumnName(i)))
+				return i;
+		}
+		return -1;
+	}
+
 	private void createTable(final boolean isEditable) {
-		_isEditable = isEditable;
-		tabModel = new DefaultTableModel() {
+		this.isEditable = isEditable;
+		defaultTableModel = new DefaultTableModel() {
 			private static final long serialVersionUID = 1L;
 
 			public boolean isCellEditable(int row, int col) {
-				String colN = this.getColumnName(col);
-				int[] colIndex = new int[1];
-				colIndex[0] = col;
-				
+				String columnName = this.getColumnName(col);
+				int[] columnIndex = new int[1];
+				columnIndex[0] = col;
+
 				if (isEditable == true) {
 					return true;
 				}
 				else { // isEditable False
-					if (colN.endsWith("Editable") == true ) {
+					if (columnName.endsWith("Editable") == true ) {
 						return true;
 					} else  { // colN.endsWith("Editable") not true
 						return false;
@@ -140,15 +173,15 @@ public class ReportTableModel implements Serializable, Cloneable {
 				}
 			} // end of isCellEditable
 
-			public Class<?> getColumnClass(int col) {
+			public Class<?> getColumnClass(int columnIndex) {
 				if (showClass == true)
 					if (classType != null) {
-						return SqlType.getClass(classType[col]);
+						return SqlType.getClass(classType[columnIndex]);
 					} else { // class type is null
 						for (int i = 0; i < this.getRowCount(); i++)
 							try{
-								if (getValueAt(i, col) != null)
-									return getValueAt(i, col).getClass();
+								if (getValueAt(i, columnIndex) != null)
+									return getValueAt(i, columnIndex).getClass();
 							} catch(Exception e) {
 								return (new Object()).getClass();
 							}
@@ -158,146 +191,148 @@ public class ReportTableModel implements Serializable, Cloneable {
 			}
 
 		};
-		tabModel.setDataVector(rowVector, column_v);
+		defaultTableModel.setDataVector(rowVector, columnVector);
 	}
 
-	public void setValueAt(String s, int row, int col) {
-		if (row < 0 || col < 0)
+	public void setValueAt(String value, int row, int column) {
+		if (row < 0 || column < 0)
 			return;
-		tabModel.setValueAt(s, row, col);
+		defaultTableModel.setValueAt(value, row, column);
 	}
 
-	public void setValueAt(Object s, int row, int col) {
-		if (row < 0 || col < 0)
+	public void setValueAt(Object value, int row, int column) {
+		item = value;
+		if (row < 0 || column < 0)
 			return;
-		tabModel.setValueAt(s, row, col);
+		defaultTableModel.setValueAt(value, row, column);
 	}
 
-	private void addColumns(String[] colName) {
+	private void addColumns(String[] columns) {
 		int i;
-		for (i = 0; i < colName.length; i++)
-			column_v.addElement((String) colName[i]);
-		col_size = i;
+		for (i = 0; i < columns.length; i++)
+			columnVector.addElement((String) columns[i]);
+		columnSize = i;
 	}
 
-	private void addColumns(Object[] colName) {
+	private void addColumns(Object[] columns) {
 		int i;
-		for (i = 0; i < colName.length; i++)
-			column_v.addElement((String) colName[i].toString());
-		col_size = i;
+		for (i = 0; i < columns.length; i++)
+			columnVector.addElement((String) columns[i].toString());
+		columnSize = i;
 	}
 
-	private void addRows(String[][] rowData) {
-		for (int i = 0; i < rowData.length; i++) {
+	private void addRows(String[][] table) {
+		for (int i = 0; i < table.length; i++) {
 			Vector<String> newRow = new Vector<String>();
-			for (int j = 0; j < rowData[i].length; j++)
-				newRow.addElement((String) rowData[i][j]);
+			for (int j = 0; j < table[i].length; j++)
+				newRow.addElement((String) table[i][j]);
 			rowVector.addElement(newRow);
 		}
 	}
 
-	public void addFillRow(String[] rowset) {
+	public void addFillRow(String[] stringRow) {
 		Vector<String> newRow = new Vector<String>();
-		for (int j = 0; j < rowset.length; j++)
-			newRow.addElement((String) rowset[j]);
+		for (int j = 0; j < stringRow.length; j++)
+			newRow.addElement((String) stringRow[j]);
 
 		rowVector.addElement(newRow);
-		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
+		defaultTableModel.fireTableRowsInserted(defaultTableModel.getRowCount(),1);
 
 	}
 
 	/* Add row from one object sequence*/
-	public void addFillRow(Object[] rowset) {
+	public void addFillRow(Object[] objectRow) {
 		Vector<Object> newRow = new Vector<Object>();
-		for (int j = 0; j < rowset.length; j++)
-			newRow.addElement(rowset[j]);
+		for (int j = 0; j < objectRow.length; j++)
+			newRow.addElement(objectRow[j]);
 
 		rowVector.addElement(newRow);
-		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
+		defaultTableModel.fireTableRowsInserted(defaultTableModel.getRowCount(),1);
 
 	}
-	public void addFillRow(Object[] rowset, Object[] rowset1) {
+
+	public void addFillRow(Object[] objectRow1, Object[] objectRow2) {
 		Vector<Object> newRow = new Vector<Object>();
-		for (int j = 0; j < rowset.length; j++)
-			newRow.addElement(rowset[j]);
-		for (int j = 0; j < rowset1.length; j++) // append in the last
-			newRow.addElement(rowset1[j]);
+		for (int j = 0; j < objectRow1.length; j++)
+			newRow.addElement(objectRow1[j]);
+		for (int j = 0; j < objectRow2.length; j++) // append in the last
+			newRow.addElement(objectRow2[j]);
 
 		rowVector.addElement(newRow);
-		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
+		defaultTableModel.fireTableRowsInserted(defaultTableModel.getRowCount(),1);
 
 	}
 
-	public void addFillRow(Vector<Object> rowset) {
-		rowVector.addElement(rowset);
-		
-		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
+	public void addFillRow(Vector<Object> objectVectorRow) {
+		rowVector.addElement(objectVectorRow);
 
-	}
-
-	public void addRow() {
-		Vector<String> newRow = new Vector<>();
-		for (int j = 0; j < col_size; j++)
-			newRow.addElement((String) "");
-
-		rowVector.addElement(newRow);
-		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
-
-	}
-
-	public void addNullRow() {
-		Vector<String> newRow = new Vector<String>();
-		for (int j = 0; j < col_size; j++)
-			newRow.addElement(null);
-		rowVector.addElement(newRow);
-		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
+		defaultTableModel.fireTableRowsInserted(defaultTableModel.getRowCount(),1);
 
 	}
 
 	// Add Column and Remove Column
 
-	public void addColumn(final String name) {
-		tabModel.addColumn(name);
-		tabModel.fireTableStructureChanged();
-		col_size = tabModel.getColumnCount();// Increase the col size
+	public void addRow() {
+		Vector<String> newRow = new Vector<>();
+		for (int j = 0; j < columnSize; j++)
+			newRow.addElement((String) "");
+
+		rowVector.addElement(newRow);
+		defaultTableModel.fireTableRowsInserted(defaultTableModel.getRowCount(),1);
+
 	}
 
+	public void addNullRow() {
+		Vector<String> newRow = new Vector<String>();
+		for (int j = 0; j < columnSize; j++)
+			newRow.addElement(null);
+		rowVector.addElement(newRow);
+		defaultTableModel.fireTableRowsInserted(defaultTableModel.getRowCount(),1);
+
+	}
+
+	public void addColumn(final String name) {
+		defaultTableModel.addColumn(name);
+		defaultTableModel.fireTableStructureChanged();
+		columnSize = defaultTableModel.getColumnCount();// Increase the col size
+	}
+	
 	public void addRows(int startRow, int noOfRows) {
-		int col_c = tabModel.getColumnCount();
+		int col_c = defaultTableModel.getColumnCount();
 		Object[] row = new Object[col_c];
 		for (int i = 0; i < noOfRows; i++)
-			tabModel.insertRow(startRow, row);
-		tabModel.fireTableRowsInserted(startRow, noOfRows);
+			defaultTableModel.insertRow(startRow, row);
+		defaultTableModel.fireTableRowsInserted(startRow, noOfRows);
 	}
 
 	public void removeRows(int startRow, int noOfRows) {
 		for (int i = 0; i < noOfRows; i++)
-			tabModel.removeRow(startRow);
-		tabModel.fireTableRowsDeleted(startRow, noOfRows);
+			defaultTableModel.removeRow(startRow);
+		defaultTableModel.fireTableRowsDeleted(startRow, noOfRows);
 	}
-	
+
 	public void removeMarkedRows(Vector<Integer> marked) {
 		Integer[] a = new Integer[marked.size()];
 		a = marked.toArray(a);
 		Arrays.sort(a);
 		int len = a.length;
 		for (int i = 0; i < len; i++) {
-			tabModel.removeRow(a[len - 1 - i]);
-			tabModel.fireTableRowsDeleted(a[len - 1 - i], 1);
+			defaultTableModel.removeRow(a[len - 1 - i]);
+			defaultTableModel.fireTableRowsDeleted(a[len - 1 - i], 1);
 		}
 	}
 
 	public Object[] copyRow(int startRow) {
-		int col_c = tabModel.getColumnCount();
+		int col_c = defaultTableModel.getColumnCount();
 		Object[] row = new Object[col_c];
 		for (int i = 0; i < col_c; i++)
-			row[i] = tabModel.getValueAt(startRow, i);
+			row[i] = defaultTableModel.getValueAt(startRow, i);
 		return row;
 	}
 
 	public void pasteRow(int startRow, Vector<Object[]> row) {
-		int row_c = tabModel.getRowCount();
-		int col_c = tabModel.getColumnCount();
+		int row_c = defaultTableModel.getRowCount();
+		int col_c = defaultTableModel.getColumnCount();
 		int vci = 0;
 		int saveR = row_c - (startRow + row.size());
 		if (saveR < 0) {
@@ -310,80 +345,59 @@ public class ReportTableModel implements Serializable, Cloneable {
 			Object[] a = row.elementAt(vci++);
 			col_c = (col_c > a.length) ? a.length : col_c;
 			for (int j = 0; j < col_c; j++)
-				tabModel.setValueAt(a[j], startRow + i, j);
+				defaultTableModel.setValueAt(a[j], startRow + i, j);
 		}
 	}
 
 	public void pasteRow(int startRow, Object[] row) {
-		int row_c = tabModel.getRowCount();
-		int col_c = tabModel.getColumnCount();
+		int rowCount = defaultTableModel.getRowCount();
+		int columnCount = defaultTableModel.getColumnCount();
 
-		int saveR = row_c - (startRow + 1);
-		if (saveR < 0) {
+		int saveRow = rowCount - (startRow + 1);
+		if (saveRow < 0) {
 			System.out.println("Not Enough Rows left to paste " + 1
 					+ " Row \n Use \'Insert Clip\' instead");
 			return;
 		}
 
-		Object[] a = row;
-		col_c = (col_c > a.length) ? a.length : col_c;
-		for (int j = 0; j < col_c; j++)
-			tabModel.setValueAt(a[j], startRow, j);
+		Object[] rowReference = row;
+		columnCount = (columnCount > rowReference.length) ? rowReference.length : columnCount;
+		for (int j = 0; j < columnCount; j++)
+			defaultTableModel.setValueAt(rowReference[j], startRow, j);
 	}
 
 	public DefaultTableModel getModel() {
-		return tabModel;
+		return defaultTableModel;
 	}
 
 	public boolean isRTMEditable() {
-		return _isEditable;
+		return isEditable;
 	}
+
 	public boolean isRTMShowClass() {
 		return showClass;
 	}
-
-	public static ReportTableModel copyTable(ReportTableModel rpt,
-			boolean editable, boolean showClass) {
-		if (rpt == null)
-			return null;
-		int colC = rpt.tabModel.getColumnCount();
-		int rowC = rpt.tabModel.getRowCount();
-		String[] colName = new String[colC];
-
-		for (int i = 0; i < colC; i++)
-			colName[i] = rpt.tabModel.getColumnName(i);
-
-		ReportTableModel newRT = new ReportTableModel(colName, editable,
-				showClass);
-		for (int i = 0; i < rowC; i++) {
-			newRT.addRow();
-			for (int j = 0; j < colC; j++)
-				newRT.tabModel.setValueAt(rpt.tabModel.getValueAt(i, j), i, j);
-		}
-		return newRT;
-
-	}
-
-	public Object[] getRow(int rowIndex) {
-		int colC = tabModel.getColumnCount();
-		Object[] obj = new Object[colC];
-		if (rowIndex < 0 || rowIndex >= tabModel.getRowCount())
-			return obj;
-		for (int i = 0; i < colC; i++) {
-			obj[i] = tabModel.getValueAt(rowIndex, i);
-		}
-		return obj;
-	}
 	
+	public Object[] getRow(int rowIndex) {
+		int columnCount = defaultTableModel.getColumnCount();
+		Object[] objectArray = new Object[columnCount];
+		if (rowIndex < 0 || rowIndex >= defaultTableModel.getRowCount())
+			return objectArray;
+		for (int i = 0; i < columnCount; i++) {
+			objectArray[i] = defaultTableModel.getValueAt(rowIndex, i);
+		}
+		return objectArray;
+	}
+
 	// To get only indexed or selected cols
-	public Object[] getSelectedColRow(int rowIndex,int[] colI) {
-		int colC = colI.length;
-		Object[] obj = new Object[colC];
-		if (rowIndex < 0 || rowIndex >= tabModel.getRowCount())
+	public Object[] getSelectedColRow(int rowIndex, int[] columnIndex) {
+		int columnIndexLength = columnIndex.length;
+		Object[] obj = new Object[columnIndexLength];
+		if (rowIndex < 0 || rowIndex >= defaultTableModel.getRowCount())
 			return obj;
-		for (int i = 0; i < colC; i++) {
+		for (int i = 0; i < columnIndexLength; i++) {
 			try {
-				obj[i] = tabModel.getValueAt(rowIndex, colI[i]);
+				obj[i] = defaultTableModel.getValueAt(rowIndex, columnIndex[i]);
 			} catch (Exception e) { // in case array out-of-bound
 				obj[i] = null;
 				continue;
@@ -391,67 +405,59 @@ public class ReportTableModel implements Serializable, Cloneable {
 		}
 		return obj;
 	}
+
 	// To get only indexed or selected cols
-	public Object[] getSelectedColRow(int rowIndex,Integer[] colI) {
-		int[] leftI = Arrays.stream(colI).mapToInt(Integer::intValue).toArray();
-		return getSelectedColRow( rowIndex, leftI);
+	public Object[] getSelectedColRow(int rowIndex, Integer[] columnIndex) {
+		int[] leftIndex = Arrays.stream(columnIndex).mapToInt(Integer::intValue).toArray();
+		return getSelectedColRow( rowIndex, leftIndex);
+	}
+	
+	public void cleanallRow() {
+		int rowCount = defaultTableModel.getRowCount();
+		removeRows(0, rowCount);
+	}
+	
+	public boolean isEmptyRow (int rowIndex) {
+		Object[] rowObjectArray = this.getRow(rowIndex);
+		for (int i=0 ; i < rowObjectArray.length ; i++) {
+			if (!(rowObjectArray[i] == null || "".equals(rowObjectArray[i].toString()))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
-	public void cleanallRow() {
-		int i = tabModel.getRowCount();
-		removeRows(0, i);
-	}
-	
-	public boolean isEmptyRow (int rowid) {
-		Object[] rowObj = this.getRow(rowid);
-		for (int i=0 ; i < rowObj.length ; i++) {
-			if (!(rowObj[i] == null || "".equals(rowObj[i].toString()))) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public boolean isEmptyExceptCols (int rowid, int[] colIndex) {
-		boolean isColMatch = false;
-		Object[] rowObj = this.getRow(rowid);
-		for (int i=0 ; i < rowObj.length ; i++) {
-			isColMatch = false;
+	public boolean isEmptyExceptCols (int rowIndex, int[] colIndex) {
+		boolean isColumnMatched = false;
+		Object[] rowObjectArray = this.getRow(rowIndex);
+		for (int i=0 ; i < rowObjectArray.length ; i++) {
+			isColumnMatched = false;
 			for (int j=0; j < colIndex.length; j++){
-				if ( i == colIndex[j]) isColMatch = true;
+				if ( i == colIndex[j]) isColumnMatched = true;
 			}
-			if (isColMatch == false && (!(rowObj[i] == null || "".equals(rowObj[i].toString())))) {
+			if (isColumnMatched == false && (!(rowObjectArray[i] == null || "".equals(rowObjectArray[i].toString())))) {
 				return false;
 			}
 		}
 		return true;
-	}
-	// Static utility method
-	public static int getColumnIndex(ReportTableModel rpt, String colName) {
-		int row_c = rpt.getModel().getColumnCount();
-		for (int i = 0; i < row_c; i++) {
-			if (colName.equals(rpt.getModel().getColumnName(i)))
-				return i;
-		}
-		return -1;
 	}
 	
 	// public util methods
-	public  int getColumnIndex(String colName) {
-		int row_c = this.getModel().getColumnCount();
-		for (int i = 0; i < row_c; i++) {
-			if (colName.equals(this.getModel().getColumnName(i)))
+	public  int getColumnIndex(String columnName) {
+		int columnCount = this.getModel().getColumnCount();
+		for (int i = 0; i < columnCount; i++) {
+			if (columnName.equals(this.getModel().getColumnName(i)))
 				return i;
 		}
 		return -1;
 	}
 	
 	public  Object[] getAllColName() {
-		int colC = this.getModel().getColumnCount();
-		Object[] colN = new Object[colC];
-		for (int i = 0; i < colC; i++)
-		 colN[i] = this.getModel().getColumnName(i);	
-		return colN;
+		int columnCount = this.getModel().getColumnCount();
+		Object[] columnNamesObjectArray = new Object[columnCount];
+		for (int i = 0; i < columnCount; i++)
+		 columnNamesObjectArray[i] = this.getModel().getColumnName(i);
+		return columnNamesObjectArray;
 	}
 	
 	public  String[] getAllColNameStr() {
@@ -463,30 +469,30 @@ public class ReportTableModel implements Serializable, Cloneable {
 	}
 	
 	public  Object[] getColData(int index) {
-		int row_c = this.getModel().getRowCount();
-		Object[] colN = new Object[row_c];
-		for (int i = 0; i < row_c; i++)
-		 colN[i] = this.getModel().getValueAt(i, index);
-		return colN;
+		int rowCount = this.getModel().getRowCount();
+		Object[] columnNameObjectArray = new Object[rowCount];
+		for (int i = 0; i < rowCount; i++)
+		 columnNameObjectArray[i] = this.getModel().getValueAt(i, index);
+		return columnNameObjectArray;
 	}
 	
 	public  Object[] getColDataRandom(int index,int count) {
-		Object[] colN = new Object[count];
-		Vector<Object> vc = new Vector<Object>();
-		int row_c = this.getModel().getRowCount();
+		Object[] columnNameObjectArray = new Object[count];
+		Vector<Object> objectVector = new Vector<Object>();
+		int rowCount = this.getModel().getRowCount();
 		int rowcount=0;
 		while(rowcount < count) {
-			int newc = new Random().nextInt(row_c);
-		 	Object o = this.getModel().getValueAt(newc, index);
-		 	// if (vc.indexOf(o) != -1) continue; // it may create loop
-		 	vc.add(o);
+			int newIndex = new Random().nextInt(rowCount);
+		 	Object value = this.getModel().getValueAt(newIndex, index);
+		 	// if (objectVector.indexOf(value) != -1) continue; // it may create loop
+		 	objectVector.add(value);
 		 	rowcount++;
 		}
-		return vc.toArray(colN);
+		return objectVector.toArray(columnNameObjectArray);
 	}
 	
-	public  Object[] getColDataRandom(String colName,int count) {
-		int index = getColumnIndex( colName);
+	public  Object[] getColDataRandom(String columnName,int count) {
+		int index = getColumnIndex( columnName);
 		if ( index  < 0 ) return null;
 		return getColDataRandom( index,count);
 
@@ -494,38 +500,38 @@ public class ReportTableModel implements Serializable, Cloneable {
 	
 	
 	public  Vector<Object> getColDataV(int index) {
-		int row_c = this.getModel().getRowCount();
+		int rowCount = this.getModel().getRowCount();
 		Vector<Object> vc = new Vector<Object>();
-		for (int i = 0; i < row_c; i++)
+		for (int i = 0; i < rowCount; i++)
 			vc.add(this.getModel().getValueAt(i, index));
 		return vc;
 	}
 	
 	public  Vector<Double> getColDataVD(int index) {
-		int row_c = this.getModel().getRowCount();
-		Vector<Double> vc = new Vector<Double>();
-		for (int i = 0; i < row_c; i++) {
-			Object colv = this.getModel().getValueAt(i, index);
-			if (colv == null || "".equals(colv.toString())) continue; // Null, empty skipped
-			if (colv instanceof Number)
-				//vc.add(((Double) colv).doubleValue());
-				vc.add(((Number)colv).doubleValue());
-			else if (colv instanceof String) {
+		int rowCount = this.getModel().getRowCount();
+		Vector<Double> doubleVector = new Vector<Double>();
+		for (int i = 0; i < rowCount; i++) {
+			Object columnValue = this.getModel().getValueAt(i, index);
+			if (columnValue == null || "".equals(columnValue.toString())) continue; // Null, empty skipped
+			if (columnValue instanceof Number)
+				//doubleVector.add(((Double) columnValue).doubleValue());
+				doubleVector.add(((Number)columnValue).doubleValue());
+			else if (columnValue instanceof String) {
 				try {
-					double newv = Double.parseDouble(colv.toString());
-					vc.add(newv);
+					double newColumnValue = Double.parseDouble(columnValue.toString());
+					doubleVector.add(newColumnValue);
 				} catch (Exception e) {
-					// Do nothing
+					// Do nothing TODO log this..
 				}
 			}
 		}
-		return vc;
+		return doubleVector;
 	}
 	
-	public  Object[] getColData(String colName) {
-		int colI = getColumnIndex( colName);
-		if ( colI  < 0 ) return null;
-		return getColData(colI);
+	public  Object[] getColData(String columnName) {
+		int columnIndex = getColumnIndex( columnName);
+		if ( columnIndex  < 0 ) return null;
+		return getColData(columnIndex);
 	}
 	
 	public int[] getClassType() {
@@ -550,10 +556,10 @@ public class ReportTableModel implements Serializable, Cloneable {
 	}
 	
 	public void toPrint() {
-		String[] colN = this.getAllColNameStr();
-		for(String s: colN)
-			if (s != null)
-				System.out.print(s+" ");
+		String[] columnNames = this.getAllColNameStr();
+		for(String columnName: columnNames)
+			if (columnName != null)
+				System.out.print(columnName+" ");
 			else
 				System.out.print("EMPTYCOLNAME"+" ");
 			System.out.println();
@@ -572,38 +578,38 @@ public class ReportTableModel implements Serializable, Cloneable {
 	/**
 	 * save the table as comma separated values (OpenCSV format)
 	 */
-	public void saveAsOpenCSV(String fileLoc) {
+	public void saveAsOpenCSV(String fileLocation) {
 		
-		File fileN = null;
-		if (fileLoc.toLowerCase().endsWith(".csv") == false) {
-			fileN = new File(fileLoc + ".csv");
+		File fileName = null;
+		if (fileLocation.toLowerCase().endsWith(".csv") == false) {
+			fileName = new File(fileLocation + ".csv");
 		} else 
-			fileN = new File(fileLoc);
+			fileName = new File(fileLocation);
 			
 		
 		// Get Row and Column count
 		int rowCount = this.getModel().getRowCount();
 		int columnCount = this.getModel().getColumnCount();
-		String[] colD = new String[columnCount];
+		String[] columnData = new String[columnCount];
 
 		try {
-			CSVWriter writer = new CSVWriter(new FileWriter(fileN));
+			CSVWriter writer = new CSVWriter(new FileWriter(fileName));
 			
 			// Get Column header
 			for (int j = 0; j < columnCount; j++) 
-				colD[j] = this.getModel().getColumnName(j);
-			writer.writeNext(colD,true);
+				columnData[j] = this.getModel().getColumnName(j);
+			writer.writeNext(columnData,true);
 			
 			// Get Column data
 			for (int i = 0; i < rowCount; i++) {
 				for (int j = 0; j < columnCount; j++) {
-					Object o = this.getModel().getValueAt(i, j);
-					if (o == null)
-						colD[j] = "null";
+					Object object = this.getModel().getValueAt(i, j);
+					if (object == null)
+						columnData[j] = "null";
 					else
-						colD[j] = o.toString();
+						columnData[j] = object.toString();
 				}
-				writer.writeNext(colD,true);
+				writer.writeNext(columnData,true);
 			}
 			writer.close();
 		} catch (IOException exp) {
