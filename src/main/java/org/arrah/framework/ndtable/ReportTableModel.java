@@ -21,9 +21,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -33,7 +36,7 @@ import com.opencsv.CSVWriter;
 
 public class ReportTableModel implements Serializable, Cloneable {
 	private static final long serialVersionUID = 1L;
-	private Vector<Object> row_v = new Vector<Object>();
+	private Vector<Vector<?>> rowVector = new Vector<>();
 	private Vector<Object> column_v = new Vector<Object>();
 	private int col_size = 0;
 	private DefaultTableModel tabModel;
@@ -155,7 +158,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 			}
 
 		};
-		tabModel.setDataVector(row_v, column_v);
+		tabModel.setDataVector(rowVector, column_v);
 	}
 
 	public void setValueAt(String s, int row, int col) {
@@ -189,7 +192,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 			Vector<String> newRow = new Vector<String>();
 			for (int j = 0; j < rowData[i].length; j++)
 				newRow.addElement((String) rowData[i][j]);
-			row_v.addElement(newRow);
+			rowVector.addElement(newRow);
 		}
 	}
 
@@ -198,7 +201,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int j = 0; j < rowset.length; j++)
 			newRow.addElement((String) rowset[j]);
 
-		row_v.addElement(newRow);
+		rowVector.addElement(newRow);
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
@@ -209,7 +212,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int j = 0; j < rowset.length; j++)
 			newRow.addElement(rowset[j]);
 
-		row_v.addElement(newRow);
+		rowVector.addElement(newRow);
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
@@ -220,24 +223,24 @@ public class ReportTableModel implements Serializable, Cloneable {
 		for (int j = 0; j < rowset1.length; j++) // append in the last
 			newRow.addElement(rowset1[j]);
 
-		row_v.addElement(newRow);
+		rowVector.addElement(newRow);
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
 
-	public void addFillRow(Vector<?> rowset) {
-		row_v.addElement(rowset);
+	public void addFillRow(Vector<Object> rowset) {
+		rowVector.addElement(rowset);
 		
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
 
 	public void addRow() {
-		Vector<String> newRow = new Vector<String>();
+		Vector<String> newRow = new Vector<>();
 		for (int j = 0; j < col_size; j++)
 			newRow.addElement((String) "");
 
-		row_v.addElement(newRow);
+		rowVector.addElement(newRow);
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
@@ -246,7 +249,7 @@ public class ReportTableModel implements Serializable, Cloneable {
 		Vector<String> newRow = new Vector<String>();
 		for (int j = 0; j < col_size; j++)
 			newRow.addElement(null);
-		row_v.addElement(newRow);
+		rowVector.addElement(newRow);
 		tabModel.fireTableRowsInserted(tabModel.getRowCount(),1);
 
 	}
@@ -533,6 +536,18 @@ public class ReportTableModel implements Serializable, Cloneable {
     {  
         return super.clone();  
     }
+
+    public List<List<Object>> toNativeObjectListList() {
+		return rowVector
+			.stream()
+			.map(vector -> {
+
+				List<Object> list = new ArrayList<>(vector);
+
+				return list;
+			})
+			.collect(Collectors.toList());
+	}
 	
 	public void toPrint() {
 		String[] colN = this.getAllColNameStr();
