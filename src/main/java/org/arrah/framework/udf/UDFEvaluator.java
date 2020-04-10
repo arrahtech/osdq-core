@@ -1,34 +1,57 @@
 package org.arrah.framework.udf;
 
-import org.arrah.framework.ndtable.ReportTableModel;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodParameterScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+/***********************************************
+ *     Copyright to Vivek Kumar Singh          *
+ *                                             *
+ * Any part of code or file can be changed,    *
+ * redistributed, modified with copyright      *
+ * information intact                          *
+ *                                             *
+ * Author$ : Vivek Singh                       *
+ *                                             *
+ ***********************************************/
 
 /**
  * A convenience class for UDF calling program.
  * This class hides the underlying java reflection
  * to invoke UDFs at runtime
+ * 
+ 
  */
+
+import org.arrah.framework.ndtable.ReportTableModel;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodParameterScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class UDFEvaluator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UDFEvaluator.class);
+    private static final Logger LOGGER = Logger.getLogger(UDFEvaluator.class.getName());
+
     /*
     A local cache of all UDFs
      */
     private static ConcurrentHashMap<String, Method> aggregateUdfMap = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Method> mapUdfMap = new ConcurrentHashMap<>();
+    
+    public static ConcurrentHashMap<String, Method> getAggregateUdf () {
+    	return aggregateUdfMap;
+    }
+    
+    public static ConcurrentHashMap<String, Method> getMapUdf () {
+    	return mapUdfMap;
+    }
 
     private static Reflections reflections = new Reflections(new ConfigurationBuilder()
             .setUrls(ClasspathHelper.forPackage("org.arrah.framework.udf"))
@@ -37,6 +60,8 @@ public class UDFEvaluator {
 
     static {
         try {
+        	LOGGER.setLevel(Level.SEVERE);
+        	
             LOGGER.info("Indexing all UDFs");
             indexAggregateUdfs();
             indexMapUdfs();
@@ -65,7 +90,7 @@ public class UDFEvaluator {
                 Method method = subType.getDeclaredMethod("eval", ReportTableModel.class, List.class);
                 aggregateUdfMap.put(subType.getName(), method);
             } catch (NoSuchMethodException exc) {
-                LOGGER.error("Error indexing UDFs", exc);
+                LOGGER.severe("Error indexing Aggregate UDFs");
             }
         });
 
@@ -80,7 +105,7 @@ public class UDFEvaluator {
                 Method method = subType.getDeclaredMethod("eval", ReportTableModel.class, List.class);
                 mapUdfMap.put(subType.getName(), method);
             } catch (NoSuchMethodException exc) {
-                LOGGER.error("Error indexing UDFs", exc);
+                LOGGER.severe("Error indexing Mapper UDFs");
             }
         });
 

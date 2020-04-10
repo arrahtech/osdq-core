@@ -3,9 +3,9 @@ package org.arrah.framework.udf.sample;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.udf.MapUdf;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /***********************************************
  *     Copyright to Vivek Kumar Singh          *
@@ -23,24 +23,45 @@ import java.util.stream.Collectors;
  * It takes maps of String as input and calls String::toUpperCase on each element
  * and returns the List on String with upper case text
  */
-public class UPPER extends MapUdf<String> {
+public class CONCATUPPER extends MapUdf<String> {
 
 
     @Override
     public List<String> eval(ReportTableModel rtm, List<String> columnName) {
     	
-    	if (columnName == null || columnName.size() ==0) return null;
+    	if (columnName == null) return null;
     	
-    	List<Object> input = Arrays.asList(rtm.getColData(columnName.get(0)) );
-        return input.stream().map(e -> {return ((String)e).toUpperCase();}).collect(Collectors.toList());
+    	int parameterLength = columnName.size();
+    	if (parameterLength <= 0) return null;
+    	
+    	List<Object> input[] = new List[parameterLength];
+    	
+    	for (int i=0; i<parameterLength; i++) { // fill the data
+    		input[i] = Arrays.asList(rtm.getColData(columnName.get(i))) ;
+    	}
+    	
+    	List<String> output = new ArrayList<String>();
+    	
+    	for (int i=0; i < input[0].size(); i++) {
+    		
+    		String newCellValue="";
+    		
+    		for (int j=0; j<parameterLength; j++) {
+    			newCellValue += input[j].get(i);
+    		}
+    		output.add(newCellValue.toUpperCase());
+    	}
+    	
+    	return output;
     }
     
     @Override
     public String describeFunction() {
-		 return "<HTML><BODY>UPPER converts String values to to UPPER Case "
-				+ "<BR> Input: Column name i.e col1"
+		return "<HTML><BODY>CONCATUPPER concatenates the input cells "
+				+ "<BR> and then converts cancatenated value to UPPER Case"
+				+ "<BR> Input:  Comma separate column names i.e col1,col2"
 				+ "<BR> "
-				+ "<BR> input - First   Output - FIRST"
+				+ "<BR> input - First,Second   Output - FIRSTSECOND"
 				+"</HTML></BODY>";
     	
     }
