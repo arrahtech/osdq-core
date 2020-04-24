@@ -20,7 +20,8 @@ import java.util.List;
 
 /**
  * A sample UDF to show how to implement custom to-upper function.
- * It takes maps of String as input and calls String::toUpperCase on each element
+ * It takes maps of String as input and concatenates it and 
+ * calls String::toUpperCase on the concatenated element
  * and returns the List on String with upper case text
  */
 public class CONCATUPPER extends MapUdf<String> {

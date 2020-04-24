@@ -17,7 +17,10 @@ package org.arrah.framework.dataquality;
  * if zip code is provided.
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 import org.arrah.framework.ndtable.RTMUtil;
@@ -63,7 +66,7 @@ public class AddressUtil {
 	}
 	
 	// This function will be used for address completion
-	public static void completeColumnsRowIndex (ReportTableModel rtm,int rowI, Integer[] indexToComplete, Object[] valuesToFill) {
+	private static void completeColumnsRowIndex (ReportTableModel rtm,int rowI, Integer[] indexToComplete, Object[] valuesToFill) {
 		if (indexToComplete.length != valuesToFill.length) {
 			System.out.println("To Fill and From Fill columns does not match");
 			return;
@@ -77,7 +80,9 @@ public class AddressUtil {
 	}
 	
 	// This function will be used for address completion
-	public static Object[]  completeColumns (Object[] row, Integer[] indexToComplete, Object[] valuesToFill) {
+	// Not in use for now
+	@SuppressWarnings("unused")
+	private static Object[]  completeColumns (Object[] row, Integer[] indexToComplete, Object[] valuesToFill) {
 		for (int i=0; i <indexToComplete.length; i++) {
 			Object o = row[indexToComplete[i]];
 			if (o == null || o.toString().equals("")) // override
@@ -88,7 +93,7 @@ public class AddressUtil {
 	
 	// This function will be used for fetch zip/pin or first index who may be empty in toFill table
 	// Skip the first index assuming it is empty
-	public static Object[] getMatchedFirstIndex(Object[] recordToMatch,ReportTableModel toFillFrom, Integer[] indexToFetch ) {
+	private static Object[] getMatchedFirstIndex(Object[] recordToMatch,ReportTableModel toFillFrom, Integer[] indexToFetch ) {
 		Object[] matchedObject = null;
 		if (recordToMatch.length != indexToFetch.length) return matchedObject;
 		
@@ -122,68 +127,108 @@ public class AddressUtil {
 	// Lot can be fractional or alpha numberic
 	
 	public static String[]  splitUSAddressSecondLine (String addressString) {
-		String[] parseV = new String[6];
+		
+		String[] stdAddressArray = new String[6];
 		if (addressString == null || "".equals(addressString))
-			return parseV;
+			return stdAddressArray;
 		
-		String[] splitV = addressString.trim().split("\\s+");
+		
+		String[] rawSplitToken = addressString.trim().split("\\s+|,|#");
+		
 		boolean isDirectional = false;
+		List<String> validSplitToken = new ArrayList<String>();
 		
-		// remove meta character from start and end 
-		for (int i=0; i < splitV.length; i++)
-			splitV[i] = StringCaseFormatUtil.removeMetaCharString(splitV[i], "", true, false, true);
+		// remove meta character from start and end and find valid token
+		for (int i=0; i < rawSplitToken.length; i++) {
+			
+			if (rawSplitToken[i] == null || rawSplitToken[i].isEmpty())
+				continue;
+			
+			String afterMetaCharCleaning = StringCaseFormatUtil.removeMetaCharString(rawSplitToken[i], "", true, false, true);
+			
+			if (afterMetaCharCleaning == null || "".equals(afterMetaCharCleaning))
+				continue;
+			
+			validSplitToken.add(afterMetaCharCleaning);
+		}
 		
-		if (splitV.length == 3) { // Standard Address
-			parseV[0] = splitV[0]; parseV[2] = splitV[1]; parseV[3] = splitV[2];
-			return parseV;
+		String[] validToken = new String[validSplitToken.size()];
+		validToken = validSplitToken.toArray(validToken);
+		System.out.println(Arrays.toString(validToken));
+		
+		
+		
+		if (validToken.length == 3) { // Standard Address
+			stdAddressArray[0] = validToken[0]; stdAddressArray[2] = validToken[1]; stdAddressArray[3] = validToken[2];
+			return stdAddressArray;
 		} 
-		if (splitV.length > 3) { // it may be directional or secondary unit type and lot in one
+		
+		if (validToken.length > 3) { // it may be directional or secondary unit type and lot in one
 			
-			parseV[0] = splitV[0];
-			String directionStr= getdirectionalVal(splitV[1]); 
+			stdAddressArray[0] = validToken[0];
 			
-			if (directionStr== null|| "".equals(directionStr)) { // 2nd value is not directornal 
-				parseV[2] = splitV[1]; parseV[3] = splitV[2];
+			String directionStr= getdirectionalVal(validToken[1]); 
+			
+			if (directionStr== null|| "".equals(directionStr)) { 
+				// 2nd value is not directornal 
+				stdAddressArray[2] = validToken[1]; stdAddressArray[3] = validToken[2];
+				
 			} else { // 2nd value is  directornal like 1200 N Main st
-				parseV[1] = directionStr; parseV[2] = splitV[2]; parseV[3] = splitV[3];
-				if (splitV.length == 4) // Standard directional address
-						return parseV;
+				
+				stdAddressArray[1] = directionStr; stdAddressArray[2] = validToken[2]; stdAddressArray[3] = validToken[3];
+				if (validToken.length == 4) // Standard directional address
+						return stdAddressArray;
 				isDirectional = true;
 			}
 			
-			directionStr= getdirectionalVal(splitV[3]); // Now check 4th value
+			directionStr= getdirectionalVal(validToken[3]); // Now check 4th value
+			
 			if (directionStr== null|| "".equals(directionStr)) { // 4th value is not directornal . 
-				parseV[2] = splitV[1]; parseV[3] = splitV[2]; parseV[4] = splitV[3];
+				
+				stdAddressArray[2] = validToken[1]; stdAddressArray[3] = validToken[2]; stdAddressArray[4] = validToken[3];
+				
 			} else { // 4th value is  directional like 1200  Main st South
-				parseV[1] = directionStr; parseV[2] = splitV[1]; parseV[3] = splitV[2];
+				
+				stdAddressArray[1] = directionStr; stdAddressArray[2] = validToken[1]; stdAddressArray[3] = validToken[2];
+				
 				isDirectional= true;
 			}
-			if (splitV.length == 4) //  like 1200 Main St STE110 or 1200 N Main St or 1200 Main st North
-				return parseV;
 			
-			if (splitV.length > 4) {
+			// 4 token are valid only if if one value is directional
+			if (validToken.length == 4 && isDirectional) { // 1200 N Main St or 1200 Main st North
+				
+				return stdAddressArray;
+				
+			} else { // like 1200 Main St STE110 or
+				// last token may be secondary unit type and secondary lot type in one
+				// so try to split it
+				
+			}
+			
+			if (validToken.length > 4) {
 				if (isDirectional == false)  { // 1200 Main St STE 110
-					parseV[5] = splitV[4];
+					stdAddressArray[5] = validToken[4];
 				} else { // 1200 Main St North STE110
-					parseV[4] = splitV[4];
+					stdAddressArray[4] = validToken[4];
 				}
 			}
 			
-			if (splitV.length == 5) //  like 1200 Main St STE 110 or 1200 N Main St STE#110
-				return parseV;
+			if (validToken.length == 5) //  like 1200 Main St STE 110 or 1200 N Main St STE#110
+				return stdAddressArray;
 			
-			parseV[5] = splitV[5]; // 1200 N Main St STE 110
+			stdAddressArray[5] = validToken[5]; // 1200 N Main St STE 110
 			
 		} // end of non standard loop
 		
-		
-		return parseV;
+		return stdAddressArray;
 		
 	}
 
 	private static String getdirectionalVal(String input) {
+		
 		String directionVal=null;
 		String inputVal = input.toUpperCase();
+		
 		switch(inputVal) {
 			case "N": case "NORTH":
 				return "N";

@@ -193,13 +193,45 @@ public class FileProfile {
 	}
 	
 	public Double[] getNumberProfiledValue (Object[]  val) {
-		for (int i=0; i < val.length; i++)
-			val[i] = Double.parseDouble(val[i].toString());
+		for (int i=0; i < val.length; i++) {
+			
+			if (val[i] == null || val[i] instanceof Number)
+				continue;
+			
+			String  s = val[i].toString();
+			
+			if ("".equals(s)) { 
+				val[i] = null;
+			} else {
+				
+				try {
+					val[i] = Double.parseDouble(s);
+				} catch (Exception e) {
+					
+					val[i] = null;
+					continue;
+				}
+			}
+		}
 		StatisticalAnalysis sa = new StatisticalAnalysis(val);
 		Double[] value = new Double[5];
-		value[0] = sa.getSum();value[1] = sa.getMean();
-		value[2] = Double.parseDouble(sa.getMinObject().toString()); value[3] = Double.parseDouble(sa.getMaxObject().toString()); 
+		
+		value[0] = sa.getSum();
+		
+		value[1] = sa.getMean();
+		
+		if (sa.getMinObject() == null)
+			value[2] = null;
+		else
+			value[2] = Double.parseDouble(sa.getMinObject().toString()); 
+		
+		if (sa.getMaxObject() == null)
+			value[3] = null;
+		else
+			value[3] = Double.parseDouble(sa.getMaxObject().toString()); 
+		
 		value[4] = sa.getSDev();
+		
 		return value;
 	}
 	

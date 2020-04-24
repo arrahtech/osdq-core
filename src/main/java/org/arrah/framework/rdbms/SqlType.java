@@ -205,4 +205,31 @@ public class SqlType {
 
 		return s;
 	}
+	
+	
+	public static String getMetaClassType(String javaclass) {
+		
+		String s = "String";
+		
+		if ( javaclass == null || "".equals(javaclass) )
+			return s;
+		
+		if (javaclass.toUpperCase().contains("INT") 
+				|| javaclass.toUpperCase().contains("DECIMAL") 
+				|| javaclass.toUpperCase().contains("DOUBLE") 
+				|| javaclass.toUpperCase().contains("FLOAT") 
+				|| javaclass.toUpperCase().contains("NUMERIC") 
+				|| javaclass.toUpperCase().contains("REAL")
+				|| javaclass.toUpperCase().contains("NUMBER")
+				
+			)
+			s = "Number";
+
+		if (javaclass.toUpperCase().contains("Date") 
+				|| javaclass.toUpperCase().contains("Time")
+			)
+			s = "Date";
+
+		return s;
+	}
 }

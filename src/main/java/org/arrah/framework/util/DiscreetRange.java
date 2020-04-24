@@ -130,7 +130,7 @@ public class DiscreetRange {
 	}
 	
 	// This function will unique values assuming low cardinality
-	public static Hashtable<Object,Integer> getUniqueInclusive(Vector<Object> list){
+	public static Hashtable<Object,Integer> getUniqueNullInclusive(Vector<Object> list){
 		
 		Hashtable <Object,Integer> newUniq = new Hashtable <Object,Integer>();
 		for (Object o: list) {
@@ -155,7 +155,7 @@ public class DiscreetRange {
 		
 		Hashtable<Object,String> output = new Hashtable<Object,String>();
 		if (ht == null) // if it is null create it
-			ht = getUniqueInclusive(list);
+			ht = getUniqueNullInclusive(list);
 		int zcount = ht.size();
 		if (zcount <= 0 ) return null;
 		
@@ -194,11 +194,6 @@ public class DiscreetRange {
 		return null;
 		
 	}
-	
-	
-	
-	
-	
 	
 	
 } // End of DiscreetRange

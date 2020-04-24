@@ -34,7 +34,7 @@ public class StatisticalAnalysis {
 	private ReportTableModel perc_t = new ReportTableModel(new String[] { "Percentile %",
 			"Record Upper Value", "Samples Below" });;
 
-	private double count, sum, avg, uniqCount =0;
+	private double count = 0, sum =0, avg=0, uniqCount =0;
 	private double variance = 0, aad = 0, skew = 0, kurt = 0;
 	private double[] perv_a = new double[21]; // To store value
 	private long[] perc_a = new long[21];
@@ -50,21 +50,35 @@ public class StatisticalAnalysis {
 		while (index < colC) {
 			if (colValue[index] != null && colValue[index].toString().isEmpty() == false) {
 				vc.add(colValue[index]);
+				
 				if (isNumber == true && colValue[index] instanceof Number)
 					sum += ((Number) colValue[index]).doubleValue();
 				else
 					isNumber = false;
 			}
+			
 			index++;
 
 		}
 		_colObj = vc.toArray();
+		
 		Arrays.sort(_colObj);
+		
 		analyseValue();
 	}
 
 	public void analyseValue() {
+		
 		count = _colObj.length;
+		
+		if (count == 0) { 
+			
+			System.out.println("Warning: Empty Object Array given for analysis.");
+//			_colObj = new Object[1];
+//			_colObj[0] = 0;
+//			return; // nothing to analyze
+		}
+		
 		avg = sum / count;
 		int freq_c = 1, c = 0;
 		Object prev_obj = null, curr_obj = null;
@@ -132,7 +146,14 @@ public class StatisticalAnalysis {
 			freq_t.addFillRow(new Object[] { prev_obj, new Integer(freq_c),
 					new Double(freq_c / count * 100) });
 
-		fillDataIntoTable();
+		try {
+			fillDataIntoTable();
+		} catch  (Exception e) {
+			
+			System.out.println("Exception :" + e.getLocalizedMessage());
+			System.out.println("Information not filled into Analysis table");
+			
+		}
 	}
 
 	
@@ -163,10 +184,16 @@ public class StatisticalAnalysis {
 		return Math.sqrt(variance);
 	}
 	public Object getMinObject() {
-		return _colObj[0];
+		if (_colObj != null && _colObj.length > 0)
+			return _colObj[0];
+		else 
+			return null;
 	}
 	public Object getMaxObject() {
-		return _colObj[_colObj.length -1 ]; //max object
+		if (_colObj != null && _colObj.length > 0)
+			return _colObj[_colObj.length -1 ]; //max object
+		else 
+			return null;
 	}
 	public double getCount() {
 		return count; 
@@ -174,10 +201,13 @@ public class StatisticalAnalysis {
 	public double getUniqCount() {
 		return uniqCount; 
 	}
+	
 	public double rangeObject () {
-		if (_colObj[0] instanceof Number && _colObj[_colObj.length -1 ] instanceof Number) {
-			return ((Number)(_colObj[_colObj.length -1 ])).doubleValue() - ((Number)(_colObj[0])).doubleValue();
-		}
+		if (_colObj != null && _colObj.length > 0)
+			if (_colObj[0] instanceof Number && _colObj[_colObj.length -1 ] instanceof Number) {
+				return ((Number)(_colObj[_colObj.length -1 ])).doubleValue() - ((Number)(_colObj[0])).doubleValue();
+			}
+		
 		return 0D;
 	}
 	public double getSum() {
