@@ -17,16 +17,21 @@ package org.arrah.framework.dataquality;
  * if zip code is provided.
  */
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import org.arrah.framework.ndtable.CSVtoReportTableModel;
 import org.arrah.framework.ndtable.RTMUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.util.DiscreetRange;
+import org.arrah.framework.util.KeyValueParser;
 import org.arrah.framework.util.StringCaseFormatUtil;
+import org.arrah.framework.wrappertoutil.DQUtil;
 
 public class AddressUtil {
 	static Hashtable<String,String> htSec = getSecondaryTypeStd();
@@ -813,4 +818,67 @@ public class AddressUtil {
 		
 	}
 	
-} // end of class
+    public static ReportTableModel addrStandardRTM(ReportTableModel rtm, int addrcolindex, String referenceFile) {
+    		
+		// Open keyval pair reference file
+		Hashtable<String, String> referenceKeyVal = KeyValueParser.parseFile(referenceFile);
+		ArrayList<String> keyList = new ArrayList<String>();
+		
+		for(Enumeration<String> s =referenceKeyVal.keys(); s.hasMoreElements();)
+			keyList.add(s.nextElement());
+		
+		//for debug
+		//System.out.println( referenceKeyVal.toString() );
+	
+		// Below is the format for second Line split
+		// [Lot] [Directional] [Street] [StreetSuffix]  [Secondary Unit Type] [Secondary Unit lot]
+		int rowc = rtm.getModel().getRowCount();
+		String[] lotAddr = new String[rowc]; String[] stName = new String[rowc];String[] secondType = new String[rowc];
+		String[] dirValue = new String[rowc]; String[] stType = new String[rowc];String[] secondUnit = new String[rowc];
+
+		for (int i =0; i < rowc; i++) {
+			Object o = rtm.getModel().getValueAt(i, addrcolindex);
+			if (o != null ) {
+			 String s[] = AddressUtil.usaAddressSecondLineStd(o.toString());
+
+			 // Now do a fuzzy match for StreetSuffix or StreetType
+			 ArrayList<String> matchedString = DQUtil.matchFuzzyString(s[3], keyList, 0.8);
+			 if(matchedString != null && matchedString.isEmpty() == false) {
+				 if (matchedString.size() == 1) {
+					 s[3] = referenceKeyVal.get(matchedString.get(0));
+				 }
+				 else {
+					 for(String sp:matchedString)
+					 	System.out.println("Conflicting Fuzzy matches:" +sp + " for:" + s[3]);
+				 }
+			 }
+
+			 // empty string not null value
+			 for (int j=0; j < 6; j++ )
+				 if ( s[j]  == null) s[j] = "";
+				 
+			 lotAddr[i] = s[0];dirValue[i] = s[1];stName[i] = s[2];stType[i] = s[3];secondType[i] = s[4];secondUnit[i] = s[5];
+			 
+//				System.out.println("[Lot -"+s[0]+
+//						"] [Directional -" +s[1] +
+//						"] [Street -" +s[2] +
+//						"] [StreetSuffix -" +s[3] +
+//						"] [Secondary Unit Type -" +s[4] +
+//						"] [Secondary Unit lot -" +s[5] +"]"
+//						);
+			}
+			
+		}
+		
+		rtm.getModel().addColumn("LotAddress", lotAddr);
+		rtm.getModel().addColumn("StreetName", stName);
+		rtm.getModel().addColumn("StreetType", stType);
+		rtm.getModel().addColumn("DirectionalAddress", dirValue);
+		rtm.getModel().addColumn("SecondaryType", secondType);
+		rtm.getModel().addColumn("SecondaryUnit", secondUnit);
+		
+		
+		return rtm;
+    }
+	
+} // end of AddressUtilclass
