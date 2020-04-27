@@ -5,7 +5,7 @@
  * @author Vivek singh
  *
  */
-package com.arrah.namestandard;
+package org.arrah.namestandard;
 
 
 import org.arrah.framework.dataquality.AddressUtil;
