@@ -17,7 +17,6 @@ package org.arrah.framework.dataquality;
  * if zip code is provided.
  */
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -25,7 +24,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
-import org.arrah.framework.ndtable.CSVtoReportTableModel;
 import org.arrah.framework.ndtable.RTMUtil;
 import org.arrah.framework.ndtable.ReportTableModel;
 import org.arrah.framework.util.DiscreetRange;
@@ -159,7 +157,7 @@ public class AddressUtil {
 		
 		String[] validToken = new String[validSplitToken.size()];
 		validToken = validSplitToken.toArray(validToken);
-		System.out.println(Arrays.toString(validToken));
+		// System.out.println(Arrays.toString(validToken));
 		
 		
 		
