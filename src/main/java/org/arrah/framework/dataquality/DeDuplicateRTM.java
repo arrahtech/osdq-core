@@ -28,10 +28,7 @@ import org.arrah.framework.ndtable.ResultsetToRTM;
 public class DeDuplicateRTM {
 	private ReportTableModel duplicates = null;
 	
-	// Constructor
-	public DeDuplicateRTM() {
-		// Do nothing
-	}
+	public DeDuplicateRTM() { }
 
 	public ReportTableModel removeDuplicate(ReportTableModel reportTableModel, int[] columnIndices) {
 		return removeDuplicate(reportTableModel, columnIndices, false);
@@ -75,19 +72,27 @@ public class DeDuplicateRTM {
 			StringBuilder row = new StringBuilder();
 			
 			// Create a string for row Values
-			for (Object o : rowObjectArray) {
-				if (o == null) {
+			for (Object rowObject : rowObjectArray) {
+				if (rowObject == null) {
 					row.append("Null");
 				} else {
-					row.append(o.toString());
+					row.append(rowObject.toString());
 				}
 			}
 
-			BigInteger md5v = ResultsetToRTM.getMD5(row.toString());
+			String rowToString;
+
+			if (ignoreCase) {
+				rowToString = row.toString().toLowerCase();
+			} else {
+				rowToString = row.toString();
+			}
+
+			BigInteger md5v = ResultsetToRTM.getMD5(rowToString);
 
 			int md5RowIndex = md5array.indexOf(md5v);
 
-			if (md5RowIndex == -1){ // not found so uniuqe row
+			if (md5RowIndex == -1){ // not found so unique row
 				md5array.add(md5v);	
 			} else { // not unique so mark for delete it
 				deletionIndices.add(i);
