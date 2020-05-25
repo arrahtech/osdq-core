@@ -20,7 +20,9 @@ import java.util.Vector;
 
 /*
  * This file is used creating case format Uppercase, Lowercase, Titlecase and
- * Sentence case
+ * Sentence case etc
+ * This file is extended to add string utility functions for 
+ * generic use
  */
 
 public class StringCaseFormatUtil {
@@ -330,8 +332,11 @@ public class StringCaseFormatUtil {
 		return matchc;
 	}
 	
-	/* This is a utility function to send matching emails 0-1 */
-	public static float matchEmail(String first, String second) {
+	/* This is a utility function to send matching emails value 0 -1 
+	 * This function will be used to give probality of two emails
+	 * string , wether they are from same entity
+	 * */
+	public static float matchSimilarEmail(String first, String second) {
 		float matchc= 0.00f;
 		if (first == null || second == null) return matchc;
 		
@@ -408,6 +413,21 @@ public class StringCaseFormatUtil {
 		return vec;
 	}
 	
+	// This function will return List of String
+	// to be used by similarity spilt by blank space 
+	public static List<String> toListString (String showUnique) {
+		List<String> splitL = new ArrayList<String> ();
+		if (showUnique == null || "".equals(showUnique) || showUnique.indexOf(" ") == -1) {
+			splitL.add(showUnique);
+			return splitL;
+		}
+		
+		String[] split = showUnique.split(" ");
+		for (String s: split)
+			splitL.add(s);
+		return splitL;
+	}
+	
 	// removing extra characters and returning digit
 	public static String digitString(String numString) {
 		String onlyDigit="";
@@ -420,6 +440,30 @@ public class StringCaseFormatUtil {
 				onlyDigit += c;
 		}
 		return onlyDigit;
+	}
+	
+	// Split number and letter in two different string
+	public static String[] splitDigitLetter(String numLeterString) {
+		
+		// numLetter[0] = number, numLetter[1] = Letter
+		String[] numLetter= new String[2];
+		numLetter[0]="";
+		numLetter[1]="";
+		
+		if (numLeterString == null  || "".equals(numLeterString) )
+			return numLetter;
+		
+		int strlen = numLeterString.length();
+		for (int i=0; i < strlen; i++) {
+			
+			char c = numLeterString.charAt(i);
+			
+			if (Character.isDigit(c) == true )
+				numLetter[0] += c;
+			else
+				numLetter[1] += c;
+		}
+		return numLetter;
 	}
 	
 	// removing extra characters and returning alpha numeric and 
@@ -503,19 +547,6 @@ public class StringCaseFormatUtil {
 		return setc;
 	}
 	
-	// This function will return List of String
-	// to be used by similarity spilt by blank space 
-	public static List<String> toListString (String showUnique) {
-		List<String> splitL = new ArrayList<String> ();
-		if (showUnique == null || "".equals(showUnique) || showUnique.indexOf(" ") == -1) {
-			splitL.add(showUnique);
-			return splitL;
-		}
-		
-		String[] split = showUnique.split(" ");
-		for (String s: split)
-			splitL.add(s);
-		return splitL;
-	}
+
 
 }
