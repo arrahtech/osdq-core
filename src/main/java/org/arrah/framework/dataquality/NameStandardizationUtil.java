@@ -115,6 +115,9 @@ public class NameStandardizationUtil {
 				
 			 String s[] = NameStandardizationUtil.nameStd(o.toString().toUpperCase());
 			 
+			 if (s == null || s.length < 1)  // nothing to add
+				continue; 
+			 
 			 int splitlength = s.length;
 			 
 			 int middlestartIndex=0;
