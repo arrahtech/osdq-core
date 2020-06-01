@@ -22,7 +22,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import org.arrah.framework.ndtable.ReportTableModel;
@@ -35,32 +40,32 @@ public class AsciiParser {
 		/* This function will check ./ascii.txt file in same directory
 		 * and parse it. If file not found it will set default limit value
 		 */
-		public void init(String fileName) throws IOException{
+	public void init(String fileName) throws IOException {
 			
-    //BufferedReader br = new BufferedReader(new InputStreamReader(
-       // AsciiParser.class.getClassLoader().getResourceAsStream(fileName)));
+		//BufferedReader br = new BufferedReader(new InputStreamReader(
+		// AsciiParser.class.getClassLoader().getResourceAsStream(fileName)));
+		
+		BufferedReader br = new BufferedReader(new  FileReader(fileName));
+		 
+		int ctr = 1; // Counter
+		String sCurrentLine = null;
+		String delimadd ="";
+		
+		while ((sCurrentLine = br.readLine()) != null) {
 			
-			BufferedReader br = new BufferedReader(new  FileReader(fileName));
-			 
-			int ctr = 1; // Counter
-			String sCurrentLine = null;
-			String delimadd ="";
-			
-			while ((sCurrentLine = br.readLine()) != null) {
-				
-				if(ctr%5==4)
-				{	
-					delimadd = sCurrentLine + " : "; 
-				}
-				else if(ctr%5==0){
-					delimadd = delimadd + sCurrentLine;
-					delims.add(delimadd);
-					delimadd = "";
-				}
-				ctr++;
+			if(ctr%5==4)
+			{	
+				delimadd = sCurrentLine + " : "; 
 			}
-			br.close();
+			else if(ctr%5==0){
+				delimadd = delimadd + sCurrentLine;
+				delims.add(delimadd);
+				delimadd = "";
+			}
+			ctr++;
 		}
+		br.close();
+	}
 		
 		/* This function will read file and 
 		 * return reporttablemodel
@@ -133,4 +138,17 @@ public class AsciiParser {
 			
 			return rtm;
 		}
+		
+	public static List<String> pullKeysFromFile(String filePath) {
+			try {
+				File keyfile = new File(filePath);
+				Path path = Paths.get(keyfile.getPath());
+				return  Files.readAllLines(path,StandardCharsets.ISO_8859_1);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("File Path:" +filePath );
+				return null;
+			}
+	}
+		
  } // End of AsciiParser
