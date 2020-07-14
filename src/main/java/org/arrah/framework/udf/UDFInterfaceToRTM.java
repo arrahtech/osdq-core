@@ -18,12 +18,18 @@ package org.arrah.framework.udf;
  * 
  */
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
+
+import java.util.Map;
 
 import org.arrah.framework.ndtable.ReportTableModel;
 
 public class UDFInterfaceToRTM {
+	
+	public static ReportTableModel metricrtm = null;
 
 	public UDFInterfaceToRTM() {
 	};
@@ -68,6 +74,47 @@ public class UDFInterfaceToRTM {
 			
 		}
 	}
+	
+	public static int evalUDF(String udfName, ReportTableModel rtm, List<String> colNames) {
+
+		try {
+		
+			Class<?> obj = Class.forName(udfName);
+			Method mapUDF = obj.getMethod("getMetricName");
+			String[] metricName = (String[]) mapUDF.invoke(obj.newInstance());
+			
+			metricrtm = new ReportTableModel(metricName,true,true);
+			
+			Map<Object,List<Object>> result = UDFEvaluator.metric(udfName, rtm, colNames);
+			
+			if (result == null || result.size() == 0) {
+				System.out.println(udfName + " returned empty Metric List");
+				return -1;
+			}
+			
+			// System.out.println("Result:" +result.toString() );
+			
+			for (Object s : result.keySet()) {
+				List<Object> metricvalue = result.get(s.toString());
+				
+				metricvalue.add(0, s.toString());
+				
+				metricrtm.addFillRow(metricvalue.toArray());
+			}
+			
+
+			return 1;
+			
+		} catch (Exception e) {
+				
+			System.out.println("Could not Invoke:"+udfName);
+			System.out.println("Exception:" + e.getLocalizedMessage());
+			// e.printStackTrace();
+			return -1;
+			
+		}
+	}
+	
 	
 	
 } // End of UDFInterfaceToRTM

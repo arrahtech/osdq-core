@@ -20,7 +20,6 @@ package org.arrah.framework.udf;
  */
 
 import org.arrah.framework.ndtable.ReportTableModel;
-
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodParameterScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -30,6 +29,7 @@ import org.reflections.util.ConfigurationBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,6 +44,7 @@ public class UDFEvaluator {
      */
     private static ConcurrentHashMap<String, Method> aggregateUdfMap = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Method> mapUdfMap = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Method> metricUdfMap = new ConcurrentHashMap<>();
     
     public static ConcurrentHashMap<String, Method> getAggregateUdf () {
     	return aggregateUdfMap;
@@ -53,6 +54,10 @@ public class UDFEvaluator {
     	return mapUdfMap;
     }
 
+    public static ConcurrentHashMap<String, Method> getMetricUdf () {
+    	return metricUdfMap;
+    }
+    
     private static Reflections reflections = new Reflections(new ConfigurationBuilder()
             .setUrls(ClasspathHelper.forPackage("org.arrah.framework.udf"))
             .setScanners(new SubTypesScanner(), new MethodParameterScanner()));
@@ -65,6 +70,7 @@ public class UDFEvaluator {
             LOGGER.info("Indexing all UDFs");
             indexAggregateUdfs();
             indexMapUdfs();
+            indexMetricUdfs();
             LOGGER.info("Indexing all UDFs - [OK]");
 
         } catch (NoSuchMethodException e) {
@@ -77,10 +83,16 @@ public class UDFEvaluator {
         return (T) aggregateUdfMap.get(udfName).invoke(Class.forName(udfName).newInstance(), rtm, colNames);
     }
 
+    
     public static <T> List<T> map(final String udfName, ReportTableModel rtm, List<String> colNames) throws ClassNotFoundException,
             IllegalAccessException, InstantiationException, InvocationTargetException {
         return (List<T>) mapUdfMap.get(udfName).invoke(Class.forName(udfName).newInstance(), rtm, colNames);
     }
+    
+    public static <K,V> Map<K,V> metric(final String udfName, ReportTableModel rtm, List<String> colNames) throws ClassNotFoundException,
+    		IllegalAccessException, InstantiationException, InvocationTargetException {
+    	return (Map<K,V>) metricUdfMap.get(udfName).invoke(Class.forName(udfName).newInstance(), rtm, colNames);
+}
 
     private static <T> void indexAggregateUdfs() throws NoSuchMethodException {
         Set<Class<? extends AggregateUdf >> subTypes = reflections.getSubTypesOf(AggregateUdf.class);
@@ -110,5 +122,20 @@ public class UDFEvaluator {
         });
 
         LOGGER.info(mapUdfMap.toString());
+    }
+    
+    private static <K,V> void indexMetricUdfs() throws NoSuchMethodException {
+        Set<Class<? extends MetricUdf >> subTypes = reflections.getSubTypesOf(MetricUdf.class);
+
+        subTypes.forEach(subType -> {
+            try {
+                Method method = subType.getDeclaredMethod("eval", ReportTableModel.class, List.class);
+                metricUdfMap.put(subType.getName(), method);
+            } catch (NoSuchMethodException exc) {
+                LOGGER.severe("Error indexing Mapper UDFs");
+            }
+        });
+
+        LOGGER.info(metricUdfMap.toString());
     }
 }
