@@ -74,6 +74,7 @@ public class SimilarityCheckLucene {
         _rt = rt;
         colName = getColName();
         rowC = _rt.getModel().getRowCount();
+        System.out.println("INFORMATION:Make sure there is no metacharacter or space in column name");
     }
 
     // For Rowset Table Input
@@ -83,6 +84,8 @@ public class SimilarityCheckLucene {
         colName = _rows.getColName();
         colType = _rows.getColType();
         rowC = _rows.getRowCount();
+        
+        System.out.println("INFORMATION:Make sure there is no metacharacter or space in column name");
     }
 
     private String[] getColName() {
@@ -436,6 +439,7 @@ public class SimilarityCheckLucene {
                     // + QueryParser.escape(token[i]) + "~0.6 "; // For Fuzzy Logic
                     + QueryParser.escape(token[i]) + "~3 "; // For Fuzzy Logic
         }
+       // System.out.println(newTerm);
         return newTerm;
     }
 

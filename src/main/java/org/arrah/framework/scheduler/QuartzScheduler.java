@@ -87,6 +87,7 @@ private final String jcbRule;
 			
 			JobDataMap jobDataMap = new JobDataMap(hashtable);
 							
+			// here it get the job that needs Scheduling
 			JobDetail job = newJob(ScheduleJob.class)
 			    .withIdentity(jobKey).usingJobData(jobDataMap).usingJobData("query", quer).usingJobData("jcbRule", jcbRule)
 			    .build();
