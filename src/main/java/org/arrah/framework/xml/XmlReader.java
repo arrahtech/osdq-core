@@ -20,6 +20,7 @@ import org.arrah.framework.ndtable.ReportTableModel;
  * Read an XML file and create a report table
  * 
  * @author jchamblee
+ * @author vivek singh
  */
 public class XmlReader {
 	 
@@ -33,7 +34,7 @@ public class XmlReader {
 	 * @return report table to be displayed
 	 */
     
-        // getRulesName() method added by Dareppa B
+        // getRulesName() method added
     
         public String[] getRulesName( File file, String rule, String ruleName ) {
             if( file.exists() && file.length() > 0 ) {

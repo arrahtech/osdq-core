@@ -18,14 +18,17 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 
-public class ScheduleJob implements Job{
+public class ScheduleSQLJob implements Job{
 		
 	
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
 	// Get the input Query from BusinessRules.xml to schedule the job	
+	// add rulename to file to make
+	
+	String ruleName = context.getJobDetail().getJobDataMap().getString("jcbRule");
     ResultSet rs = null;
-	File file=new File("./scheduleoutput.csv");
+	File file=new File("./sqlscheduleoutput_"+ruleName+".csv");
 	FileWriter fstream;
 	BufferedWriter out = null;
 	
@@ -78,19 +81,19 @@ public class ScheduleJob implements Job{
 				out.write("\n");
 	         }
 		
-			 System.out.println("Job executed");	
+			 System.out.println("SQL Scheduler Job executed");	
 		}  catch (SQLException e) {
 			System.out.println("Job failed because of SQL Exception" + e);
 			e.printStackTrace();
 		}
 		catch (Exception e) {
-			System.out.println("Job failed with an exception" + e);
+			System.out.println("SQL Scheduler Job failed with an exception" + e);
 			e.printStackTrace();
 		}
 		finally{
 			try {
 				out.close();
-				System.out.println("File Saved at:"+file.getAbsolutePath());
+				System.out.println("SQL Scheduler File Saved at:"+file.getAbsolutePath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}  

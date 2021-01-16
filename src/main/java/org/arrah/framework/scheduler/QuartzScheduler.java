@@ -37,6 +37,7 @@ private final String jcbFrequency;
 private final Date jdcEdate;
 private final int startdayofMonth;
 private final Hashtable<String, String> hashtable;
+private final Hashtable<String, String> hashrule;
 private final String jcbRule;
 
 	public QuartzScheduler(String text, int hour, int minute, int second, 
@@ -44,7 +45,8 @@ private final String jcbRule;
 	    String jcbFrequency, 
 	    Date jdcEdate, 
 	    int startdayofMonth, 
-	    Hashtable<String, String> hashtable, 
+	    Hashtable<String, String> hashtableDBInfo, 
+	    Hashtable<String, String> hashtableRuleInfo,
 	    String jcbRule) throws SchedulerException, InterruptedException{
 		
 		hours=hour;
@@ -55,7 +57,8 @@ private final String jcbRule;
 		this.jcbFrequency = jcbFrequency;
 		this.jdcEdate = jdcEdate;
 		this.startdayofMonth = startdayofMonth;
-		this.hashtable = hashtable;
+		this.hashtable = hashtableDBInfo;
+		this.hashrule = hashtableRuleInfo;
 		this.jcbRule = jcbRule;
 		try {
 			task();
@@ -85,12 +88,24 @@ private final String jcbRule;
 			String key="ExecuteJob", value="Report Generation" +jcbRule ;
 			JobKey jobKey = new JobKey(key, value);
 			
-			JobDataMap jobDataMap = new JobDataMap(hashtable);
+			JobDataMap jobDataMap = null;
+			JobDetail job = null;
+			
+			if (hashtable != null || hashtable.isEmpty() == false) {
+			
+				jobDataMap = new JobDataMap(hashtable);
 							
-			// here it get the job that needs Scheduling
-			JobDetail job = newJob(ScheduleJob.class)
-			    .withIdentity(jobKey).usingJobData(jobDataMap).usingJobData("query", quer).usingJobData("jcbRule", jcbRule)
-			    .build();
+				// here it get the job that needs Scheduling
+				job = newJob(ScheduleSQLJob.class)
+						.withIdentity(jobKey).usingJobData(jobDataMap).usingJobData("query", quer).usingJobData("jcbRule", jcbRule)
+						.build();
+			} else {
+				
+				jobDataMap = new JobDataMap(hashrule);
+				job = newJob(ScheduleUDFJob.class)
+						.withIdentity(jobKey).usingJobData(jobDataMap).usingJobData("jcbRule", jcbRule)
+						.build();
+			}
 			
 			// This logic applies if the user want to schedule on a one-time basis
 			if(jcbFrequency.equals("One Time")){

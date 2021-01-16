@@ -19,7 +19,6 @@ package org.arrah.framework.udf;
  */
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -80,8 +79,8 @@ public class UDFInterfaceToRTM {
 		try {
 		
 			Class<?> obj = Class.forName(udfName);
-			Method mapUDF = obj.getMethod("getMetricName");
-			String[] metricName = (String[]) mapUDF.invoke(obj.newInstance());
+			Method metricUDF = obj.getMethod("getMetricName");
+			String[] metricName = (String[]) metricUDF.invoke(obj.newInstance());
 			
 			metricrtm = new ReportTableModel(metricName,true,true);
 			

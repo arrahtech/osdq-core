@@ -18,6 +18,13 @@ package org.arrah.framework.ndtable;
  *
  */
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -29,6 +36,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.arrah.framework.dataquality.SimilarityCheckLucene;
+import org.arrah.framework.json.FlattenJsonToCSV;
+import org.arrah.framework.xls.XlsxReader;
+import org.arrah.framework.xml.XmlReader;
 
 public class DisplayFileAsTableCore {
 	
@@ -200,6 +210,61 @@ public class DisplayFileAsTableCore {
 		}
 		return matchedI;
 		
+	}
+	
+	/* This function has been added to load a filelocation into RTM */
+	
+	public ReportTableModel loadFileIntoRTM(String fileLocation) {
+		
+		File f = new File(fileLocation);
+		
+		ReportTableModel showT = null;
+		
+		try{
+			if (f.getName().toLowerCase().endsWith(".xml")) {
+				
+				final XmlReader xmlReader = new XmlReader();
+				showT = xmlReader.read(f);
+				return showT;
+				
+			} else if (f.getName().toLowerCase().endsWith(".xlsx") || f.getName().toLowerCase().endsWith(".xls")) {
+				
+				final XlsxReader xlsReader = new XlsxReader();
+				List<String> sheetname = xlsReader.showSheets(f);
+				if (sheetname == null || sheetname.isEmpty() == true) {
+					System.out.println( "No XLS Sheet to load");
+					return showT;
+				}
+				
+				return showT = xlsReader.read(sheetname);
+
+			} else if (f.getName().toLowerCase().endsWith(".csv")) {
+				
+				CSVtoReportTableModel csvReader = new CSVtoReportTableModel(f);
+				return showT = csvReader.loadOpenCSVIntoTable();
+				
+			} else if (f.getName().toLowerCase().endsWith(".json")){
+				
+				Path path = Paths.get(f.getPath());
+		    	String contents = new String(Files.readAllBytes(path),StandardCharsets.ISO_8859_1);
+		    	
+				return showT = new FlattenJsonToCSV().getRTM(contents);
+				
+			} else {
+				System.out.println("File format not recognised.");
+				return showT;
+			}
+			
+		} catch (FileNotFoundException file_e) {
+			
+			System.out.println("Exception:" + file_e.getLocalizedMessage());
+			return showT;
+			
+		} catch (IOException io_e) {
+			
+			System.out.println(" Exception:" + io_e.getLocalizedMessage());
+			return showT;
+		} 
 	}
   
 } // End of Class DisplayFileAsTableCore
