@@ -91,7 +91,7 @@ private final String jcbRule;
 			JobDataMap jobDataMap = null;
 			JobDetail job = null;
 			
-			if (hashtable != null || hashtable.isEmpty() == false) {
+			if (hashtable != null && hashtable.isEmpty() == false) { // this is sql
 			
 				jobDataMap = new JobDataMap(hashtable);
 							
@@ -99,7 +99,7 @@ private final String jcbRule;
 				job = newJob(ScheduleSQLJob.class)
 						.withIdentity(jobKey).usingJobData(jobDataMap).usingJobData("query", quer).usingJobData("jcbRule", jcbRule)
 						.build();
-			} else {
+			} else { // now it is UDF
 				
 				jobDataMap = new JobDataMap(hashrule);
 				job = newJob(ScheduleUDFJob.class)
