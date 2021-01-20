@@ -14,7 +14,7 @@ package org.arrah.framework.udf.sample;
 /**
  * A sample UDF to show how to implement business rule
  * based metrics. This metric will show the incomplete
- * value of each column
+ * value of each column selected
  */
 
 
